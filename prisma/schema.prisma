@@ -1,28 +1,58 @@
 // schema.prisma
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
 }
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
 }
 
-model Post {
+enum Source {
+  STABLEDIFFUSION
+}
+
+model Collection {
   id        String     @default(cuid()) @id
-  title     String
-  content   String?
-  published Boolean @default(false)
-  author    User?   @relation(fields: [authorId], references: [id])
-  authorId  String?
-}
-
-model User {
-  id            String       @default(cuid()) @id
-  name          String?
-  email         String?   @unique
+  slugUrl String @unique
+  title     String @unique
+  description   String
+  promptPhrase String
+  promptInitImage String?
+  promptSource Source
+  promptSourceParams Json 
+  bannerImageURL String
+  nftPlaceholderImageURL String
+  mintTotalSupply Int?
+  mintCandyMachineId String? @unique
+  mintDiscountPercentage Int?
+  artistName String
+  artistDescription String
+  artistTwitter String
+  artistDiscordUser String
+  artistRoyaltiesWalletAddress String
+  artistWebsiteURL String?
+  artistInstagramURL String?
+  artistTwitterURL String?
+  isMintOpen Boolean @default(false)
+  isFullyRevealed Boolean @default(false)
   createdAt     DateTime  @default(now()) @map(name: "created_at")
   updatedAt     DateTime  @updatedAt @map(name: "updated_at")
-  posts         Post[]
-  @@map(name: "users")
+  @@map(name: "collections")
+}
+
+model Mint {
+  id            String       @default(cuid()) @id
+  mint_address String @unique
+  title     String
+  description   String
+  image String
+  attributes Json?
+  rawMetadata Json?
+  isRevealed Boolean @default(false)
+  createdAt     DateTime  @default(now()) @map(name: "created_at")
+  updatedAt     DateTime  @updatedAt @map(name: "updated_at")
+  @@map(name: "mints")
 }
