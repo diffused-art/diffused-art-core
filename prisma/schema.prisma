@@ -27,6 +27,7 @@ model Collection {
   nftPlaceholderImageURL String
   mintTotalSupply Int?
   mintCandyMachineId String? @unique
+  collectionOnChainAddress String? @unique
   mintDiscountPercentage Int?
   artistName String
   artistDescription String
