@@ -12,6 +12,7 @@ import {
   Answer,
   ArtifactType,
   Artifact,
+  ScheduleParameters,
 } from './stubs/generation_pb';
 import { NodeHttpTransport } from '@improbable-eng/grpc-web-node-http-transport';
 import uuid4 from 'uuid4';
@@ -88,8 +89,8 @@ const withDefaults: (
     initImage: draft.initImage ?? (undefined as any),
     outDir: draft.outDir ?? path.join(process.cwd(), '.out', requestId),
     debug: Boolean(draft.debug),
-    start_schedule: 1.0,
-    end_schedule: 0.01,
+    start_schedule: draft.start_schedule ?? 0.9,
+    end_schedule: draft.end_schedule ?? 0.01,
     noStore: Boolean(draft.noStore),
   };
 };
@@ -118,6 +119,7 @@ export const generateStableDiffImage: (
     end_schedule,
   } = withDefaults(opts);
 
+
   if (!promptText) throw new Error('Prompt text is required');
 
   const api = new EventEmitter() as StabilityApi;
@@ -129,6 +131,12 @@ export const generateStableDiffImage: (
   request.setEngineId(engine);
   request.setRequestId(requestId);
 
+  const step = new StepParameter();
+  step.setScaledStep(0);
+  const sampler = new SamplerParameters();
+  sampler.setCfgScale(cfgScale);
+  step.setSampler(sampler);
+
   const prompt = new Prompt();
   prompt.setText(promptText);
   request.addPrompt(prompt);
@@ -136,7 +144,6 @@ export const generateStableDiffImage: (
   if (initImage) {
     const promptParameters = new PromptParameters();
     promptParameters.setInit(true);
-    promptParameters.setWeight(0.1); // used to modify image strength
     const initImagePrompt = new Prompt();
     initImagePrompt.setParameters(promptParameters);
 
@@ -146,6 +153,11 @@ export const generateStableDiffImage: (
 
     initImagePrompt.setArtifact(imagePromptArtifact);
     request.addPrompt(initImagePrompt);
+
+    const scheduleParameters = new ScheduleParameters();
+    scheduleParameters.setStart(start_schedule);
+    scheduleParameters.setEnd(end_schedule);
+    step.setSchedule(scheduleParameters);
   }
 
   const image = new ImageParameters();
@@ -159,24 +171,19 @@ export const generateStableDiffImage: (
   transform.setDiffusion(diffusionMap[diffusion]);
   image.setTransform(transform);
 
-  const step = new StepParameter();
-  step.setScaledStep(0);
-
-  const sampler = new SamplerParameters();
-  sampler.setCfgScale(cfgScale);
-  // TODO: Need to add ScheduleParameters in order to make init image strength work as expected
-  step.setSampler(sampler);
-
   image.addParameters(step);
-
-  request.setImage(image);
 
   const classifier = new ClassifierParameters();
   request.setClassifier(classifier);
+  request.setImage(image);
+  console.info(
+    '[stability - request]',
+    JSON.stringify(request.toObject(), null, 2),
+  );
   /** End Build Request **/
 
   if (debug) {
-    console.log(
+    console.info(
       '[stability - request]',
       JSON.stringify(request.toObject(), null, 2),
     );
@@ -268,15 +275,15 @@ export async function generateStableDiffImageAsync(
       initImage,
       ...promptObject.sourceParams,
       outDir: path.join(process.cwd(), '.out', 'test'),
-      debug: true,
+      // debug: true,
     });
 
     api.on('image', data => {
-      console.log('[stability - image]', data);
+      console.info('[stability - image]', data);
     });
 
     api.on('end', data => {
-      console.log('[stability - end]', data);
+      console.info('[stability - end]', data);
       resolve(data);
     });
   });

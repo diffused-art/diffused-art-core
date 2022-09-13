@@ -11,4 +11,3 @@ export default async function handle(req: any, res: any) {
 
   return res.status(result.status).json({ message: result.message });
 }
-

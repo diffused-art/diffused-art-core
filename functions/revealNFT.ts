@@ -58,21 +58,22 @@ export async function revealNFT(
     const specObject = getV2SpecFromAttributes(nftOnChainData.json.attributes!);
     if (AISource.StableDiffusion === specObject.source) {
       // TODO: If it generates here, it should return all params used in the v2 attributes spec format + the image URL to be uploaded back to NFT storage + new JSON on NFT storage
-      await generateStableDiffImageAsync(specObject);
-    } else {
-      // TODO: Delete this once everything is asserted to work
       await generateStableDiffImageAsync({
-        prompt: 'A dragon above you',
-        init_image: 'https://i.imgur.com/LqTxvU9.png',
+        prompt: specObject.prompt,
+        init_image: specObject.init_image,
         sourceParams: {
-          seed: generateSemiRandomNumberStableDiffusionRange(nftOnChainData.address.toString()),
+          seed: generateSemiRandomNumberStableDiffusionRange(
+            nftOnChainData.address.toString(),
+          ),
+          ...specObject.sourceParams,
         },
-        source: AISource.StableDiffusion,
+        source: specObject.source,
       });
+    } else {
       return { status: 400, message: 'nft_does_not_follow_morpheus_spec' };
     }
 
-    // In case of success we should update the NFT on-chain data, do another update to mark it immutable and 
+    // In case of success we should update the NFT on-chain data, do another update to mark it immutable and
     // mark it as revealed on the DB (also save the entire data on the DB), should use funded wallet for this
   }
   return { status: 400, message: 'unknown_error' };
