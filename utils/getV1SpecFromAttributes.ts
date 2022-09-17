@@ -1,6 +1,7 @@
 import { SpecObject } from "../typings";
 
-export function getV2SpecFromAttributes(attributes: {
+
+export function getV1SpecFromAttributes(attributes: {
   [key: string]: unknown;
   trait_type?: string | undefined;
   value?: string | undefined;

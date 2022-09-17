@@ -26,6 +26,7 @@ import TypedEmitter from 'typed-emitter';
 import { diffusionMap, range } from './utils';
 import { SpecObject } from '../../../typings';
 import axios from 'axios';
+import { STABLE_DIFFUSION_DEFAULTS } from './defaults';
 
 type DraftStabilityOptions = Partial<{
   outDir: string;
@@ -76,21 +77,21 @@ const withDefaults: (
   const requestId = draft.requestId ?? uuid4();
   return {
     ...draft,
-    host: draft.host ?? 'https://grpc.stability.ai:443',
-    engine: draft.engine ?? 'stable-diffusion-v1-5',
+    host: draft.host ?? STABLE_DIFFUSION_DEFAULTS.host,
+    engine: draft.engine ?? STABLE_DIFFUSION_DEFAULTS.engine as any,
     requestId,
-    seed: draft.seed ?? range(0, 4294967295),
-    width: draft.width ?? 512,
-    height: draft.height ?? 512,
-    diffusion: draft.diffusion ?? 'k_lms',
-    steps: draft.steps ?? 50,
-    cfgScale: draft.cfgScale ?? 7,
-    samples: draft.samples ?? 1,
+    seed: draft.seed as any,
+    width: draft.width ?? STABLE_DIFFUSION_DEFAULTS.width,
+    height: draft.height ?? STABLE_DIFFUSION_DEFAULTS.height,
+    diffusion: draft.diffusion ?? STABLE_DIFFUSION_DEFAULTS.diffusion as any,
+    steps: draft.steps ?? STABLE_DIFFUSION_DEFAULTS.steps,
+    cfgScale: draft.cfgScale ?? STABLE_DIFFUSION_DEFAULTS.cfgScale,
+    samples: draft.samples ?? STABLE_DIFFUSION_DEFAULTS.samples,
     initImage: draft.initImage ?? (undefined as any),
     outDir: draft.outDir ?? path.join(process.cwd(), '.out', requestId),
     debug: Boolean(draft.debug),
-    start_schedule: draft.start_schedule ?? 0.9,
-    end_schedule: draft.end_schedule ?? 0.01,
+    start_schedule: draft.start_schedule ?? STABLE_DIFFUSION_DEFAULTS.start_schedule,
+    end_schedule: draft.end_schedule ?? STABLE_DIFFUSION_DEFAULTS.end_schedule,
     noStore: Boolean(draft.noStore),
   };
 };
@@ -254,7 +255,7 @@ interface StableDiffusionPromptParams extends SpecObject {
 
 export async function generateStableDiffImageAsync(
   promptObject: StableDiffusionPromptParams,
-) {
+): Promise<{buffer: Buffer; filePath: String}[]> {
   let initImage: Uint8Array | undefined = undefined;
   if (promptObject.init_image) {
     const bufferData = await axios
@@ -278,13 +279,16 @@ export async function generateStableDiffImageAsync(
       // debug: true,
     });
 
+    const images: any[] = [];
+
     api.on('image', data => {
       console.info('[stability - image]', data);
+      images.push(data);
     });
 
     api.on('end', data => {
       console.info('[stability - end]', data);
-      resolve(data);
+      resolve(images);
     });
   });
 }

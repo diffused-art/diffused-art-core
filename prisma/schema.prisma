@@ -1,12 +1,12 @@
 // schema.prisma
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
   referentialIntegrity = "prisma"
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["referentialIntegrity"]
 }
 
@@ -15,45 +15,50 @@ enum Source {
 }
 
 model Collection {
-  id        String     @default(cuid()) @id
-  slugUrl String @unique
-  title     String @unique
-  description   String
-  promptPhrase String
-  promptInitImage String?
-  promptSource Source
-  promptSourceParams Json 
-  bannerImageURL String
-  nftPlaceholderImageURL String
-  mintTotalSupply Int?
-  mintCandyMachineId String? @unique
-  collectionOnChainAddress String? @unique
-  mintDiscountPercentage Int?
-  artistName String
-  artistDescription String
-  artistTwitter String
-  artistDiscordUser String
+  id                           String   @id @default(cuid())
+  slugUrl                      String   @unique
+  title                        String   @unique
+  description                  String
+  promptPhrase                 String
+  promptInitImage              String?
+  promptSource                 Source
+  promptSourceParams           Json
+  bannerImageURL               String
+  nftPlaceholderImageURL       String
+  mintTotalSupply              Int?
+  mintCandyMachineId           String?  @unique
+  collectionOnChainAddress     String?  @unique
+  mintDiscountPercentage       Int?
+  artistName                   String
+  artistDescription            String
+  artistTwitter                String
+  artistDiscordUser            String
   artistRoyaltiesWalletAddress String
-  artistWebsiteURL String?
-  artistInstagramURL String?
-  artistTwitterURL String?
-  isMintOpen Boolean @default(false)
-  isFullyRevealed Boolean @default(false)
-  createdAt     DateTime  @default(now()) @map(name: "created_at")
-  updatedAt     DateTime  @updatedAt @map(name: "updated_at")
+  artistWebsiteURL             String?
+  artistInstagramURL           String?
+  artistTwitterURL             String?
+  isMintOpen                   Boolean  @default(false)
+  isFullyRevealed              Boolean  @default(false)
+  createdAt                    DateTime @default(now()) @map(name: "created_at")
+  updatedAt                    DateTime @updatedAt @map(name: "updated_at")
+  mints                        Mint[]
+
   @@map(name: "collections")
 }
 
 model Mint {
-  id            String       @default(cuid()) @id
-  mint_address String @unique
-  title     String
-  description   String
-  image String
-  attributes Json?
-  rawMetadata Json?
-  isRevealed Boolean @default(false)
-  createdAt     DateTime  @default(now()) @map(name: "created_at")
-  updatedAt     DateTime  @updatedAt @map(name: "updated_at")
+  id           String     @id @default(cuid())
+  collectionId String     @unique // relation scalar field (used in the `@relation` attribute above)
+  collection   Collection @relation(fields: [collectionId], references: [id])
+  mint_address String     @unique
+  title        String
+  description  String
+  image        String
+  attributes   Json?
+  rawMetadata  Json?
+  isRevealed   Boolean    @default(false)
+  createdAt    DateTime   @default(now()) @map(name: "created_at")
+  updatedAt    DateTime   @updatedAt @map(name: "updated_at")
+
   @@map(name: "mints")
 }

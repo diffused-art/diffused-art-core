@@ -10,12 +10,13 @@
     "generate-prisma-cli": "npx prisma generate",
     "db-push": "npx prisma db push",
     "db-studio": "npx prisma studio",
-    "download-stable-diffusion-lib": "node ./scripts/download-stable-diffusion-lib.mjs"
+    "download-stable-diffusion-lib": "./scripts/download-and-build-sd-lib.sh"
   },
   "dependencies": {
     "@improbable-eng/grpc-web": "^0.15.0",
     "@improbable-eng/grpc-web-node-http-transport": "^0.15.0",
     "@metaplex-foundation/js": "^0.15.0",
+    "@metaplex-foundation/js-plugin-nft-storage": "^0.1.1",
     "@prisma/client": "^4.3.1",
     "@solana/web3.js": "^1.60.0",
     "axios": "^0.27.2",
@@ -30,7 +31,8 @@
     "react-dom": "18.2.0",
     "ts-node": "^10.9.1",
     "typed-emitter": "^2.1.0",
-    "uuid4": "^2.0.3"
+    "uuid4": "^2.0.3",
+    "yup": "^0.32.11"
   },
   "devDependencies": {
     "@types/google-protobuf": "^3.15.6",
