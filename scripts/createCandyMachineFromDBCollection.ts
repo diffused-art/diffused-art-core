@@ -5,6 +5,7 @@ import { getWriteCli } from '../functions/getMetaplexCli';
 import { AISource } from '../typings';
 import { PublicKey } from '@solana/web3.js';
 import { sol, toBigNumber, toDateTime } from '@metaplex-foundation/js';
+import { retry } from 'ts-retry-promise';
 
 const prisma = new PrismaClient();
 
@@ -45,9 +46,10 @@ function getAttributes(collection) {
 
   return attributes;
 }
-async function createCandyMachineFromDBCollection(
-  slugUrl = '/sample-collection-cyberpunk-dragon',
-) {
+async function createCandyMachineFromDBCollection() {
+  
+  const result = require('minimist')(process.argv.slice(2));
+  const slugUrl = result.slugUrl || '/sample-collection-cyberpunk-dragon';
   const metaplexWriteCli = await getWriteCli();
 
   let [foundCollection] = await prisma.collection.findMany({
@@ -89,6 +91,7 @@ async function createCandyMachineFromDBCollection(
         },
       })
       .run();
+    console.info(`Collection NFT not found, creating now, please wait...`)
     const { nft: collectionNFT } = await metaplexWriteCli
       .nfts()
       .create({
@@ -111,6 +114,7 @@ async function createCandyMachineFromDBCollection(
         isCollection: true,
       })
       .run();
+      console.info(`Collection NFT minted successfully Hash: https://solscan.io/token/${collectionNFT.address.toString()}`)
 
     await prisma.collection.update({
       where: {
@@ -122,7 +126,7 @@ async function createCandyMachineFromDBCollection(
     });
 
     console.info(
-      `Collection NFT (Metaplex Certified Collection) created successfully!! Hash: https://solscan.io/token/${collectionNFT.address}`,
+      `Collection NFT (Metaplex Certified Collection) saved to the DB collection id: ${foundCollection.id}`,
     );
   }
 
@@ -152,7 +156,6 @@ async function createCandyMachineFromDBCollection(
   ];
 
   let candyMachine = null;
-  await new Promise(resolve => setTimeout(resolve, 5000));
   if (foundCollection.mintCandyMachineId) {
     console.info(
       `Candy machine already created for this collection, fetching!!`,
@@ -165,28 +168,26 @@ async function createCandyMachineFromDBCollection(
       .run();
   } else {
     console.info(`Candy machine needs to be created, creating now...`);
-    candyMachine = (
-      await metaplexWriteCli
-        .candyMachines()
-        .create({
-          collection: new PublicKey(foundCollection.collectionOnChainAddress!),
-          itemsAvailable: toBigNumber(foundCollection.mintTotalSupply),
-          price: sol(foundCollection.mintPrice.toNumber()),
-          // TODO: Needed to support SPL Tokens
-          // tokenMint: foundCollection?.mintTokenSPL
-          //   ? new PublicKey(foundCollection?.mintTokenSPL)
-          //   : undefined,
-          sellerFeeBasisPoints: foundCollection.mintSellerFeeBasisPoints,
-          creators: creatorsArray,
-          retainAuthority: true,
-          symbol: foundCollection.mintSymbol,
-          maxEditionSupply: toBigNumber(0),
-          goLiveDate: toDateTime(foundCollection.mintOpenAt.getTime()),
-          isMutable: true,
-          // gatekeeper TODO: Add here to add botting protection
-        })
-        .run()
-    ).candyMachine;
+    candyMachine = (await retry(() => metaplexWriteCli
+    .candyMachines()
+    .create({
+      collection: new PublicKey(foundCollection.collectionOnChainAddress!),
+      itemsAvailable: toBigNumber(foundCollection.mintTotalSupply),
+      price: sol(foundCollection.mintPrice.toNumber()),
+      // TODO: Needed to support SPL Tokens
+      // tokenMint: foundCollection?.mintTokenSPL
+      //   ? new PublicKey(foundCollection?.mintTokenSPL)
+      //   : undefined,
+      sellerFeeBasisPoints: foundCollection.mintSellerFeeBasisPoints,
+      creators: creatorsArray,
+      retainAuthority: true,
+      symbol: foundCollection.mintSymbol,
+      maxEditionSupply: toBigNumber(0),
+      goLiveDate: toDateTime(foundCollection.mintOpenAt.getTime()),
+      isMutable: true,
+      // gatekeeper TODO: Add here to add botting protection
+    })
+    .run(), { retries: 5, delay: 1000 })).candyMachine;
   }
 
   await prisma.collection.update({

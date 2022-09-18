@@ -7,14 +7,16 @@ import { toBigNumber } from '@metaplex-foundation/js';
 
 const prisma = new PrismaClient();
 
-async function reinsertNonConfirmedItemsInsert(cmId: string = 'CMID') {
+async function reinsertNonConfirmedItemsInsert() {
+  const result = require('minimist')(process.argv.slice(2));
+
   const metaplexWriteCli = await getWriteCli();
 
   const allTimedOut = await prisma.errorsCMChunksUpload.findMany({
     where: {
       actioned: false,
       collection: {
-        mintCandyMachineId: cmId,
+        mintCandyMachineId: result.cmid,
       },
     },
     include: {

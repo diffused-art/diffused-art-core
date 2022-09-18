@@ -83,20 +83,6 @@ async function updateNFTOnChain(
     },
   });
 
-  await prisma.mint.update({
-    where: { mint_address: updatedNFT.address.toString() },
-    data: {
-      mint_address: updatedNFT.address.toString(),
-      title: updatedNFT.name,
-      description: updatedNFT.json?.description,
-      image: updatedNFT.json?.image,
-      attributes: updatedNFT.json?.attributes as any,
-      rawMetadata: updatedNFT.json as any,
-      isRevealed: true,
-      updatedAt: new Date(Date.now()),
-    },
-  });
-
   const foundCollection = await prisma.collection.findFirst({
     where: {
       collectionOnChainAddress: updatedNFT.collection?.address?.toString(),

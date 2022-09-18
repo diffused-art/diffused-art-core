@@ -13,7 +13,7 @@ async function createSampleCollectionOnDb() {
       mintName: 'Cyberpunk Dragon',
       slugUrl: '/sample-collection-cyberpunk-dragon',
       mintSymbol: 'CPDRAGON',
-      mintPrice: 0.1,
+      mintPrice: 0.01,
       mintOpenAt: addDays(new Date(), 1),
       description:
         'This collection imagines a cyberpunk dragon on the colors of the Solana logo. A fitting first collection, huh?',
