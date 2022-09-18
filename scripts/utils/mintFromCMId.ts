@@ -40,7 +40,8 @@ async function mintFromCMID() {
     },
   });
 
-  console.info(mintResult.nft);
+  console.info(`NFT Minted, Hash: https://solscan.io/account/${candyMachine.address.toString()}`);
+  return;
 }
 
 mintFromCMID();

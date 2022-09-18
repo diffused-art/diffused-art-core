@@ -14,6 +14,7 @@
     "create-cm-db": "ts-node ./scripts/createCandyMachineFromDBCollection.ts --slugUrl ",
     "reinsert-non-confirmed-items-insert": "ts-node ./scripts/reinsertNonConfirmedItemsInsert.ts --cmid ",
     "mint-from-cmid": "ts-node ./scripts/utils/mintFromCMID.ts --cmid ",
+    "reveal-all-from-cmid": "ts-node ./scripts/revealAllMintedNFTsForCMID.ts --cmid ",
     "download-stable-diffusion-lib": "./scripts/download-and-build-sd-lib.sh"
   },
   "dependencies": {
@@ -21,6 +22,8 @@
     "@improbable-eng/grpc-web-node-http-transport": "^0.15.0",
     "@metaplex-foundation/js": "^0.15.0",
     "@metaplex-foundation/js-plugin-nft-storage": "^0.1.1",
+    "@metaplex-foundation/mpl-token-metadata": "^2.2.4",
+    "@metaplex/js": "^4.12.0",
     "@prisma/client": "^4.3.1",
     "@solana/web3.js": "^1.60.0",
     "axios": "^0.27.2",

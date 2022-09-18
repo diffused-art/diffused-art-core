@@ -220,8 +220,8 @@ export async function revealNFT(
       }
 
       const data = await generateStableDiffImageAsync(newObjectMetadata).catch(
-        e => {
-          throw new Error('Couldnt generate image', e);
+        () => {
+          throw new Error('Couldnt generate image');
         },
       );
       const lastGeneratedImage = data[data.length - 1];
