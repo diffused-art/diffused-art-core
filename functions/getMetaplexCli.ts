@@ -6,7 +6,6 @@ import {
 import { nftStorage } from '@metaplex-foundation/js-plugin-nft-storage';
 import { Connection, Keypair } from '@solana/web3.js';
 import bs58 from 'bs58';
-const connection = new Connection(process.env.RPC_URL!);
 const wallet = Keypair.generate();
 
 const fundedWallet = Keypair.fromSecretKey(
@@ -14,18 +13,18 @@ const fundedWallet = Keypair.fromSecretKey(
 );
 
 export function getReadonlyCli() {
+  const connection = new Connection(process.env.RPC_URL_QN!);
   const metaplex = Metaplex.make(connection)
     .use(keypairIdentity(wallet))
-    .use(bundlrStorage())
     .use(nftStorage({ token: process.env.NFTSTORAGE_KEY! }));
 
   return metaplex;
 }
 
 export function getWriteCli() {
+  const connection = new Connection(process.env.RPC_URL_QN!);
   const metaplex = Metaplex.make(connection)
     .use(keypairIdentity(fundedWallet))
-    .use(bundlrStorage())
     .use(nftStorage({ token: process.env.NFTSTORAGE_KEY! }));
   return metaplex;
 }

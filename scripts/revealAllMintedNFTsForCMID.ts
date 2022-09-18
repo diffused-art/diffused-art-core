@@ -1,48 +1,15 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
-import { getReadonlyCli } from '../functions/getMetaplexCli';
 import { revealNFT } from '../functions/revealNFT';
-import { PublicKey } from '@solana/web3.js';
 import { PrismaClient } from '@prisma/client';
-import { Metadata } from '@metaplex-foundation/js';
-import axios from 'axios';
+import fs from 'fs';
+import shell from 'shelljs';
 const prisma = new PrismaClient();
-
-function getNFTHashListUsingQuicknode(cmid: string) {
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-  const data = {
-    jsonrpc: '2.0',
-    id: 1,
-    method: 'qn_fetchNFTsByCreator',
-    params: [
-      {
-        creator: cmid,
-        page: 1,
-        perPage: 40,
-      },
-    ],
-  };
-  axios
-    .post(process.env.RPC_URL!, data, config)
-    .then(function (response) {
-      // handle success
-      console.log(response.data);
-    })
-    .catch(err => {
-      // handle error
-      console.log(err);
-    });
-}
 
 // TODO: Long term solution is to use something like Holaplex indexer, tho, and store on the DB as unrevealed item as the quicknode fetch mints is unreliable
 async function createCandyMachineFromDBCollection() {
   const result = require('minimist')(process.argv.slice(2));
   const cmid = result.cmid;
-  const metaplexCli = await getReadonlyCli();
 
   const foundCollection = await prisma.collection.findUnique({
     where: {
@@ -56,17 +23,16 @@ async function createCandyMachineFromDBCollection() {
   }
 
   console.info(`Getting hash list for candy machine... ${result.cmid}`);
+  if (shell.exec(`metaboss snapshot mints -r ${process.env.RPC_URL_ALCHEMY} --creator ${result.cmid} --v2 --output ./output/hashlists`).code !== 0) {
+    shell.echo('Error: Couldnt fetch hash list');
+    shell.exit(1);
+    return;
+  }
 
-  const mintedNFTs: Metadata[] = (await metaplexCli
-    .candyMachines()
-    .findMintedNfts({
-      candyMachine: new PublicKey(cmid),
-    })
-    .run()) as any;
+  const hashListAddress = JSON.parse(fs.readFileSync(`./output/hashlists/${result.cmid}_mint_accounts.json`, 'utf8').toString());
 
-  console.info(`Got minted NFTs (hash list) --- ${mintedNFTs.length} items`);
+  console.info(`Got minted NFTs (hash list) --- ${hashListAddress.length} items`);
 
-  const hashListAddress = mintedNFTs.map(mint => mint.mintAddress.toString());
   const chunkSize = 25;
   const chunkedItems = [];
   for (let i = 0; i < hashListAddress.length; i += chunkSize) {
