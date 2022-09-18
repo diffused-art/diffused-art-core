@@ -2,7 +2,6 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import { PrismaClient } from '@prisma/client';
 import { getWriteCli } from '../functions/getMetaplexCli';
-import { AISource } from '../typings';
 import { PublicKey } from '@solana/web3.js';
 import { toBigNumber } from '@metaplex-foundation/js';
 

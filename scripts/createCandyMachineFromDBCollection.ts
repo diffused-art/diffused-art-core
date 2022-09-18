@@ -4,13 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { getWriteCli } from '../functions/getMetaplexCli';
 import { AISource } from '../typings';
 import { PublicKey } from '@solana/web3.js';
-import {
-  sol,
-  toBigNumber,
-  toDateTime,
-} from '@metaplex-foundation/js';
-
-import { batchedPromiseAll } from 'batched-promise-all'
+import { sol, toBigNumber, toDateTime } from '@metaplex-foundation/js';
 
 const prisma = new PrismaClient();
 
@@ -158,7 +152,7 @@ async function createCandyMachineFromDBCollection(
   ];
 
   let candyMachine = null;
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  await new Promise(resolve => setTimeout(resolve, 5000));
   if (foundCollection.mintCandyMachineId) {
     console.info(
       `Candy machine already created for this collection, fetching!!`,
@@ -187,7 +181,7 @@ async function createCandyMachineFromDBCollection(
           retainAuthority: true,
           symbol: foundCollection.mintSymbol,
           maxEditionSupply: toBigNumber(0),
-          goLiveDate: toDateTime(new Date().getTime()), // TODO: foundCollection.mintOpenAt, need to figure out why this one was not working
+          goLiveDate: toDateTime(foundCollection.mintOpenAt.getTime()),
           isMutable: true,
           // gatekeeper TODO: Add here to add botting protection
         })
@@ -264,39 +258,44 @@ async function createCandyMachineFromDBCollection(
     for (let index = 0; index < chunkedItems.length; index++) {
       const chunkItems = chunkedItems[index];
 
-      promisesArray.push(() => 
-        new Promise(async resolve => {
-          console.info(`Inserting Chunk N${index + 1} with 5 items`);
-          resolve(
-            await metaplexWriteCli
-              .candyMachines()
-              .insertItems({
-                candyMachine,
-                authority: metaplexWriteCli.identity(),
-                items: chunkItems,
-                index: toBigNumber(index * chunkSize),
-              })
-              .run()
-              .catch(async e => {
-                if (e.message.includes('Invalid response body while trying to fetch')) { 
-                  console.info(`Error while inserting Chunk N${index + 1}`);
-                  await prisma.errorsCMChunksUpload.create({
-                    data: {
-                      candyMachineAddress: candyMachine.address.toString(),
-                      collection: {
-                        connect: {
-                          id: foundCollection.id,
+      promisesArray.push(
+        () =>
+          new Promise(async resolve => {
+            console.info(`Inserting Chunk N${index + 1} with 5 items`);
+            resolve(
+              await metaplexWriteCli
+                .candyMachines()
+                .insertItems({
+                  candyMachine,
+                  authority: metaplexWriteCli.identity(),
+                  items: chunkItems,
+                  index: toBigNumber(index * chunkSize),
+                })
+                .run()
+                .catch(async e => {
+                  if (
+                    e.message.includes(
+                      'Invalid response body while trying to fetch',
+                    )
+                  ) {
+                    console.info(`Error while inserting Chunk N${index + 1}`);
+                    await prisma.errorsCMChunksUpload.create({
+                      data: {
+                        candyMachineAddress: candyMachine.address.toString(),
+                        collection: {
+                          connect: {
+                            id: foundCollection.id,
+                          },
                         },
+                        index: index * chunkSize,
+                        items: chunkItems,
+                        cause: e.message,
                       },
-                      index: index * chunkSize,
-                      items: chunkItems,
-                      cause: e.message,
-                    },
-                  });
-                }
-              }),
-          );
-        }),
+                    });
+                  }
+                }),
+            );
+          }),
       );
     }
 
@@ -308,8 +307,8 @@ async function createCandyMachineFromDBCollection(
     }
 
     for (let index = 0; index < batchedPromiseArray.length; index++) {
-      await Promise.all(batchedPromiseArray[index].map((promise) => promise()));
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await Promise.all(batchedPromiseArray[index].map(promise => promise()));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     console.info(

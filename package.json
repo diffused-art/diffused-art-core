@@ -23,7 +23,6 @@
     "@prisma/client": "^4.3.1",
     "@solana/web3.js": "^1.60.0",
     "axios": "^0.27.2",
-    "batched-promise-all": "^0.9.2",
     "bs58": "^5.0.0",
     "date-fns": "^2.29.3",
     "dotenv": "^16.0.2",

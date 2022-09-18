@@ -27,7 +27,7 @@ async function createSampleCollectionOnDb() {
         'https://bafybeig4xlmbku44liu2tnc4dxy7d4zyjb3pkgy5kr2dmcjbu6d4ai3uvi.ipfs.nftstorage.link/',
       nftPlaceholderImageURL:
         'https://bafybeif7vz5efqf3fjhpncih6gmdqig7u7fgmnezro6eigoxf7fzhldhnm.ipfs.nftstorage.link/',
-      mintTotalSupply: 500,
+      mintTotalSupply: 100,
       artistName: 'Diffused Art',
       artistDescription: 'Revolutionizing the way we create art',
       artistDiscordUser: 'Kevcode#9254',
