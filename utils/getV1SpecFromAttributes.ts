@@ -6,7 +6,7 @@ export function getV1SpecFromAttributes(attributes: {
   trait_type?: string | undefined;
   value?: string | undefined;
 }[]): SpecObject {
-  const specObject: SpecObject = {} as any;
+  const specObject: SpecObject = { sourceParams: {} } as any;
   for (let index = 0; index < attributes.length; index++) {
     const attribute = attributes[index];
     if (attribute.trait_type && ['prompt', 'init_image', 'source'].includes(attribute.trait_type)) {

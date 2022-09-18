@@ -99,6 +99,7 @@ const withDefaults: (
 export const generateStableDiffImage: (
   opts: DraftStabilityOptions & RequiredStabilityOptions,
 ) => StabilityApi = opts => {
+  
   const {
     host,
     engine,
@@ -119,7 +120,6 @@ export const generateStableDiffImage: (
     start_schedule,
     end_schedule,
   } = withDefaults(opts);
-
 
   if (!promptText) throw new Error('Prompt text is required');
 
@@ -269,10 +269,12 @@ export async function generateStableDiffImageAsync(
       bufferData.byteLength / Uint8Array.BYTES_PER_ELEMENT,
     );
   }
+  
   return new Promise(resolve => {
     const api = generateStableDiffImage({
       apiKey: process.env.DREAMSTUDIO_API_KEY!,
       prompt: promptObject.prompt,
+      seed: promptObject.seed as number,
       initImage,
       ...promptObject.sourceParams,
       outDir: path.join(process.cwd(), '.out', 'test'),

@@ -29,6 +29,7 @@ async function updateNFTOnChain(
   const { uri: newUri } = await metaplexWriteCli
     .nfts()
     .uploadMetadata({
+      name: currentNft.name,
       image: toMetaplexFile(newImage, 'generation.png'),
       attributes: newAttributes,
       files: [
@@ -45,6 +46,7 @@ async function updateNFTOnChain(
     .update({
       nftOrSft: currentNft,
       uri: newUri,
+      collection: new PublicKey(currentNft.collection?.address.toString()!),
       isMutable: false,
     })
     .run();
@@ -65,17 +67,26 @@ async function updateNFTOnChain(
     where: { mint_address: updatedNFT.address.toString() },
     create: {
       mint_address: updatedNFT.address.toString(),
-      collectionId: collectionFound?.id as any,
+      collection: {
+        connect: {
+          id: collectionFound?.id as any,
+        }
+      },
       title: updatedNFT.name,
-      description: updatedNFT.json?.description as any,
+      description: updatedNFT.json?.attributes?.find((attribute) => attribute.trait_type === 'prompt')?.value as any,
       image: updatedNFT.json?.image as any,
       attributes: updatedNFT.json?.attributes as any,
       rawMetadata: updatedNFT.json as any,
       isRevealed: true,
     },
     update: {
+      collection: {
+        connect: {
+          id: collectionFound?.id as any,
+        }
+      },
       title: updatedNFT.name,
-      description: updatedNFT.json?.description as any,
+      description: updatedNFT.json?.attributes?.find((attribute) => attribute.trait_type === 'prompt')?.value as any,
       image: updatedNFT.json?.image as any,
       attributes: updatedNFT.json?.attributes as any,
       rawMetadata: updatedNFT.json as any,
@@ -128,16 +139,35 @@ export async function revealNFT(
     .run()) as unknown as Nft | NftWithToken;
 
   if (!nftOnChainData.isMutable) {
-    await prisma.mint.update({
+    const collectionId = (await prisma.collection.findUnique({ where: { collectionOnChainAddress: nftOnChainData.collection?.address.toString() }}))?.id;
+    await prisma.mint.upsert({
       where: { mint_address: nftOnChainData.address.toString() },
-      data: {
+      create: {
+        mint_address: nftOnChainData.address.toString(),
+        collection: {
+          connect: {
+            id: collectionId
+          }
+        },
         title: nftOnChainData.name,
-        description: nftOnChainData.json?.description as any,
+        description: nftOnChainData.json?.attributes?.find((attribute) => attribute.trait_type === 'prompt')?.value as any,
         image: nftOnChainData.json?.image as any,
         attributes: nftOnChainData.json?.attributes as any,
         rawMetadata: nftOnChainData.json as any,
         isRevealed: true,
-        updatedAt: new Date(Date.now()),
+      },
+      update: {
+        collection: {
+          connect: {
+            id: collectionId,
+          }
+        },
+        title: nftOnChainData.name,
+        description: nftOnChainData.json?.attributes?.find((attribute) => attribute.trait_type === 'prompt')?.value as any,
+        image: nftOnChainData.json?.image as any,
+        attributes: nftOnChainData.json?.attributes as any,
+        rawMetadata: nftOnChainData.json as any,
+        isRevealed: true,
       },
     });
     prisma.$disconnect();
@@ -175,9 +205,8 @@ export async function revealNFT(
       specObject,
     );
     if (isValidStableDiffSpecObject) {
-      const newObjectMetadata = {
+      const newObjectMetadata: any = {
         prompt: specObject.prompt,
-        init_image: specObject.init_image,
         seed: generateSemiRandomNumberStableDiffusionRange(
           nftOnChainData.address.toString(),
         ),
@@ -186,6 +215,10 @@ export async function revealNFT(
         },
         source: specObject.source,
       };
+      if (specObject.init_image) {
+        newObjectMetadata.init_image = specObject.init_image;
+      }
+
       const data = await generateStableDiffImageAsync(newObjectMetadata).catch(
         e => {
           throw new Error('Couldnt generate image', e);

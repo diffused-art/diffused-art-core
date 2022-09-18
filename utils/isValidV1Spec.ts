@@ -5,7 +5,6 @@ let v1SpecSchemaStableDiffusion = object({
   init_image: string(),
   source: string().matches(/(stable_diffusion)/).required(),
   sourceParams: object({
-    host: string(),
     engine: string().matches(/(stable-diffusion-v1|stable-diffusion-v1-4|stable-diffusion-v1-5)/).required(),
     width: number().integer().min(512).max(1024).required(),
     height: number().integer().min(512).max(1024).required(),
@@ -13,8 +12,8 @@ let v1SpecSchemaStableDiffusion = object({
     steps: number().integer().min(10).max(150).required(),
     cfgScale: number().integer().min(0).max(20).required(),
     samples: number().integer().min(1).max(9).required(),
-    start_schedule: number().integer().min(0).max(1).required(),
-    end_schedule: number().integer().min(0).max(1).required(),
+    start_schedule: number().min(0).max(1).required(),
+    end_schedule: number().min(0).max(1).required(),
   })
 });
 

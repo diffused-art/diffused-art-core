@@ -54,7 +54,7 @@ model Collection {
 
 model Mint {
   id           String     @id @default(cuid())
-  collectionId String     @unique // relation scalar field (used in the `@relation` attribute above)
+  collectionId String     
   collection   Collection @relation(fields: [collectionId], references: [id])
   mint_address String     @unique
   title        String

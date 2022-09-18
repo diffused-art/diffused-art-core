@@ -6,5 +6,6 @@ export interface SpecObject {
   prompt: string;
   init_image?: string;
   source: string;
+  seed: number | string;
   sourceParams: { [key: string]: unknown };
 }
