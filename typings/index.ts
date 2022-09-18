@@ -1,5 +1,5 @@
 export enum AISource {
-  StableDiffusion = 'stable_diffusion',
+  STABLEDIFFUSION = 'stable_diffusion',
 }
 
 export interface SpecObject {

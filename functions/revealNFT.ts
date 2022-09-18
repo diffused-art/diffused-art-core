@@ -31,6 +31,12 @@ async function updateNFTOnChain(
     .uploadMetadata({
       image: toMetaplexFile(newImage, 'generation.png'),
       attributes: newAttributes,
+      files: [
+        {
+          type: 'image/png',
+          uri: toMetaplexFile(newImage, 'generation.png'),
+        },
+      ],
     })
     .run();
 
@@ -48,17 +54,32 @@ async function updateNFTOnChain(
     .findByMint({ mintAddress: currentNft.address })
     .run()) as unknown as Nft | NftWithToken;
 
-  await prisma.mint.update({
+  const collectionFound = await prisma.collection.findFirst({
+    where: {
+      collectionOnChainAddress: updatedNFT.collection?.address?.toString(),
+      isFullyRevealed: false,
+    },
+  });
+
+  await prisma.mint.upsert({
     where: { mint_address: updatedNFT.address.toString() },
-    data: {
+    create: {
       mint_address: updatedNFT.address.toString(),
+      collectionId: collectionFound?.id as any,
       title: updatedNFT.name,
-      description: updatedNFT.json?.description,
-      image: updatedNFT.json?.image,
+      description: updatedNFT.json?.description as any,
+      image: updatedNFT.json?.image as any,
       attributes: updatedNFT.json?.attributes as any,
       rawMetadata: updatedNFT.json as any,
       isRevealed: true,
-      updatedAt: new Date(Date.now()),
+    },
+    update: {
+      title: updatedNFT.name,
+      description: updatedNFT.json?.description as any,
+      image: updatedNFT.json?.image as any,
+      attributes: updatedNFT.json?.attributes as any,
+      rawMetadata: updatedNFT.json as any,
+      isRevealed: true,
     },
   });
 
@@ -105,11 +126,13 @@ export async function revealNFT(
   mint_address: string,
 ): Promise<{ status: number; message: PossibleResults }> {
   if (!isValidPublicKey(mint_address)) {
+    prisma.$disconnect();
     return { status: 400, message: 'invalid_public_key' };
   }
 
   const foundMint = await prisma.mint.findUnique({ where: { mint_address } });
   if (foundMint?.isRevealed) {
+    prisma.$disconnect();
     return { status: 400, message: 'already_revealed' };
   }
   const metaplexCli = getReadonlyCli();
@@ -122,10 +145,16 @@ export async function revealNFT(
     await prisma.mint.update({
       where: { mint_address: nftOnChainData.address.toString() },
       data: {
+        title: nftOnChainData.name,
+        description: nftOnChainData.json?.description as any,
+        image: nftOnChainData.json?.image as any,
+        attributes: nftOnChainData.json?.attributes as any,
+        rawMetadata: nftOnChainData.json as any,
         isRevealed: true,
         updatedAt: new Date(Date.now()),
       },
     });
+    prisma.$disconnect();
     return { status: 400, message: 'already_revealed' };
   }
 
@@ -140,14 +169,17 @@ export async function revealNFT(
       },
     });
     if (!foundCollection) {
+      prisma.$disconnect();
       return { status: 400, message: 'invalid_collection_address' };
     }
   } else {
+    prisma.$disconnect();
     return { status: 400, message: 'invalid_collection_address' };
   }
 
   // From here on, it means that the NFT is mutable and we can reveal it.
   if (!nftOnChainData.json) {
+    prisma.$disconnect();
     return { status: 400, message: 'uri_metadata_not_found' };
   }
 
@@ -165,9 +197,6 @@ export async function revealNFT(
         ),
         sourceParams: {
           ...specObject.sourceParams,
-          seed: generateSemiRandomNumberStableDiffusionRange(
-            nftOnChainData.address.toString(),
-          ),
         },
         source: specObject.source,
       };
@@ -200,9 +229,13 @@ export async function revealNFT(
         nftOnChainData,
         nftAttributes,
       );
+      prisma.$disconnect();
+      return { status: 200, message: 'success' };
     } else {
+      prisma.$disconnect();
       return { status: 400, message: 'nft_does_not_follow_morpheus_spec' };
     }
   }
+  prisma.$disconnect();
   return { status: 400, message: 'unknown_error' };
 }

@@ -1,6 +1,6 @@
 // schema.prisma
 datasource db {
-  provider             = "mysql"
+  provider             = "postgresql"
   url                  = env("DATABASE_URL")
   referentialIntegrity = "prisma"
 }
@@ -15,9 +15,9 @@ enum Source {
 }
 
 model Collection {
-  id                           String   @id @default(cuid())
-  slugUrl                      String   @unique
-  title                        String   @unique
+  id                           String                 @id @default(cuid())
+  slugUrl                      String                 @unique
+  title                        String
   description                  String
   promptPhrase                 String
   promptInitImage              String?
@@ -25,23 +25,29 @@ model Collection {
   promptSourceParams           Json
   bannerImageURL               String
   nftPlaceholderImageURL       String
+  mintName                     String
+  mintPrice                    Decimal
+  mintSellerFeeBasisPoints     Int                    @default(250)
+  mintOpenAt                   DateTime
+  mintSymbol                   String
+  mintTokenSPL                 String?
   mintTotalSupply              Int?
-  mintCandyMachineId           String?  @unique
-  collectionOnChainAddress     String?  @unique
+  mintCandyMachineId           String?                @unique
+  collectionOnChainAddress     String?                @unique
   mintDiscountPercentage       Int?
   artistName                   String
   artistDescription            String
-  artistTwitter                String
   artistDiscordUser            String
   artistRoyaltiesWalletAddress String
   artistWebsiteURL             String?
   artistInstagramURL           String?
   artistTwitterURL             String?
-  isMintOpen                   Boolean  @default(false)
-  isFullyRevealed              Boolean  @default(false)
-  createdAt                    DateTime @default(now()) @map(name: "created_at")
-  updatedAt                    DateTime @updatedAt @map(name: "updated_at")
+  isMintOpen                   Boolean                @default(false)
+  isFullyRevealed              Boolean                @default(false)
+  createdAt                    DateTime               @default(now()) @map(name: "created_at")
+  updatedAt                    DateTime               @updatedAt @map(name: "updated_at")
   mints                        Mint[]
+  errorsCMChunksUploads        ErrorsCMChunksUpload[]
 
   @@map(name: "collections")
 }
@@ -61,4 +67,21 @@ model Mint {
   updatedAt    DateTime   @updatedAt @map(name: "updated_at")
 
   @@map(name: "mints")
+}
+
+model ErrorsCMChunksUpload {
+  id           String     @id @default(cuid())
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id])
+
+  candyMachineAddress String
+  index               Int
+  items               Json
+  cause               String
+  txId                String?
+  actioned            Boolean  @default(false)
+  createdAt           DateTime @default(now()) @map(name: "created_at")
+  updatedAt           DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "errorscmchunksupload")
 }
