@@ -34,9 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.env.template
 .env
 .out
 api-interfaces
 root.crt
 output/hashlists/*.json
+cache-output/*
+sugar.log

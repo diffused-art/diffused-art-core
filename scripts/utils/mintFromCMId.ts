@@ -1,46 +1,21 @@
-import { PrismaClient } from '@prisma/client';
-import { PublicKey } from '@solana/web3.js';
-import { getWriteCli } from '../../functions/getMetaplexCli';
-
-const prisma = new PrismaClient();
+import shell from 'shelljs';
 
 async function mintFromCMID() {
   const result = require('minimist')(process.argv.slice(2));
-  const metaplexWriteCli = await getWriteCli();
-  const candyMachine = await metaplexWriteCli
-    .candyMachines()
-    .findByAddress({
-      address: new PublicKey(result.cmid),
-    })
-    .run();
 
-  const mintResult = await metaplexWriteCli
-    .candyMachines()
-    .mint({
-      candyMachine,
-    })
-    .run();
+  console.info(`Minting 5 items from the CM... ${result.cmid}`);
+  if (
+    shell.exec(
+      `sugar mint --candy-machine ${result.cmid} --cache ./cache-output -n 5`,
+    ).code !== 0
+  ) {
+    shell.echo('Error: Couldnt mint 5 items');
+    shell.exit(1);
+    return;
+  }
 
-  const collectionFound = await prisma.collection.findUnique({
-    where: {
-      mintCandyMachineId: candyMachine.address.toString(),
-    },
-  });
+  console.info(`5 NFTs successfully minted for the CMID ${result.cmid}`);
 
-  await prisma.mint.create({
-    data: {
-      mint_address: mintResult.nft.address.toString(),
-      collectionId: collectionFound?.id as any,
-      title: mintResult.nft.name,
-      description: mintResult.nft.json?.description as any,
-      image: mintResult.nft.json?.image as any,
-      attributes: mintResult.nft.json?.attributes as any,
-      rawMetadata: mintResult.nft.json as any,
-      isRevealed: false,
-    },
-  });
-
-  console.info(`NFT Minted, Hash: https://solscan.io/account/${candyMachine.address.toString()}`);
   return;
 }
 

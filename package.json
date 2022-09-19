@@ -14,8 +14,8 @@
     "create-cm-db": "ts-node ./scripts/createCandyMachineFromDBCollection.ts --slugUrl ",
     "reinsert-non-confirmed-items-insert": "ts-node ./scripts/reinsertNonConfirmedItemsInsert.ts --cmid ",
     "mint-from-cmid": "ts-node ./scripts/utils/mintFromCMID.ts --cmid ",
-    "reveal-all-from-cmid": "ts-node ./scripts/revealAllMintedNFTsForCMID.ts --cmid ",
-    "download-stable-diffusion-lib": "./scripts/download-and-build-sd-lib.sh"
+    "download-stable-diffusion-lib": "./scripts/download-and-build-sd-lib.sh",
+    "reveal-cronjobs": "nodemon --watch 'src/' --exec 'ts-node ./cronjobs/revealMintsCronjob.ts' -e ts"
   },
   "dependencies": {
     "@improbable-eng/grpc-web": "^0.15.0",
@@ -35,6 +35,8 @@
     "mkdirp": "^1.0.4",
     "next": "12.3.0",
     "nft.storage": "^7.0.0",
+    "node-cron": "^3.0.2",
+    "nodemon": "^2.0.20",
     "rand-seed": "^1.0.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -49,6 +51,7 @@
     "@types/mime": "^3.0.1",
     "@types/mkdirp": "^1.0.2",
     "@types/node": "18.7.16",
+    "@types/node-cron": "^3.0.4",
     "@types/react": "18.0.19",
     "@types/react-dom": "18.0.6",
     "@types/uuid4": "^2.0.0",

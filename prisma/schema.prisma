@@ -44,6 +44,7 @@ model Collection {
   artistTwitterURL             String?
   isMintOpen                   Boolean                @default(false)
   isFullyRevealed              Boolean                @default(false)
+  hashList                     Json?
   createdAt                    DateTime               @default(now()) @map(name: "created_at")
   updatedAt                    DateTime               @updatedAt @map(name: "updated_at")
   mints                        Mint[]
@@ -54,7 +55,7 @@ model Collection {
 
 model Mint {
   id           String     @id @default(cuid())
-  collectionId String     
+  collectionId String
   collection   Collection @relation(fields: [collectionId], references: [id])
   mint_address String     @unique
   title        String
