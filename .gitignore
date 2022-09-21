@@ -41,3 +41,4 @@ root.crt
 output/hashlists/*.json
 cache-output/*
 sugar.log
+generate-images/*

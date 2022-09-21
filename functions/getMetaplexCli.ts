@@ -13,7 +13,7 @@ const fundedWallet = Keypair.fromSecretKey(
 );
 
 export function getReadonlyCli() {
-  const connection = new Connection(process.env.RPC_URL_QN!);
+  const connection = new Connection(process.env.RPC_URL_INSERTCM!);
   const metaplex = Metaplex.make(connection)
     .use(keypairIdentity(wallet))
     .use(nftStorage({ token: process.env.NFTSTORAGE_KEY! }));
@@ -21,7 +21,7 @@ export function getReadonlyCli() {
   return metaplex;
 }
 
-export function getWriteCli(RPC_URL = process.env.RPC_URL_QN!) {
+export function getWriteCli(RPC_URL = process.env.RPC_URL_INSERTCM!) {
   const connection = new Connection(RPC_URL);
   const metaplex = Metaplex.make(connection)
     .use(keypairIdentity(fundedWallet))

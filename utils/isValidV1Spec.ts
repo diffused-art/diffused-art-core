@@ -12,8 +12,8 @@ let v1SpecSchemaStableDiffusion = object({
     steps: number().integer().min(10).max(150).required(),
     cfgScale: number().integer().min(0).max(20).required(),
     samples: number().integer().min(1).max(9).required(),
-    start_schedule: number().min(0).max(1).required(),
-    end_schedule: number().min(0).max(1).required(),
+    start_schedule: number().min(0).max(1),
+    end_schedule: number().min(0).max(1),
   })
 });
 

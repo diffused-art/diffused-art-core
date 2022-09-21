@@ -10,25 +10,27 @@ const prisma = new PrismaClient();
 async function createSampleCollectionOnDb() {
   await prisma.collection.create({
     data: {
-      title: 'Sample Collection - A Thousand Solana Cats',
-      mintName: 'DiffArt Cats',
-      slugUrl: '/sample-collection-thousand-sol-cats',
-      mintSymbol: 'DIFFTCATS',
+      title: 'Sample Collection - Cyberpunk Town',
+      mintName: 'DiffArt Cyberpunk',
+      slugUrl: '/sample-collection-cyberpunk-town',
+      mintSymbol: 'DIFFCTOWN',
       mintPrice: 0.001,
       mintOpenAt: addDays(new Date(), 1),
       description:
-        'This collection imagines a dream of a thousand cats on the colors of the Solana logo. A fitting first collection, huh?',
+        'This collection tests a generation that uses an init image for giving context on a medieval town that gets mutated into a Cyberpunk dystopia.',
       promptSource: 'STABLEDIFFUSION',
       promptPhrase:
-        'Dream of a thousand cats on the colors of purple, blue and pink, ukiyo-e art',
+        'A digital illustration of a cyberpunk medieval town, robot dragons in the sky, trending in artstation, fantasy',
       promptSourceParams: {
         ...STABLE_DIFFUSION_DEFAULTS_FOR_METADATA,
+        start_schedule: 0.6,
       },
-      nftPlaceholderForegroundColor: '#d5d5d5',
-      nftPlaceholderBackgroundColor: '#7d1aa5',
+      promptInitImage: 'https://bafybeihzqncear44one6zvf2wqtjsjcu3hoz65ajg2ctmnthjx5qnzptym.ipfs.nftstorage.link',
+      nftPlaceholderForegroundColor: '#4A4945',
+      nftPlaceholderBackgroundColor: '#896F60',
       nftPlaceholderFontFamily: FontFamilies.Roboto,
       bannerImageURL:
-        'https://bafybeihm3h2slf2iezvcmypwcvoro2r6odtsh3fsrska5pshiqknz5npfq.ipfs.nftstorage.link',
+        'https://bafybeihzqncear44one6zvf2wqtjsjcu3hoz65ajg2ctmnthjx5qnzptym.ipfs.nftstorage.link',
       mintTotalSupply: 100,
       artistName: 'Diffused Art',
       artistDescription: 'Revolutionizing the way we create immutable AI art on-chain',

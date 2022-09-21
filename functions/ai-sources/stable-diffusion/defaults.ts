@@ -7,7 +7,7 @@ export const STABLE_DIFFUSION_DEFAULTS_FOR_METADATA = {
   cfgScale: 7,
   samples: 1,
   start_schedule: 0.5,
-  end_schedule: 0.5,
+  end_schedule: 0.01,
 }
 
 export const STABLE_DIFFUSION_DEFAULTS = {

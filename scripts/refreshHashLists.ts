@@ -33,7 +33,7 @@ export async function refreshHashLists() {
 
     if (
       shell.exec(
-        `metaboss snapshot mints -r ${process.env.RPC_URL_ALCHEMY} --creator ${collection.mintCandyMachineId} --v2 --output ./output/hashlists`,
+        `metaboss snapshot mints -r ${process.env.RPC_URL_FETCHHASHLIST} --creator ${collection.mintCandyMachineId} --v2 --output ./output/hashlists`,
       ).code !== 0
     ) {
       shell.echo('Error: Couldnt fetch hash list');

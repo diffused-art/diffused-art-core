@@ -4,8 +4,14 @@ import { PrismaClient } from '@prisma/client';
 import { getWriteCli } from '../functions/getMetaplexCli';
 import { AISource } from '../typings';
 import { PublicKey } from '@solana/web3.js';
-import { sol, toBigNumber, toDateTime } from '@metaplex-foundation/js';
+import {
+  sol,
+  toBigNumber,
+  toDateTime,
+  toMetaplexFile,
+} from '@metaplex-foundation/js';
 import { retry } from 'ts-retry-promise';
+import { generatePlaceholderImage } from './generatePlaceholderImage';
 
 const prisma = new PrismaClient();
 
@@ -31,6 +37,9 @@ function getAttributes(collection) {
       trait_type: 'init_image',
       value: collection.promptInitImage,
     });
+  } else {
+    delete collection.promptSourceParams.start_schedule;
+    delete collection.promptSourceParams.end_schedule;
   }
 
   attributes.push(
@@ -47,7 +56,6 @@ function getAttributes(collection) {
   return attributes;
 }
 async function createCandyMachineFromDBCollection() {
-  
   const result = require('minimist')(process.argv.slice(2));
   const slugUrl = result.slugUrl || '/sample-collection-cyberpunk-dragon';
   const metaplexWriteCli = await getWriteCli();
@@ -63,19 +71,36 @@ async function createCandyMachineFromDBCollection() {
     throw new Error('Collection not found');
   }
 
+  const nftPlaceholderImage = await generatePlaceholderImage(
+    foundCollection.id,
+    foundCollection.promptPhrase,
+    foundCollection.promptInitImage,
+    foundCollection.nftPlaceholderFontFamily as any,
+    foundCollection.nftPlaceholderBackgroundColor,
+    foundCollection.nftPlaceholderForegroundColor,
+  );
+
+  const { metadata } = await metaplexWriteCli
+    .nfts()
+    .uploadMetadata({
+      image: toMetaplexFile(nftPlaceholderImage, 'nftPlaceholderImage.png'),
+    })
+    .run();
+  const nftPlaceholderImageURL = metadata.image;
+
   if (!foundCollection.collectionOnChainAddress) {
     const { uri } = await metaplexWriteCli
       .nfts()
       .uploadMetadata({
         name: foundCollection.mintName,
-        image: foundCollection.nftPlaceholderImageURL,
+        image: nftPlaceholderImageURL,
         description: foundCollection.description,
         attributes: getAttributes(foundCollection),
         properties: {
           files: [
             {
               type: 'image/png',
-              uri: foundCollection?.nftPlaceholderImageURL,
+              uri: nftPlaceholderImageURL,
             },
           ],
           creators: [
@@ -91,8 +116,8 @@ async function createCandyMachineFromDBCollection() {
         },
       })
       .run();
-    console.info(`Collection NFT not found, creating now, please wait...`)
-    const { nft: collectionNFT } = await metaplexWriteCli
+    console.info(`Collection NFT not found, creating now, please wait...`);
+    const collectionNFTAddress: string = await metaplexWriteCli
       .nfts()
       .create({
         uri,
@@ -113,15 +138,28 @@ async function createCandyMachineFromDBCollection() {
         ],
         isCollection: true,
       })
-      .run();
-      console.info(`Collection NFT minted successfully Hash: https://solscan.io/token/${collectionNFT.address.toString()}`)
+      .run()
+      .then(res => res.nft.address.toString())
+      .catch(e =>
+        e?.problem
+          ?.replace(
+            'The account of type [MintAccount] was not found at the provided address [',
+            '',
+          )
+          .replace(']', ''),
+      );
+
+    await new Promise(resolve => setTimeout(resolve, 10000));
+    console.info(
+      `Collection NFT minted successfully Hash: https://solana.fm/address/${collectionNFTAddress}`,
+    );
 
     await prisma.collection.update({
       where: {
         slugUrl,
       },
       data: {
-        collectionOnChainAddress: collectionNFT.address.toString(),
+        collectionOnChainAddress: collectionNFTAddress,
       },
     });
 
@@ -132,7 +170,7 @@ async function createCandyMachineFromDBCollection() {
 
   if (foundCollection.collectionOnChainAddress) {
     console.info(
-      `Collection NFT already created for this registry, skipping!! Hash: https://solscan.io/token/${foundCollection?.collectionOnChainAddress}`,
+      `Collection NFT already created for this registry, skipping!! Hash: https://solana.fm/address/${foundCollection?.collectionOnChainAddress}`,
     );
   }
 
@@ -168,26 +206,34 @@ async function createCandyMachineFromDBCollection() {
       .run();
   } else {
     console.info(`Candy machine needs to be created, creating now...`);
-    candyMachine = (await retry(() => metaplexWriteCli
-    .candyMachines()
-    .create({
-      collection: new PublicKey(foundCollection.collectionOnChainAddress!),
-      itemsAvailable: toBigNumber(foundCollection.mintTotalSupply),
-      price: sol(foundCollection.mintPrice.toNumber()),
-      // TODO: Needed to support SPL Tokens
-      // tokenMint: foundCollection?.mintTokenSPL
-      //   ? new PublicKey(foundCollection?.mintTokenSPL)
-      //   : undefined,
-      sellerFeeBasisPoints: foundCollection.mintSellerFeeBasisPoints,
-      creators: creatorsArray,
-      retainAuthority: true,
-      symbol: foundCollection.mintSymbol,
-      maxEditionSupply: toBigNumber(0),
-      goLiveDate: toDateTime(foundCollection.mintOpenAt.getTime()),
-      isMutable: true,
-      // gatekeeper TODO: Add here to add botting protection
-    })
-    .run(), { retries: 5, delay: 1000 })).candyMachine;
+    candyMachine = (
+      await retry(
+        () =>
+          metaplexWriteCli
+            .candyMachines()
+            .create({
+              collection: new PublicKey(
+                foundCollection.collectionOnChainAddress!,
+              ),
+              itemsAvailable: toBigNumber(foundCollection.mintTotalSupply),
+              price: sol(foundCollection.mintPrice.toNumber()),
+              // TODO: Needed to support SPL Tokens
+              // tokenMint: foundCollection?.mintTokenSPL
+              //   ? new PublicKey(foundCollection?.mintTokenSPL)
+              //   : undefined,
+              sellerFeeBasisPoints: foundCollection.mintSellerFeeBasisPoints,
+              creators: creatorsArray,
+              retainAuthority: true,
+              symbol: foundCollection.mintSymbol,
+              maxEditionSupply: toBigNumber(0),
+              goLiveDate: toDateTime(foundCollection.mintOpenAt.getTime()),
+              isMutable: true,
+              // gatekeeper TODO: Add here to add botting protection
+            })
+            .run(),
+        { retries: 15, delay: 1000, timeout: 1000000 },
+      )
+    ).candyMachine;
   }
 
   await prisma.collection.update({
@@ -202,7 +248,7 @@ async function createCandyMachineFromDBCollection() {
   console.info(`DB updated with the CM ID! ${candyMachine.address.toString()}`);
 
   console.info(
-    `Candy Machine for collection created here: Hash: https://solscan.io/account/${candyMachine.address.toString()} `,
+    `Candy Machine for collection created here: Hash: https://solana.fm/address/${candyMachine.address.toString()} `,
   );
 
   if (candyMachine.items.length !== foundCollection.mintTotalSupply) {
@@ -210,14 +256,14 @@ async function createCandyMachineFromDBCollection() {
       .nfts()
       .uploadMetadata({
         name: foundCollection.mintName,
-        image: foundCollection.nftPlaceholderImageURL,
+        image: nftPlaceholderImageURL,
         description: foundCollection.description,
         attributes: getAttributes(foundCollection),
         properties: {
           files: [
             {
               type: 'image/png',
-              uri: foundCollection?.nftPlaceholderImageURL,
+              uri: nftPlaceholderImageURL,
             },
           ],
           creators: [
@@ -313,7 +359,7 @@ async function createCandyMachineFromDBCollection() {
     }
 
     console.info(
-      `Finished inserting items into the CM! Please validate with "reinsertNonConfirmedItemsInsert" that all have been uploaded. Hash: https://solscan.io/account/${candyMachine.address.toString()}`,
+      `Finished inserting items into the CM! Please validate with "reinsertNonConfirmedItemsInsert" that all have been uploaded. Hash: https://solana.fm/address/account/${candyMachine.address.toString()}`,
     );
   } else {
     console.info('All items already inserted into the CM');

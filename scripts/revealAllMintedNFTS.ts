@@ -75,6 +75,7 @@ export async function revealAllMintedNFTS() {
       `Failure: ${
         promisesResults.filter(result => result.status === 'rejected').length
       } items`,
+      promisesResults.filter(result => result.status === 'rejected')
     );
 
     console.info(
