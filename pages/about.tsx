@@ -7,7 +7,7 @@ const About = () => {
   return (
     <div>
       <Head>
-        <title>Diffused Art - About</title>
+        <title>diffused art - About</title>
         <meta
           name="description"
           content="Truly immutable on-chain 1/1 AI art generated in real time"

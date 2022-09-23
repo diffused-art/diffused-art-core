@@ -30,7 +30,7 @@ async function createSampleCollectionOnDb() {
       bannerImageURL:
         'https://bafybeihm3h2slf2iezvcmypwcvoro2r6odtsh3fsrska5pshiqknz5npfq.ipfs.nftstorage.link',
       mintTotalSupply: 100,
-      artistName: 'Diffused Art',
+      artistName: 'diffused art',
       artistDescription: 'Revolutionizing the way we create immutable AI art on-chain',
       artistDiscordUser: 'Kevcode#9254',
       artistRoyaltiesWalletAddress:

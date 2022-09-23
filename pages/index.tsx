@@ -32,7 +32,7 @@ const Home = ({ collectionsLive }: HomeProps) => {
   return (
     <div>
       <Head>
-        <title>Diffused Art</title>
+        <title>diffused art</title>
         <meta
           name="description"
           content="Truly immutable on-chain 1/1 AI art generated in real time"
