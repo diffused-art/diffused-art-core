@@ -25,7 +25,7 @@ export function useCandyMachine(candyMachineId: string) {
       .then(cm => setCandyMachine(cm))
       .catch(() => setCandyMachine(null))
       .then(() => setIsLoadingState(false));
-  }, [candyMachineId]);
+  }, [candyMachineId, wallet]);
 
   const onMint = async () => {
     setIsMinting(true);
@@ -34,9 +34,15 @@ export function useCandyMachine(candyMachineId: string) {
       const mintResult = await metaplex
         .use(walletAdapterIdentity(wallet))
         .candyMachines()
-        .mint({ candyMachine })
+        .mint({ 
+          candyMachine, 
+        })
         .run()
-        .catch(() => null);
+        .catch((e) => {
+          console.error(e);
+          return null;
+        });
+
       if (mintResult) {
         mintHash = mintResult.nft.mint.address.toString();
       } else {

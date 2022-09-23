@@ -1,6 +1,4 @@
-import { toBigNumber } from '@metaplex-foundation/js';
 import { Collection, Mint } from '@prisma/client';
-import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import axios from 'axios';
 import Head from 'next/head';
 import { useCallback, useState } from 'react';
