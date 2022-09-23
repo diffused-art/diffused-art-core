@@ -48,8 +48,7 @@ const Home = ({ collectionsLive }: HomeProps) => {
           </h2>
 
           <h3 className="text-base">
-            Mint one of the latest AI art drops powered by the diffused.art
-            protocol below:
+            Mint one of the latest AI art drops powered by <i><b>diffused.</b></i> platform below:
           </h3>
           <div id="collections-live" className="flex space-x-5">
             {collectionsLive.map(collection => (

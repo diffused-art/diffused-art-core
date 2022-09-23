@@ -3,9 +3,8 @@
     "target": "es6",
     "module": "commonjs",
     "esModuleInterop": true,
-    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "noImplicitAny": false,
-    "strict": true
+    "strict": false
   }
 }

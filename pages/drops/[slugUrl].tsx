@@ -1,10 +1,16 @@
-import { Collection } from '@prisma/client';
+import { toBigNumber } from '@metaplex-foundation/js';
+import { Collection, Mint } from '@prisma/client';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+import axios from 'axios';
 import Head from 'next/head';
-import CollectionAttributeCard from '../../components/collection-attribute-card';
+import { useCallback, useState } from 'react';
+import { useInterval } from 'usehooks-ts';
 import CornerCard from '../../components/corner-card';
 import Footer from '../../components/footer';
 import Header from '../../components/header';
-import { useCandyMachine } from '../../lib/candy-machine/hook';
+import MintButton from '../../components/mint-button';
+import MintModal from '../../components/mint-modal';
+import { useCandyMachine } from '../../lib/candy-machine';
 import prisma from '../../lib/prisma';
 
 export const getServerSideProps = async ({ params }) => {
@@ -33,9 +39,48 @@ interface DropsSlugPageProps {
 }
 
 const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
-  const candyMachine = useCandyMachine({
-    candyMachineAddress: collection.mintCandyMachineId!,
-  });
+  const [isMintModalOpen, setIsMintModalOpen] = useState(false);
+  const { isLoadingState, onMint, isMinting, candyMachine } = useCandyMachine(
+    collection.mintCandyMachineId!,
+  );
+
+  const [activeMintHash, setActiveMintHash] = useState<string | null>(null);
+  const [activeMint, setActiveMint] = useState<Mint | null>(null);
+
+  const onMintCB = useCallback(async () => {
+    setIsMintModalOpen(true);
+    const mintHash = await onMint();
+    if (mintHash === null) {
+      setIsMintModalOpen(false);
+      setActiveMintHash(null);
+    } else {
+      setActiveMintHash(mintHash);
+      await axios
+        .post(`/api/mint/${mintHash}/reveal`)
+        .catch(err => console.error(err));
+    }
+  }, [onMint]);
+
+  const onCloseModal = useCallback(() => {
+    setIsMintModalOpen(false);
+    setActiveMintHash(null);
+    setActiveMint(null);
+  }, []);
+
+  useInterval(
+    () => {
+      axios
+        .get(`/api/mint/${activeMintHash}`)
+        .then(res => {
+          const mint: Mint = res.data.data;
+          if (mint?.isRevealed) {
+            setActiveMint(mint);
+          }
+        })
+        .catch(() => setActiveMint(null));
+    },
+    activeMintHash && !activeMint ? 30000 : null,
+  );
   const pageTitle = `diffused. "${collection.title}"`;
   return (
     <div>
@@ -48,6 +93,15 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
       <div className="flex flex-col">
         <Header />
 
+        <MintModal
+          isMinting={isMinting}
+          open={isMintModalOpen}
+          closeModal={onCloseModal}
+          nftPlaceholderURL={collection.nftPlaceholderImageURL!}
+          mintHash={activeMintHash}
+          mint={activeMint}
+        />
+
         <main className="flex flex-col space-y-8 justify-center items-center !min-h-[80vh] text-center my-5">
           <img
             src={collection.bannerImageURL}
@@ -56,8 +110,8 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
             width="70%"
           />
 
-          <h2 className="text-xl text-secondary font-bold">
-            {collection.title} -{' '}
+          <h2 className="text-lg text-secondary font-bold">
+            &quot;{collection.title}&quot; by{'  '}
             <a
               href={collection.artistTwitterURL!}
               target="_blank"
@@ -69,25 +123,46 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
           </h2>
 
           <CornerCard
+            backgroundColor={collection.nftPlaceholderBackgroundColor!}
+            textColor={collection.nftPlaceholderForegroundColor!}
             title={
-              candyMachine.isLive
+              new Date(Date.now()) > new Date(collection.mintOpenAt)
                 ? 'mint is live.'
                 : `mint will be live starting at:{' '}
-                ${candyMachine.goLiveDate.toLocaleString()}`
+                ${new Date(collection.mintOpenAt).toLocaleString()}`
             }
           >
-            <h2 className="text-base">
-              <b>supply -</b> {candyMachine.itemsAvailable}◎
-            </h2>
-            <h2 className="text-base">
-              <b>pieces remaining -</b> {candyMachine.itemsRemaining}
-            </h2>
-            <h2 className="text-base">
-              <b>price -</b> {candyMachine.price}◎
-            </h2>
+            {!isLoadingState ? (
+              <>
+                <h2 className="text-base">
+                  <b>supply -</b> {candyMachine?.itemsAvailable.toNumber()}
+                </h2>
+                <h2 className="text-base">
+                  <b>pieces remaining -</b>{' '}
+                  {candyMachine?.itemsRemaining.toNumber()}
+                </h2>
+                <h2 className="text-base">
+                  <b>price -</b>{' '}
+                  {(candyMachine?.price.basisPoints?.toNumber() || 0) /
+                    Math.pow(10, candyMachine?.price.currency.decimals || 0)}
+                  ◎
+                </h2>
+              </>
+            ) : (
+              <h2 className="text-lg">loading mint details...</h2>
+            )}
+
+            <div className="absolute top-10 right-5">
+              <MintButton onMint={onMintCB} isLoading={isMinting} />
+            </div>
           </CornerCard>
 
-          <CornerCard title="drop details." side="right">
+          <CornerCard
+            backgroundColor={collection.nftPlaceholderBackgroundColor!}
+            textColor={collection.nftPlaceholderForegroundColor!}
+            title="drop details."
+            side="right"
+          >
             {collection.artistWebsiteURL && (
               <a href={collection.artistWebsiteURL}>
                 <h2 className="text-lg font-bold">
@@ -101,7 +176,12 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
             </h2>
           </CornerCard>
 
-          <CornerCard title="generation parameters." side="left">
+          <CornerCard
+            backgroundColor={collection.nftPlaceholderBackgroundColor!}
+            textColor={collection.nftPlaceholderForegroundColor!}
+            title="generation parameters."
+            side="left"
+          >
             <h2 className="text-base text-left mt-1">
               <b>prompt - </b> {collection.promptPhrase.toLowerCase()}
             </h2>
@@ -125,8 +205,14 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
             </h2>
 
             <h2 className="text-base text-left mt-1">
-              <b>dynamism - </b> each art is unique and immutable by using a
-              derivation of the NFT address that gets generated on mint time
+              <b>techniques used</b>
+              <ul className="ml-5">
+                <li>
+                  <b>- dynamic seed:</b> each art is unique and immutable by
+                  using a derivation of the NFT address that gets generated on
+                  mint time
+                </li>
+              </ul>
             </h2>
 
             <h1 className="text-2xl space-x-1"></h1>

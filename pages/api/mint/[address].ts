@@ -1,5 +1,4 @@
-import { revealNFT } from '../../../../functions/revealNFT';
-import prisma from '../../../../lib/prisma';
+import prisma from '../../../lib/prisma';
 
 // TODO: Adds API key to gate this service
 // TODO: Adds cors
@@ -18,5 +17,5 @@ export default async function handle(req: any, res: any) {
   if (!result) {
     return res.status(404).json({ message: 'Not found.' });
   }
-  return res.status(200).json({ message: result });
+  return res.status(200).json({ data: result });
 }

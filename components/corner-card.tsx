@@ -4,9 +4,11 @@ interface CornerCardProps {
   side?: 'left' | 'right';
   children: React.ReactNode;
   title: string;
+  backgroundColor?: string;
+  textColor?: string;
 }
 
-export default function CornerCard({ side = 'left', children, title }) {
+export default function CornerCard({ side = 'left', children, title, backgroundColor, textColor }: CornerCardProps) {
   let classes = 'mr-10 rounded-r-lg self-start items-start pl-5 pr-8';
   let titleClasses = 'text-left';
   if (side === 'right') {
@@ -15,7 +17,11 @@ export default function CornerCard({ side = 'left', children, title }) {
   }
   return (
     <div
-      className={`flex flex-col bg-secondary text-primary py-5 w-[95%] ${classes}`}
+    style={{
+      backgroundColor,
+      color: textColor,
+    }}
+      className={`relative flex flex-col bg-secondary text-primary py-5 w-[95%] ${classes}`}
     >
       <h1 className={`text-xl w-full font-bold mb-5 ${titleClasses}`}>{title}</h1>
       {children}
