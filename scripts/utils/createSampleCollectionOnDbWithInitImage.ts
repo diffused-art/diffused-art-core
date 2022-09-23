@@ -12,7 +12,7 @@ async function createSampleCollectionOnDb() {
     data: {
       title: 'Sample Collection - Cyberpunk Town',
       mintName: 'DiffArt Cyberpunk',
-      slugUrl: '/sample-collection-cyberpunk-town',
+      slugUrl: 'sample-collection-cyberpunk-town',
       mintSymbol: 'DIFFCTOWN',
       mintPrice: 0.001,
       mintOpenAt: addDays(new Date(), 1),
@@ -32,7 +32,7 @@ async function createSampleCollectionOnDb() {
       bannerImageURL:
         'https://bafybeihzqncear44one6zvf2wqtjsjcu3hoz65ajg2ctmnthjx5qnzptym.ipfs.nftstorage.link',
       mintTotalSupply: 100,
-      artistName: 'diffused art',
+      artistName: 'diffused.',
       artistDescription: 'Revolutionizing the way we create immutable AI art on-chain',
       artistDiscordUser: 'Kevcode#9254',
       artistRoyaltiesWalletAddress:

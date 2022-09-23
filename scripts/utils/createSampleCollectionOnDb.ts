@@ -12,7 +12,7 @@ async function createSampleCollectionOnDb() {
     data: {
       title: 'Sample Collection - A Thousand Solana Cats',
       mintName: 'DiffArt Cats',
-      slugUrl: '/sample-collection-thousand-sol-cats',
+      slugUrl: 'sample-collection-thousand-sol-cats',
       mintSymbol: 'DIFFTCATS',
       mintPrice: 0.001,
       mintOpenAt: addDays(new Date(), 1),
@@ -30,7 +30,7 @@ async function createSampleCollectionOnDb() {
       bannerImageURL:
         'https://bafybeihm3h2slf2iezvcmypwcvoro2r6odtsh3fsrska5pshiqknz5npfq.ipfs.nftstorage.link',
       mintTotalSupply: 100,
-      artistName: 'diffused art',
+      artistName: 'diffused.art',
       artistDescription: 'Revolutionizing the way we create immutable AI art on-chain',
       artistDiscordUser: 'Kevcode#9254',
       artistRoyaltiesWalletAddress:

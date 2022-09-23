@@ -1,5 +1,4 @@
 import Head from 'next/head';
-import Link from 'next/link';
 import Footer from '../components/footer';
 import Header from '../components/header';
 
@@ -7,17 +6,18 @@ const About = () => {
   return (
     <div>
       <Head>
-        <title>diffused art - About</title>
+        <title>diffused. about.</title>
         <meta
           name="description"
           content="Truly immutable on-chain 1/1 AI art generated in real time"
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <div className="flex flex-col h-full">
+        <Header />
 
       <main className="flex flex-col space-y-5 justify-center items-center !min-h-[80vh] px-20 text-center">
-        <Header />
-        <p className="space-y-1">
+        <div className="space-y-1">
           <h2 className="text-lg">
             AI art is the latest evolution of digital art; and more
             specifically, generative art.
@@ -35,9 +35,9 @@ const About = () => {
             outputs that are reproducible for the authentication of the art
             using its seed.
           </h2>
-        </p>
+        </div>
 
-        <p className="space-y-1 pt-10">
+        <div className="space-y-1 pt-10">
           <h2 className="text-lg">
             Currently, existing solutions don&apos;t grasp the real potential of
             AI art as the most powerful tool for generative art, which in our
@@ -51,9 +51,9 @@ const About = () => {
             immutable unique token addresses guaranteed by fast blockchain
             consensus.
           </h2>
-        </p>
+        </div>
 
-        <p className="space-y-1 pt-10">
+        <div className="space-y-1 pt-10">
           <h2 className="text-lg">
             We believe we are just at the tip of the iceberg of AI art
             exploration; but we also think it is the future of digital art.
@@ -62,9 +62,10 @@ const About = () => {
             A new art renaissance has begun, and we are here to help you get in
             on the ground floor.
           </h2>
-        </p>
+        </div>
       </main>
       <Footer />
+      </div>
     </div>
   );
 };
