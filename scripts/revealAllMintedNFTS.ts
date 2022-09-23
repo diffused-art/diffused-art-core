@@ -36,19 +36,19 @@ export async function revealAllMintedNFTS() {
     console.info(`Got minted NFTs (hash list) --- ${hashList.length} items`);
 
     const chunkSize = 25;
-    const chunkedItems = [];
+    const chunkedItems: any[] = [];
     for (let i = 0; i < hashList.length; i += chunkSize) {
       const chunk = hashList.slice(i, i + chunkSize);
       chunkedItems.push(chunk);
     }
 
-    const promisesArray = [];
+    const promisesArray: any[] = [];
     for (let index = 0; index < chunkedItems.length; index++) {
       const chunk = chunkedItems[index];
       promisesArray.push(chunk.map(item => () => revealNFT(item)));
     }
 
-    let promisesResults = [];
+    let promisesResults: any[] = [];
 
     for (let index = 0; index < promisesArray.length; index++) {
       console.info(

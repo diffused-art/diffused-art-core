@@ -25,14 +25,14 @@ async function reinsertNonConfirmedItemsInsert() {
   });
 
   const uniqueCandyMachines = [
-    ...new Set(allTimedOut.map(item => item.collection.mintCandyMachineId)),
+    ...Array.from(new Set(allTimedOut.map(item => item.collection.mintCandyMachineId))),
   ];
   for (let index = 0; index < uniqueCandyMachines.length; index++) {
     const candyMachineAddy = uniqueCandyMachines[index];
     const candyMachine = await metaplexWriteCli
       .candyMachines()
       .findByAddress({
-        address: new PublicKey(candyMachineAddy),
+        address: new PublicKey(candyMachineAddy!),
       })
       .run();
 
@@ -42,7 +42,7 @@ async function reinsertNonConfirmedItemsInsert() {
     console.info(
       `Inserting items into the CM ${candyMachineAddy}, please wait...`,
     );
-    const promisesArray = [];
+    const promisesArray: any[] = [];
     for (let index = 0; index < items.length; index++) {
       const errorCMChunksUpload = items[index];
 
@@ -82,7 +82,7 @@ async function reinsertNonConfirmedItemsInsert() {
       );
     }
     const batchSize = 75;
-    const batchedPromiseArray = [];
+    const batchedPromiseArray: any[] = [];
     for (let i = 0; i < promisesArray.length; i += batchSize) {
       const batch = promisesArray.slice(i, i + batchSize);
       batchedPromiseArray.push(batch);

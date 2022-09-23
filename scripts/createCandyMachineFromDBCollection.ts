@@ -1,10 +1,11 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
-import { PrismaClient } from '@prisma/client';
+import { Collection, PrismaClient } from '@prisma/client';
 import { getWriteCli } from '../functions/getMetaplexCli';
 import { AISource } from '../typings';
 import { PublicKey } from '@solana/web3.js';
 import {
+  CandyMachine,
   sol,
   toBigNumber,
   toDateTime,
@@ -15,8 +16,12 @@ import { generatePlaceholderImage } from './generatePlaceholderImage';
 
 const prisma = new PrismaClient();
 
+function isCandyMachine(candyMachine: CandyMachine | undefined): candyMachine is CandyMachine {
+  return (<CandyMachine>candyMachine)?.address !== undefined;
+}
+
 function getAttributes(collection) {
-  const attributes = [];
+  const attributes: any[] = [];
 
   if (collection.promptSource === 'STABLEDIFFUSION') {
     attributes.push({
@@ -74,10 +79,10 @@ async function createCandyMachineFromDBCollection() {
   const nftPlaceholderImage = await generatePlaceholderImage(
     foundCollection.id,
     foundCollection.promptPhrase,
-    foundCollection.promptInitImage,
+    foundCollection.promptInitImage as any,
     foundCollection.nftPlaceholderFontFamily as any,
-    foundCollection.nftPlaceholderBackgroundColor,
-    foundCollection.nftPlaceholderForegroundColor,
+    foundCollection.nftPlaceholderBackgroundColor as any,
+    foundCollection.nftPlaceholderForegroundColor as any,
   );
 
   const { metadata } = await metaplexWriteCli
@@ -87,6 +92,15 @@ async function createCandyMachineFromDBCollection() {
     })
     .run();
   const nftPlaceholderImageURL = metadata.image;
+
+  await prisma.collection.update({
+    where: {
+      id: foundCollection.id,
+    },
+    data: {
+      nftPlaceholderImageURL,
+    }
+  })
 
   if (!foundCollection.collectionOnChainAddress) {
     const { uri } = await metaplexWriteCli
@@ -126,7 +140,7 @@ async function createCandyMachineFromDBCollection() {
         sellerFeeBasisPoints: 250,
         creators: [
           {
-            address: new PublicKey(process.env.FUNDED_WALLET_PUBKEY),
+            address: new PublicKey(process.env.FUNDED_WALLET_PUBKEY!),
             share: 10,
           },
           {
@@ -178,11 +192,11 @@ async function createCandyMachineFromDBCollection() {
     where: {
       slugUrl,
     },
-  });
+  }) as Collection;
 
   const creatorsArray = [
     {
-      address: new PublicKey(process.env.FUNDED_WALLET_PUBKEY),
+      address: new PublicKey(process.env.FUNDED_WALLET_PUBKEY!),
       share: 10,
       verified: true,
     },
@@ -193,7 +207,7 @@ async function createCandyMachineFromDBCollection() {
     },
   ];
 
-  let candyMachine = null;
+  let candyMachine: CandyMachine | undefined = undefined;
   if (foundCollection.mintCandyMachineId) {
     console.info(
       `Candy machine already created for this collection, fetching!!`,
@@ -215,7 +229,7 @@ async function createCandyMachineFromDBCollection() {
               collection: new PublicKey(
                 foundCollection.collectionOnChainAddress!,
               ),
-              itemsAvailable: toBigNumber(foundCollection.mintTotalSupply),
+              itemsAvailable: toBigNumber(foundCollection.mintTotalSupply || 0),
               price: sol(foundCollection.mintPrice.toNumber()),
               // TODO: Needed to support SPL Tokens
               // tokenMint: foundCollection?.mintTokenSPL
@@ -294,14 +308,14 @@ async function createCandyMachineFromDBCollection() {
     );
 
     const chunkSize = 5;
-    const chunkedItems = [];
+    const chunkedItems: any[] = [];
     for (let i = 0; i < items.length; i += chunkSize) {
       const chunk = items.slice(i, i + chunkSize);
       chunkedItems.push(chunk);
     }
 
     console.info(`Inserting items into the CM, please wait...`);
-    const promisesArray = [];
+    const promisesArray: any[] = [];
     for (let index = 0; index < chunkedItems.length; index++) {
       const chunkItems = chunkedItems[index];
 
@@ -309,45 +323,51 @@ async function createCandyMachineFromDBCollection() {
         () =>
           new Promise(async resolve => {
             console.info(`Inserting Chunk N${index + 1} with 5 items`);
-            resolve(
-              await metaplexWriteCli
-                .candyMachines()
-                .insertItems({
-                  candyMachine,
-                  authority: metaplexWriteCli.identity(),
-                  items: chunkItems,
-                  index: toBigNumber(index * chunkSize),
-                })
-                .run()
-                .catch(async e => {
-                  if (
-                    e.message.includes(
-                      'Invalid response body while trying to fetch',
-                    )
-                  ) {
-                    console.info(`Error while inserting Chunk N${index + 1}`);
-                    await prisma.errorsCMChunksUpload.create({
-                      data: {
-                        candyMachineAddress: candyMachine.address.toString(),
-                        collection: {
-                          connect: {
-                            id: foundCollection.id,
+            if (isCandyMachine(candyMachine)) {
+              resolve(
+                await metaplexWriteCli
+                  .candyMachines()
+                  .insertItems({
+                    candyMachine,
+                    authority: metaplexWriteCli.identity(),
+                    items: chunkItems,
+                    index: toBigNumber(index * chunkSize),
+                  })
+                  .run()
+                  .catch(async e => {
+                    if (
+                      e.message.includes(
+                        'Invalid response body while trying to fetch',
+                      )
+                    ) {
+                      console.info(`Error while inserting Chunk N${index + 1}`);
+                     if (isCandyMachine(candyMachine)) {
+                      await prisma.errorsCMChunksUpload.create({
+                        data: {
+                          candyMachineAddress: candyMachine.address.toString(),
+                          collection: {
+                            connect: {
+                              id: foundCollection.id,
+                            },
                           },
+                          index: index * chunkSize,
+                          items: chunkItems,
+                          cause: e.message,
                         },
-                        index: index * chunkSize,
-                        items: chunkItems,
-                        cause: e.message,
-                      },
-                    });
-                  }
-                }),
-            );
+                      });
+                     }
+                      
+                    }
+                  }),
+              );
+            }
+            
           }),
       );
     }
 
     const batchSize = 75;
-    const batchedPromiseArray = [];
+    const batchedPromiseArray: any[] = [];
     for (let i = 0; i < promisesArray.length; i += batchSize) {
       const batch = promisesArray.slice(i, i + batchSize);
       batchedPromiseArray.push(batch);

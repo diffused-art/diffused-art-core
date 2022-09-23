@@ -86,7 +86,7 @@ export function getTemplate(
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>PLACEHOLDER IMAGE</title>
-      <link href="https://fonts.googleapis.com/css2?family=Jura&family=Orbitron&family=PT+Mono&family=Roboto:ital@1&family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Jura&family=Orbitron&family=PT+Mono&family=Roboto@1&family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
     </head>
     <style>${css}</style>
     
