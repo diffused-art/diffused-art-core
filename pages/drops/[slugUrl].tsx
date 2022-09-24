@@ -53,9 +53,6 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
       setActiveMintHash(null);
     } else {
       setActiveMintHash(mintHash);
-      await axios
-        .post(`/api/mint/${mintHash}/reveal`)
-        .catch(err => console.error(err));
     }
   }, [onMint]);
 
