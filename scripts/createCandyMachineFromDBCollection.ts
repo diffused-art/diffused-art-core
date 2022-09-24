@@ -16,7 +16,9 @@ import { generatePlaceholderImage } from './generatePlaceholderImage';
 
 const prisma = new PrismaClient();
 
-function isCandyMachine(candyMachine: CandyMachine | undefined): candyMachine is CandyMachine {
+function isCandyMachine(
+  candyMachine: CandyMachine | undefined,
+): candyMachine is CandyMachine {
   return (<CandyMachine>candyMachine)?.address !== undefined;
 }
 
@@ -99,8 +101,8 @@ async function createCandyMachineFromDBCollection() {
     },
     data: {
       nftPlaceholderImageURL,
-    }
-  })
+    },
+  });
 
   if (!foundCollection.collectionOnChainAddress) {
     const { uri } = await metaplexWriteCli
@@ -154,14 +156,27 @@ async function createCandyMachineFromDBCollection() {
       })
       .run()
       .then(res => res.nft.address.toString())
-      .catch(e =>
-        e?.problem
-          ?.replace(
-            'The account of type [MintAccount] was not found at the provided address [',
-            '',
+      .catch(e => {
+        if (
+          e.message.includes(
+            'raised an error that is not recognized by the programs registered by the SDK',
           )
-          .replace(']', ''),
-      );
+        ) {
+          console.error('Error >', e);
+          throw new Error('Error when creating Collection NFT');
+        } else if (
+          e?.problem.includes(
+            'The account of type [MintAccount] was not found at the provided address',
+          )
+        ) {
+          return e?.problem
+            ?.replace(
+              'The account of type [MintAccount] was not found at the provided address [',
+              '',
+            )
+            .replace(']', '');
+        }
+      });
 
     await new Promise(resolve => setTimeout(resolve, 10000));
     console.info(
@@ -188,11 +203,11 @@ async function createCandyMachineFromDBCollection() {
     );
   }
 
-  foundCollection = await prisma.collection.findUnique({
+  foundCollection = (await prisma.collection.findUnique({
     where: {
       slugUrl,
     },
-  }) as Collection;
+  })) as Collection;
 
   const creatorsArray = [
     {
@@ -240,7 +255,7 @@ async function createCandyMachineFromDBCollection() {
               retainAuthority: true,
               symbol: foundCollection.mintSymbol,
               maxEditionSupply: toBigNumber(0),
-              goLiveDate: toDateTime(foundCollection.mintOpenAt.getTime()),
+              goLiveDate: toDateTime(foundCollection.mintOpenAt),
               isMutable: true,
               // gatekeeper TODO: Add here to add botting protection
             })
@@ -341,27 +356,26 @@ async function createCandyMachineFromDBCollection() {
                       )
                     ) {
                       console.info(`Error while inserting Chunk N${index + 1}`);
-                     if (isCandyMachine(candyMachine)) {
-                      await prisma.errorsCMChunksUpload.create({
-                        data: {
-                          candyMachineAddress: candyMachine.address.toString(),
-                          collection: {
-                            connect: {
-                              id: foundCollection.id,
+                      if (isCandyMachine(candyMachine)) {
+                        await prisma.errorsCMChunksUpload.create({
+                          data: {
+                            candyMachineAddress:
+                              candyMachine.address.toString(),
+                            collection: {
+                              connect: {
+                                id: foundCollection.id,
+                              },
                             },
+                            index: index * chunkSize,
+                            items: chunkItems,
+                            cause: e.message,
                           },
-                          index: index * chunkSize,
-                          items: chunkItems,
-                          cause: e.message,
-                        },
-                      });
-                     }
-                      
+                        });
+                      }
                     }
                   }),
               );
             }
-            
           }),
       );
     }
