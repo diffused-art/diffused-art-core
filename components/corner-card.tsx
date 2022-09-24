@@ -9,11 +9,11 @@ interface CornerCardProps {
 }
 
 export default function CornerCard({ side = 'left', children, title, backgroundColor, textColor }: CornerCardProps) {
-  let classes = 'mr-10 rounded-r-lg self-start items-start pl-5 pr-8';
+  let classes = 'mr-10 rounded-lg self-start items-start pl-5 pr-8';
   let titleClasses = 'text-left';
   if (side === 'right') {
     titleClasses = 'text-right';
-    classes = 'ml-10 rounded-l-lg self-end items-end pl-8 pr-5';
+    classes = 'ml-10 rounded-lg self-end items-end pl-8 pr-5';
   }
   return (
     <div

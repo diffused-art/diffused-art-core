@@ -50,13 +50,13 @@ const Home = ({ collectionsLive }: HomeProps) => {
           <h3 className="text-base">
             Mint one of the latest AI art drops powered by <i><b>diffused.</b></i> platform below:
           </h3>
-          <div id="collections-live" className="flex space-x-5">
+          <div id="collections-live" className="flex flex-col md:flex-row space-y-5 space-x-0 md:space-y-0 md:space-x-5 py-5">
             {collectionsLive.map(collection => (
               <Link key={collection.id} href={`/drops/${collection.slugUrl}`}>
                 <div className="relative group">
                   <div
                     className="invisible group-hover:visible 
-                absolute bottom-1 mx-5 z-10 opacity-85 cursor-pointer"
+                absolute bottom-1 z-10 opacity-85 cursor-pointer text-xs md:text-lg ml-5"
                   >
                     {collection.title}
                   </div>

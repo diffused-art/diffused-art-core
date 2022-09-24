@@ -88,7 +88,7 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col justify-center items-center justify-items-center">
         <Header />
 
         <MintModal
@@ -100,12 +100,12 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
           mint={activeMint}
         />
 
-        <main className="flex flex-col space-y-8 justify-center items-center !min-h-[80vh] text-center my-5">
+        <main className="flex flex-col space-y-8 justify-center items-center !min-h-[80vh] my-5 px-3 md:px-20 text-center">
           <img
             src={collection.bannerImageURL}
             alt={collection?.title}
             className="rounded-md"
-            width="70%"
+            width="640"
           />
 
           <h2 className="text-lg text-secondary font-bold">
@@ -185,16 +185,17 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
             </h2>
 
             {collection.promptInitImage && (
-              <h2 className="text-base text-left truncate mt-1">
+              <div className="text-base text-left mt-1">
                 <b>initial image - </b>{' '}
                 <a
                   href={collection.promptInitImage}
                   target="_blank"
                   rel="noreferrer"
+                  className='inline'
                 >
-                  {collection.promptInitImage}
+                  Click here to see
                 </a>
-              </h2>
+              </div>
             )}
 
             <h2 className="text-base text-left mt-1">
