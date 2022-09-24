@@ -33,7 +33,7 @@ export default function MintModal({
   }
 
   if (mintRevealedImage) {
-    ModalTitle = 'Your NFT has been revealed, please check it out:';
+    ModalTitle = 'Your NFT has been revealed, check it out:';
   }
 
   const closeButtonText = !mintRevealedImage
