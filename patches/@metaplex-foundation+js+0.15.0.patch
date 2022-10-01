@@ -1,0 +1,13 @@
+diff --git a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/asserts.mjs b/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/asserts.mjs
+index 4c36041..7387100 100644
+--- a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/asserts.mjs
++++ b/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/asserts.mjs
+@@ -49,7 +49,7 @@ const assertCandyMachineIsLive = candyMachine => {
+ 
+   const liveDate = candyMachine.goLiveDate;
+ 
+-  if (!liveDate || liveDate.gte(now())) {
++  if (!liveDate || new Date(liveDate.toNumber()) > new Date(Date.now())) {
+     throw new CandyMachineNotLiveError(liveDate);
+   }
+ };

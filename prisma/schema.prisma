@@ -1,0 +1,91 @@
+// schema.prisma
+datasource db {
+  provider             = "postgresql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+enum Source {
+  STABLEDIFFUSION
+}
+
+model Collection {
+  id                            String                 @id @default(cuid())
+  slugUrl                       String                 @unique
+  title                         String
+  description                   String
+  promptPhrase                  String
+  promptInitImage               String?
+  promptSource                  Source
+  promptSourceParams            Json
+  bannerImageURL                String
+  nftPlaceholderImageURL        String?
+  nftPlaceholderForegroundColor String?                @default("#d5d5d5")
+  nftPlaceholderBackgroundColor String?                @default("#000000")
+  nftPlaceholderFontFamily      String?                @default("Roboto")
+  mintName                      String
+  mintPrice                     Decimal
+  mintSellerFeeBasisPoints      Int                    @default(250)
+  mintOpenAt                    DateTime
+  mintSymbol                    String
+  mintTokenSPL                  String?
+  mintTotalSupply               Int?
+  mintCandyMachineId            String?                @unique
+  collectionOnChainAddress      String?                @unique
+  mintDiscountPercentage        Int?
+  artistName                    String
+  artistDescription             String
+  artistDiscordUser             String
+  artistRoyaltiesWalletAddress  String
+  artistWebsiteURL              String?
+  artistInstagramURL            String?
+  artistTwitterURL              String?
+  isMintOpen                    Boolean                @default(false)
+  isFullyRevealed               Boolean                @default(false)
+  hashList                      Json?
+  createdAt                     DateTime               @default(now()) @map(name: "created_at")
+  updatedAt                     DateTime               @updatedAt @map(name: "updated_at")
+  mints                         Mint[]
+  errorsCMChunksUploads         ErrorsCMChunksUpload[]
+
+  @@map(name: "collections")
+}
+
+model Mint {
+  id           String     @id @default(cuid())
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id])
+  mint_address String     @unique
+  title        String
+  description  String
+  image        String
+  attributes   Json?
+  rawMetadata  Json?
+  isRevealed   Boolean    @default(false)
+  createdAt    DateTime   @default(now()) @map(name: "created_at")
+  updatedAt    DateTime   @updatedAt @map(name: "updated_at")
+
+  @@map(name: "mints")
+}
+
+model ErrorsCMChunksUpload {
+  id           String     @id @default(cuid())
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id])
+
+  candyMachineAddress String
+  index               Int
+  items               Json
+  cause               String
+  txId                String?
+  actioned            Boolean  @default(false)
+  createdAt           DateTime @default(now()) @map(name: "created_at")
+  updatedAt           DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "errorscmchunksupload")
+}
