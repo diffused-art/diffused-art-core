@@ -231,3 +231,7 @@ declare module '@heroicons/react/*' {
 	export const ZoomInIcon: DefineComponent<{}, {}, any>
 	export const ZoomOutIcon: DefineComponent<{}, {}, any>
 }
+
+declare module '*.jpg';
+declare module '*.jpeg';
+declare module '*.png';

@@ -1,36 +1,64 @@
 import React from 'react';
+import ActiveLink from './active-link';
+import TwitterSVG from 'assets/svg/twitter.svg';
+import DiscordSVG from 'assets/svg/discord.svg';
 
 interface FooterProps {
   ctaEnabled?: boolean;
   twitterEnabled?: boolean;
+  discordEnabled?:boolean;
 }
 export default function Footer({
   ctaEnabled = true,
   twitterEnabled = true,
+  discordEnabled = true,
 }: FooterProps) {
   return (
-    <footer className="justify-self-end flex flex-col items-center justify-end pb-5">
-      {ctaEnabled && (
-        <a
-          className="hover:text-gray-400 transition-all mb-3"
-          href="mailto:info@diffused.art"
-        >
-          Interested? Send us a message
-        </a>
+    <footer className="max-w-6xl mx-auto w-full">
+        <div className="md:flex text-center md:text-left items-center justify-between h-16">
+        <div className="flex items-baseline space-x-2 text-sm">
+                <span className='text-snow text-opacity-25'> ©2022 Diffused.art, All rights reserved.</span>
+              </div>
+          <div className='text-sm flex gap-4 items-center'>
+          {ctaEnabled && (
+            <div className='flex gap-2 opacity-60'>
+                <ActiveLink activeClassName='active' href="/">
+                  <a className="px-1 py-2 rounded-md">Bug Bounty</a>
+                </ActiveLink>
+                <ActiveLink activeClassName='active' href="/">
+                  <a className="px-1 py-2 rounded-md">Terms of Service</a>
+                </ActiveLink>
+                <ActiveLink activeClassName='active' href="/">
+                  <a className="px-1 py-2 rounded-md">Privacy Policy</a>
+                </ActiveLink>
+          </div>
       )}
-
       {twitterEnabled && (
         <a
-          className="hover:text-gray-400 transition-all mb-10"
+          className="hover:text-gray-400 transition-all"
           href="https://twitter.com/diffused_art"
           target="_blank"
           rel="noreferrer"
         >
-          Twitter
+          <span>
+            <TwitterSVG fill="white" className='h-5'/>
+          </span>
         </a>
       )}
-
-      <div>Powered by Solana</div>
+      {discordEnabled && (
+        <a
+          className="hover:text-gray-400 transition-all"
+          href="https://twitter.com/diffused_art"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <span>
+            <DiscordSVG fill="white" className='h-5'/>
+          </span>
+        </a>
+      )}
+          </div>
+        </div>
     </footer>
   );
 }

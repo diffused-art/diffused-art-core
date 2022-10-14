@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import Footer from '../components/footer';
 import Header from '../components/header';
+import CloseSVG from 'assets/svg/cross-small.svg';
 
 const About = () => {
   return (
@@ -13,9 +14,9 @@ const About = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="flex flex-col min-h-full justify-center items-center justify-items-center">
-        <Header />
+      <Header />
 
+      <div className="flex flex-col min-h-full justify-center items-center justify-items-center">
         <main className="flex flex-col space-y-5 justify-center items-center !min-h-[80vh] px-20 text-center container">
           <div className="space-y-1">
             <h2 className="text-lg">
