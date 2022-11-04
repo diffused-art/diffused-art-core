@@ -7,10 +7,12 @@ import Link from 'next/link';
 import React from 'react';
 import { Fragment, useRef, useState, useEffect } from "react"
 import SettingsMenu from './settings-menu';
+import MobileMenu from './mobile-menu';
 import ActiveLink from './active-link';
 import Tag from './tag';
 import { Popover, Transition } from '@headlessui/react'
 import LogoSVG from 'assets/svg/logo-diffused.svg';
+import UserSVG from 'assets/svg/user.svg';
 
 import Img1 from 'assets/temp/img1.png';
 import Img2 from 'assets/temp/img2.png';
@@ -23,6 +25,7 @@ function classNames(...classes) {
 
 
 export default function Header() {
+  const [showMenu, setShowMenu] = useState(false)
   const wallet = useWallet();
 
   let timeout // NodeJS.Timeout
@@ -61,7 +64,7 @@ export default function Header() {
   }
 
   const LINK_STYLES = classNames(
-    "nav-link  hover:text-opacity-75 px-4 py-5 h-[70px] block ",
+    "nav-link  hover:text-opacity-75 px-4 py-4 h-[70px] block ",
   )
   const handleClickOutside = (event) => {
     if (buttonRef.current && !buttonRef.current.contains(event.target)) {
@@ -77,15 +80,50 @@ export default function Header() {
   })
 
   return (
-    <div className=" sticky top-8 max-w-6xl mx-auto mt-8 z-50 pb-[70px] w-full drop-shadow-md">
-      <div className='flex w-full gap-3 h-full'>
-        <div className='bg-primary rounded-[10px] grow flex px-8 relative'>
-          <div className='flex justify-between self-center w-full'>
+    <div className="sticky md:top-8 max-w-6xl mx-auto md:mt-8 z-50 md:pb-[70px] w-full drop-shadow-md bg-primary md:bg-transparent">
+      <div className='flex w-full md:gap-3 px-4 md:px-0 h-full items-center md:items-start'>
+        <div className='md:bg-primary md:rounded-[10px] grow flex md:px-8 relative'>
+          <div className='flex justify-between self-center w-full h-[70px] items-center'>
             <Link href='/'><div className='hover:opacity-70 cursor-pointer flex items-center'><LogoSVG /></div></Link>
-            <ul className='nav flex gap-4 text-xl'>
+            <div className='md:hidden mr-4'>
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white bg-fourth hover:bg-third focus:outline-none focus:bg-third focus:text-white"
+            >
+          
+              <svg
+                className="block h-6 w-6"
+                stroke="currentColor"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+        
+              <svg
+                className="hidden h-6 w-6"
+                stroke="currentColor"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            </div>
+            <ul className='nav hidden md:flex gap-4 text-xl'>
               <li>
                 <ActiveLink activeClassName='active' href="/about">
-                  <a className="nav-link text-secondary hover:text-opacity-75 px-4 py-5 h-[70px] block">About</a>
+                  <a className="nav-link text-secondary hover:text-opacity-75 px-4 py-4 h-[70px] block">About</a>
                 </ActiveLink>
               </li>
               <li>
@@ -192,7 +230,7 @@ export default function Header() {
               </li>
               <li>
                 <ActiveLink activeClassName='active' href="/create">
-                  <a className="nav-link text-secondary hover:text-opacity-75 px-4 py-5 h-[70px] block">Create</a>
+                  <a className="nav-link text-secondary hover:text-opacity-75 px-4 py-4 h-[70px] block">Create</a>
                 </ActiveLink>
               </li>
 
@@ -200,18 +238,24 @@ export default function Header() {
             </ul>
           </div>
         </div>
-        <div className="flex-none">
+        <div className="hidden md:block flex-none">
           <SettingsMenu />
         </div>
         <div className="flex-none">
           {wallet.connected ? (
-            <WalletDisconnectButton className="!bg-secondary !text-primary !h-[70px] !font-sans !text-lg" />
+            <WalletDisconnectButton className="!bg-secondary !text-primary h-[45px] md:!h-[70px] !font-sans !text-lg" />
           ) : (
-            <WalletMultiButton className="!bg-secondary !text-primary !h-[70px] !font-sans !text-lg" />
+            <WalletMultiButton className="!bg-secondary !text-primary h-[45px] md:!h-[70px] !font-sans !text-lg" />
           )}
         </div>
       </div>
+      {/* Menu open: "block", Menu closed: "hidden" */}
       
+      <div className={`md:hidden bg-third ${showMenu ? 'block' : 'hidden'}`}>
+        <div className="px-2 pt-2 pb-3 sm:px-3">
+            <MobileMenu />
+        </div>
+      </div>
     </div>
     
   );
