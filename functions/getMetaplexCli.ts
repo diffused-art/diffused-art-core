@@ -1,7 +1,7 @@
 import {
   Metaplex,
   keypairIdentity,
-  bundlrStorage,
+  MetaplexPlugin,
 } from '@metaplex-foundation/js';
 import { nftStorage } from '@metaplex-foundation/js-plugin-nft-storage';
 import { Connection, Keypair } from '@solana/web3.js';
@@ -16,7 +16,11 @@ export function getReadonlyCli() {
   const connection = new Connection(process.env.RPC_URL_INSERTCM!);
   const metaplex = Metaplex.make(connection)
     .use(keypairIdentity(wallet))
-    .use(nftStorage({ token: process.env.NFTSTORAGE_KEY! }));
+    .use(
+      nftStorage({
+        token: process.env.NFTSTORAGE_KEY!,
+      }) as unknown as MetaplexPlugin,
+    );
 
   return metaplex;
 }
@@ -25,6 +29,10 @@ export function getWriteCli(RPC_URL = process.env.RPC_URL_INSERTCM!) {
   const connection = new Connection(RPC_URL);
   const metaplex = Metaplex.make(connection)
     .use(keypairIdentity(fundedWallet))
-    .use(nftStorage({ token: process.env.NFTSTORAGE_KEY! }));
+    .use(
+      nftStorage({
+        token: process.env.NFTSTORAGE_KEY!,
+      }) as unknown as MetaplexPlugin,
+    );
   return metaplex;
 }
