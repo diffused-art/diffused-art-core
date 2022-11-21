@@ -55,7 +55,12 @@ export async function refreshHashLists() {
         id: collection.id,
       },
       data: {
-        hashList: hashListAddresses,
+        hashList: [
+          ...new Set([
+            ...(collection.hashList as string[]),
+            ...hashListAddresses,
+          ]),
+        ],
       },
     });
 
