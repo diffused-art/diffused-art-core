@@ -31,7 +31,7 @@ export default function Header() {
   let timeout // NodeJS.Timeout
   const timeoutDuration = 400
 
-  const buttonRef = useRef(null) // useRef<HTMLButtonElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const [openState, setOpenState] = useState(false)
 
   const toggleMenu = (open) => {
@@ -84,7 +84,7 @@ export default function Header() {
       <div className='flex w-full md:gap-3 px-4 md:px-0 h-full items-center md:items-start'>
         <div className='md:bg-primary md:rounded-[10px] grow flex md:px-8 relative'>
           <div className='flex justify-between self-center w-full h-[70px] items-center'>
-            <Link href='/'><div className='hover:opacity-70 cursor-pointer flex items-center'><LogoSVG /></div></Link>
+            <Link legacyBehavior href='/'><div className='hover:opacity-70 cursor-pointer flex items-center'><LogoSVG /></div></Link>
             <div className='md:hidden mr-4'>
             <button
               onClick={() => setShowMenu(!showMenu)}

@@ -1,5 +1,5 @@
 import {
-  CandyMachine,
+  CandyMachineV2,
   Metaplex,
   walletAdapterIdentity,
 } from '@metaplex-foundation/js';
@@ -12,16 +12,15 @@ const metaplex = Metaplex.make(connection);
 
 export function useCandyMachine(candyMachineId: string) {
   const wallet = useWallet();
-  const [candyMachine, setCandyMachine] = useState<CandyMachine | null>(null);
+  const [candyMachine, setCandyMachine] = useState<CandyMachineV2 | null>(null);
   const [isLoadingState, setIsLoadingState] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
 
   useEffect(() => {
     setIsLoadingState(true);
     metaplex
-      .candyMachines()
+      .candyMachinesV2()
       .findByAddress({ address: new PublicKey(candyMachineId) })
-      .run()
       .then(cm => setCandyMachine(cm))
       .catch(() => setCandyMachine(null))
       .then(() => setIsLoadingState(false));
@@ -33,11 +32,10 @@ export function useCandyMachine(candyMachineId: string) {
     if (candyMachine) {
       const mintResult = await metaplex
         .use(walletAdapterIdentity(wallet))
-        .candyMachines()
+        .candyMachinesV2()
         .mint({ 
           candyMachine, 
         })
-        .run()
         .catch((e) => {
           console.error(e);
           return null;

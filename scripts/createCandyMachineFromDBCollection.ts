@@ -5,7 +5,7 @@ import { getWriteCli } from '../functions/getMetaplexCli';
 import { AISource } from '../typings';
 import { PublicKey } from '@solana/web3.js';
 import {
-  CandyMachine,
+  CandyMachineV2,
   sol,
   toBigNumber,
   toDateTime,
@@ -17,9 +17,9 @@ import { generatePlaceholderImage } from './generatePlaceholderImage';
 const prisma = new PrismaClient();
 
 function isCandyMachine(
-  candyMachine: CandyMachine | undefined,
-): candyMachine is CandyMachine {
-  return (<CandyMachine>candyMachine)?.address !== undefined;
+  candyMachine: CandyMachineV2 | undefined,
+): candyMachine is CandyMachineV2 {
+  return (<CandyMachineV2>candyMachine)?.address !== undefined;
 }
 
 function getAttributes(collection) {
@@ -87,12 +87,9 @@ async function createCandyMachineFromDBCollection() {
     foundCollection.nftPlaceholderForegroundColor as any,
   );
 
-  const { metadata } = await metaplexWriteCli
-    .nfts()
-    .uploadMetadata({
-      image: toMetaplexFile(nftPlaceholderImage, 'nftPlaceholderImage.png'),
-    })
-    .run();
+  const { metadata } = await metaplexWriteCli.nfts().uploadMetadata({
+    image: toMetaplexFile(nftPlaceholderImage, 'nftPlaceholderImage.png'),
+  });
   const nftPlaceholderImageURL = metadata.image;
 
   await prisma.collection.update({
@@ -105,33 +102,30 @@ async function createCandyMachineFromDBCollection() {
   });
 
   if (!foundCollection.collectionOnChainAddress) {
-    const { uri } = await metaplexWriteCli
-      .nfts()
-      .uploadMetadata({
-        name: foundCollection.mintName,
-        image: nftPlaceholderImageURL,
-        description: foundCollection.description,
-        attributes: getAttributes(foundCollection),
-        properties: {
-          files: [
-            {
-              type: 'image/png',
-              uri: nftPlaceholderImageURL,
-            },
-          ],
-          creators: [
-            {
-              address: process.env.FUNDED_WALLET_PUBKEY,
-              share: 10,
-            },
-            {
-              address: foundCollection?.artistRoyaltiesWalletAddress,
-              share: 90,
-            },
-          ],
-        },
-      })
-      .run();
+    const { uri } = await metaplexWriteCli.nfts().uploadMetadata({
+      name: foundCollection.mintName,
+      image: nftPlaceholderImageURL,
+      description: foundCollection.description,
+      attributes: getAttributes(foundCollection),
+      properties: {
+        files: [
+          {
+            type: 'image/png',
+            uri: nftPlaceholderImageURL,
+          },
+        ],
+        creators: [
+          {
+            address: process.env.FUNDED_WALLET_PUBKEY,
+            share: 10,
+          },
+          {
+            address: foundCollection?.artistRoyaltiesWalletAddress,
+            share: 90,
+          },
+        ],
+      },
+    });
     console.info(`Collection NFT not found, creating now, please wait...`);
     const collectionNFTAddress: string = await metaplexWriteCli
       .nfts()
@@ -154,7 +148,6 @@ async function createCandyMachineFromDBCollection() {
         ],
         isCollection: true,
       })
-      .run()
       .then(res => res.nft.address.toString())
       .catch(e => {
         if (
@@ -222,44 +215,38 @@ async function createCandyMachineFromDBCollection() {
     },
   ];
 
-  let candyMachine: CandyMachine | undefined = undefined;
+  let candyMachine: CandyMachineV2 | undefined = undefined;
   if (foundCollection.mintCandyMachineId) {
     console.info(
       `Candy machine already created for this collection, fetching!!`,
     );
-    candyMachine = await metaplexWriteCli
-      .candyMachines()
-      .findByAddress({
-        address: new PublicKey(foundCollection.mintCandyMachineId),
-      })
-      .run();
+    candyMachine = await metaplexWriteCli.candyMachinesV2().findByAddress({
+      address: new PublicKey(foundCollection.mintCandyMachineId),
+    });
   } else {
     console.info(`Candy machine needs to be created, creating now...`);
     candyMachine = (
       await retry(
         () =>
-          metaplexWriteCli
-            .candyMachines()
-            .create({
-              collection: new PublicKey(
-                foundCollection.collectionOnChainAddress!,
-              ),
-              itemsAvailable: toBigNumber(foundCollection.mintTotalSupply || 0),
-              price: sol(foundCollection.mintPrice.toNumber()),
-              // TODO: Needed to support SPL Tokens
-              // tokenMint: foundCollection?.mintTokenSPL
-              //   ? new PublicKey(foundCollection?.mintTokenSPL)
-              //   : undefined,
-              sellerFeeBasisPoints: foundCollection.mintSellerFeeBasisPoints,
-              creators: creatorsArray,
-              retainAuthority: true,
-              symbol: foundCollection.mintSymbol,
-              maxEditionSupply: toBigNumber(0),
-              goLiveDate: toDateTime(foundCollection.mintOpenAt),
-              isMutable: true,
-              // gatekeeper TODO: Add here to add botting protection
-            })
-            .run(),
+          metaplexWriteCli.candyMachinesV2().create({
+            collection: new PublicKey(
+              foundCollection.collectionOnChainAddress!,
+            ),
+            itemsAvailable: toBigNumber(foundCollection.mintTotalSupply || 0),
+            price: sol(foundCollection.mintPrice.toNumber()),
+            // TODO: Needed to support SPL Tokens
+            // tokenMint: foundCollection?.mintTokenSPL
+            //   ? new PublicKey(foundCollection?.mintTokenSPL)
+            //   : undefined,
+            sellerFeeBasisPoints: foundCollection.mintSellerFeeBasisPoints,
+            creators: creatorsArray,
+            retainAuthority: true,
+            symbol: foundCollection.mintSymbol,
+            maxEditionSupply: toBigNumber(0),
+            goLiveDate: toDateTime(foundCollection.mintOpenAt),
+            isMutable: true,
+            // gatekeeper TODO: Add here to add botting protection
+          }),
         { retries: 15, delay: 1000, timeout: 1000000 },
       )
     ).candyMachine;
@@ -281,33 +268,30 @@ async function createCandyMachineFromDBCollection() {
   );
 
   if (candyMachine.items.length !== foundCollection.mintTotalSupply) {
-    const { uri } = await metaplexWriteCli
-      .nfts()
-      .uploadMetadata({
-        name: foundCollection.mintName,
-        image: nftPlaceholderImageURL,
-        description: foundCollection.description,
-        attributes: getAttributes(foundCollection),
-        properties: {
-          files: [
-            {
-              type: 'image/png',
-              uri: nftPlaceholderImageURL,
-            },
-          ],
-          creators: [
-            {
-              address: process.env.FUNDED_WALLET_PUBKEY,
-              share: 10,
-            },
-            {
-              address: foundCollection?.artistRoyaltiesWalletAddress,
-              share: 90,
-            },
-          ],
-        },
-      })
-      .run();
+    const { uri } = await metaplexWriteCli.nfts().uploadMetadata({
+      name: foundCollection.mintName,
+      image: nftPlaceholderImageURL,
+      description: foundCollection.description,
+      attributes: getAttributes(foundCollection),
+      properties: {
+        files: [
+          {
+            type: 'image/png',
+            uri: nftPlaceholderImageURL,
+          },
+        ],
+        creators: [
+          {
+            address: process.env.FUNDED_WALLET_PUBKEY,
+            share: 10,
+          },
+          {
+            address: foundCollection?.artistRoyaltiesWalletAddress,
+            share: 90,
+          },
+        ],
+      },
+    });
 
     const items = Array(foundCollection.mintTotalSupply)
       .fill(0)
@@ -341,14 +325,13 @@ async function createCandyMachineFromDBCollection() {
             if (isCandyMachine(candyMachine)) {
               resolve(
                 await metaplexWriteCli
-                  .candyMachines()
+                  .candyMachinesV2()
                   .insertItems({
                     candyMachine,
                     authority: metaplexWriteCli.identity(),
                     items: chunkItems,
                     index: toBigNumber(index * chunkSize),
                   })
-                  .run()
                   .catch(async e => {
                     if (
                       e.message.includes(

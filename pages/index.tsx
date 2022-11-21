@@ -52,7 +52,7 @@ const Home = ({ collectionsLive }: HomeProps) => {
           </h3>
           <div id="collections-live" className="flex flex-col md:flex-row space-y-5 space-x-0 md:space-y-0 md:space-x-5 py-5">
             {collectionsLive.map(collection => (
-              <Link key={collection.id} href={`/drops/${collection.slugUrl}`}>
+              <Link legacyBehavior key={collection.id} href={`/drops/${collection.slugUrl}`}>
                 <div className="relative group">
                   <div
                     className="invisible group-hover:visible 

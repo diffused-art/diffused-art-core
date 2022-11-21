@@ -25,16 +25,17 @@ async function reinsertNonConfirmedItemsInsert() {
   });
 
   const uniqueCandyMachines = [
-    ...Array.from(new Set(allTimedOut.map(item => item.collection.mintCandyMachineId))),
+    ...Array.from(
+      new Set(allTimedOut.map(item => item.collection.mintCandyMachineId)),
+    ),
   ];
   for (let index = 0; index < uniqueCandyMachines.length; index++) {
     const candyMachineAddy = uniqueCandyMachines[index];
     const candyMachine = await metaplexWriteCli
-      .candyMachines()
+      .candyMachinesV2()
       .findByAddress({
         address: new PublicKey(candyMachineAddy!),
-      })
-      .run();
+      });
 
     const items = allTimedOut.filter(
       item => item.collection.mintCandyMachineId === candyMachineAddy,
@@ -52,14 +53,13 @@ async function reinsertNonConfirmedItemsInsert() {
             console.info(`Inserting Chunk N${index + 1} with 5 items`);
             resolve(
               await metaplexWriteCli
-                .candyMachines()
+                .candyMachinesV2()
                 .insertItems({
                   candyMachine,
                   authority: metaplexWriteCli.identity(),
                   items: errorCMChunksUpload.items as any,
                   index: toBigNumber(errorCMChunksUpload.index),
                 })
-                .run()
                 .then(async () => {
                   await prisma.errorsCMChunksUpload.update({
                     where: {

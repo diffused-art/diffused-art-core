@@ -26,35 +26,30 @@ async function updateNFTOnChain(
 ) {
   const metaplexWriteCli = await getWriteCli();
 
-  const { uri: newUri } = await metaplexWriteCli
-    .nfts()
-    .uploadMetadata({
-      name: currentNft.name,
-      image: toMetaplexFile(newImage, 'generation.png'),
-      attributes: newAttributes,
-      files: [
-        {
-          type: 'image/png',
-          uri: toMetaplexFile(newImage, 'generation.png'),
-        },
-      ],
-    })
-    .run();
+  const { uri: newUri } = await metaplexWriteCli.nfts().uploadMetadata({
+    name: currentNft.name,
+    image: toMetaplexFile(newImage, 'generation.png'),
+    attributes: newAttributes,
+    files: [
+      {
+        type: 'image/png',
+        uri: toMetaplexFile(newImage, 'generation.png'),
+      },
+    ],
+  });
 
-  await metaplexWriteCli
-    .nfts()
-    .update({
-      nftOrSft: currentNft,
-      uri: newUri,
-      collection: new PublicKey(currentNft.collection?.address.toString()!),
-      isMutable: false,
-    })
-    .run();
+  await metaplexWriteCli.nfts().update({
+    nftOrSft: currentNft,
+    uri: newUri,
+    collection: new PublicKey(currentNft.collection?.address.toString()!),
+    isMutable: false,
+  });
 
   const updatedNFT: Nft | NftWithToken = (await metaplexWriteCli
     .nfts()
-    .findByMint({ mintAddress: currentNft.address })
-    .run()) as unknown as Nft | NftWithToken;
+    .findByMint({ mintAddress: currentNft.address })) as unknown as
+    | Nft
+    | NftWithToken;
 
   const collectionFound = await prisma.collection.findFirst({
     where: {
@@ -70,10 +65,12 @@ async function updateNFTOnChain(
       collection: {
         connect: {
           id: collectionFound?.id as any,
-        }
+        },
       },
       title: updatedNFT.name,
-      description: updatedNFT.json?.attributes?.find((attribute) => attribute.trait_type === 'prompt')?.value as any,
+      description: updatedNFT.json?.attributes?.find(
+        attribute => attribute.trait_type === 'prompt',
+      )?.value as any,
       image: updatedNFT.json?.image as any,
       attributes: updatedNFT.json?.attributes as any,
       rawMetadata: updatedNFT.json as any,
@@ -83,10 +80,12 @@ async function updateNFTOnChain(
       collection: {
         connect: {
           id: collectionFound?.id as any,
-        }
+        },
       },
       title: updatedNFT.name,
-      description: updatedNFT.json?.attributes?.find((attribute) => attribute.trait_type === 'prompt')?.value as any,
+      description: updatedNFT.json?.attributes?.find(
+        attribute => attribute.trait_type === 'prompt',
+      )?.value as any,
       image: updatedNFT.json?.image as any,
       attributes: updatedNFT.json?.attributes as any,
       rawMetadata: updatedNFT.json as any,
@@ -135,22 +134,32 @@ export async function revealNFT(
   const metaplexCli = getReadonlyCli();
   const nftOnChainData: Nft | NftWithToken = (await metaplexCli
     .nfts()
-    .findByMint({ mintAddress: new PublicKey(mint_address) })
-    .run()) as unknown as Nft | NftWithToken;
+    .findByMint({ mintAddress: new PublicKey(mint_address) })) as unknown as
+    | Nft
+    | NftWithToken;
 
   if (!nftOnChainData.isMutable) {
-    const collectionId = (await prisma.collection.findUnique({ where: { collectionOnChainAddress: nftOnChainData.collection?.address.toString() }}))?.id;
+    const collectionId = (
+      await prisma.collection.findUnique({
+        where: {
+          collectionOnChainAddress:
+            nftOnChainData.collection?.address.toString(),
+        },
+      })
+    )?.id;
     await prisma.mint.upsert({
       where: { mint_address: nftOnChainData.address.toString() },
       create: {
         mint_address: nftOnChainData.address.toString(),
         collection: {
           connect: {
-            id: collectionId
-          }
+            id: collectionId,
+          },
         },
         title: nftOnChainData.name,
-        description: nftOnChainData.json?.attributes?.find((attribute) => attribute.trait_type === 'prompt')?.value as any,
+        description: nftOnChainData.json?.attributes?.find(
+          attribute => attribute.trait_type === 'prompt',
+        )?.value as any,
         image: nftOnChainData.json?.image as any,
         attributes: nftOnChainData.json?.attributes as any,
         rawMetadata: nftOnChainData.json as any,
@@ -160,10 +169,12 @@ export async function revealNFT(
         collection: {
           connect: {
             id: collectionId,
-          }
+          },
         },
         title: nftOnChainData.name,
-        description: nftOnChainData.json?.attributes?.find((attribute) => attribute.trait_type === 'prompt')?.value as any,
+        description: nftOnChainData.json?.attributes?.find(
+          attribute => attribute.trait_type === 'prompt',
+        )?.value as any,
         image: nftOnChainData.json?.image as any,
         attributes: nftOnChainData.json?.attributes as any,
         rawMetadata: nftOnChainData.json as any,
