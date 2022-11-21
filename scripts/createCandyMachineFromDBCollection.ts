@@ -5,7 +5,7 @@ import { getWriteCli } from '../functions/getMetaplexCli';
 import { AISource } from '../typings';
 import { PublicKey } from '@solana/web3.js';
 import {
-  CandyMachine,
+  CandyMachineV2,
   sol,
   toBigNumber,
   toDateTime,
@@ -17,9 +17,9 @@ import { generatePlaceholderImage } from './generatePlaceholderImage';
 const prisma = new PrismaClient();
 
 function isCandyMachine(
-  candyMachine: CandyMachine | undefined,
-): candyMachine is CandyMachine {
-  return (<CandyMachine>candyMachine)?.address !== undefined;
+  candyMachine: CandyMachineV2 | undefined,
+): candyMachine is CandyMachineV2 {
+  return (<CandyMachineV2>candyMachine)?.address !== undefined;
 }
 
 function getAttributes(collection) {
@@ -92,7 +92,7 @@ async function createCandyMachineFromDBCollection() {
     .uploadMetadata({
       image: toMetaplexFile(nftPlaceholderImage, 'nftPlaceholderImage.png'),
     })
-    .run();
+    ;
   const nftPlaceholderImageURL = metadata.image;
 
   await prisma.collection.update({
@@ -131,7 +131,7 @@ async function createCandyMachineFromDBCollection() {
           ],
         },
       })
-      .run();
+      ;
     console.info(`Collection NFT not found, creating now, please wait...`);
     const collectionNFTAddress: string = await metaplexWriteCli
       .nfts()
@@ -154,7 +154,7 @@ async function createCandyMachineFromDBCollection() {
         ],
         isCollection: true,
       })
-      .run()
+      
       .then(res => res.nft.address.toString())
       .catch(e => {
         if (
@@ -222,24 +222,24 @@ async function createCandyMachineFromDBCollection() {
     },
   ];
 
-  let candyMachine: CandyMachine | undefined = undefined;
+  let candyMachine: CandyMachineV2 | undefined = undefined;
   if (foundCollection.mintCandyMachineId) {
     console.info(
       `Candy machine already created for this collection, fetching!!`,
     );
     candyMachine = await metaplexWriteCli
-      .candyMachines()
+      .candyMachinesV2()
       .findByAddress({
         address: new PublicKey(foundCollection.mintCandyMachineId),
       })
-      .run();
+      ;
   } else {
     console.info(`Candy machine needs to be created, creating now...`);
     candyMachine = (
       await retry(
         () =>
           metaplexWriteCli
-            .candyMachines()
+            .candyMachinesV2()
             .create({
               collection: new PublicKey(
                 foundCollection.collectionOnChainAddress!,
@@ -259,7 +259,7 @@ async function createCandyMachineFromDBCollection() {
               isMutable: true,
               // gatekeeper TODO: Add here to add botting protection
             })
-            .run(),
+            ,
         { retries: 15, delay: 1000, timeout: 1000000 },
       )
     ).candyMachine;
@@ -307,7 +307,7 @@ async function createCandyMachineFromDBCollection() {
           ],
         },
       })
-      .run();
+      ;
 
     const items = Array(foundCollection.mintTotalSupply)
       .fill(0)
@@ -341,14 +341,14 @@ async function createCandyMachineFromDBCollection() {
             if (isCandyMachine(candyMachine)) {
               resolve(
                 await metaplexWriteCli
-                  .candyMachines()
+                  .candyMachinesV2()
                   .insertItems({
                     candyMachine,
                     authority: metaplexWriteCli.identity(),
                     items: chunkItems,
                     index: toBigNumber(index * chunkSize),
                   })
-                  .run()
+                  
                   .catch(async e => {
                     if (
                       e.message.includes(
