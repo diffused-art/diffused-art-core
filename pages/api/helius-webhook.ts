@@ -32,19 +32,14 @@ export default async function handle(req: any, res: any) {
         },
       });
       if (result) {
-        const mints = tx.tokenTransfers
-          .flat()
+        const mints: string[] = tx.tokenTransfers
           .map(tokenTransfer => tokenTransfer.mint)
           .filter(Boolean);
-        console.log(
-          'Mints that just happened',
-          collectionFound.mintCandyMachineId,
-        );
-        const mintsToInsert = new Set(
-          ...mints,
-          ...(result.hashList as Prisma.JsonArray[]),
-        );
-        const uniqueMints = [...mintsToInsert] as string[];
+        console.log('Mints that just happened', mints);
+
+        const uniqueMints = [
+          ...new Set([...mints, ...(result.hashList as Prisma.JsonArray[])]),
+        ] as string[];
         console.log('Mints to insert', uniqueMints);
         await prisma.collection.update({
           where: {
