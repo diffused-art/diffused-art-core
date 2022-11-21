@@ -10,35 +10,47 @@ export default async function handle(req: any, res: any) {
   const arrayOfTxs = req.body;
   for (let index = 0; index < arrayOfTxs.length; index++) {
     const tx = arrayOfTxs[index];
-    const cmId = tx.accountData[5]?.account;
-    console.log('Monitoring cmId', cmId);
-    const result = await prisma.collection.findUnique({
-      where: { mintCandyMachineId: cmId },
-      include: {
-        mints: true,
+    const accountsList: string[] = tx.accountData.map((accountData) => accountData.account);
+    const [collectionFound] = await prisma.collection.findMany({
+      where: {
+        mintCandyMachineId: {
+          in: accountsList,
+        }
       },
-    });
-    if (result) {
-      const mints = tx.tokenTransfers
-        .flat()
-        .map(tokenTransfer => tokenTransfer.mint)
-        .filter(Boolean);
-      console.log('Mints that just happened', cmId);
-      const mintsToInsert = new Set(
-        ...mints,
-        ...(result.hashList as Prisma.JsonArray[]),
-      );
-      const uniqueMints = [...mintsToInsert] as string[];
-      console.log('Mints to insert', uniqueMints);
-      await prisma.collection.update({
-        where: {
-          id: result.id,
-        },
-        data: {
-          hashList: uniqueMints,
+      take: 1,
+    })
+    console.log('Monitoring cmId', collectionFound.mintCandyMachineId);
+    if (collectionFound) {
+      const result = await prisma.collection.findUnique({
+        where: { mintCandyMachineId: collectionFound.mintCandyMachineId },
+        include: {
+          mints: true,
         },
       });
+      if (result) {
+        const mints = tx.tokenTransfers
+          .flat()
+          .map(tokenTransfer => tokenTransfer.mint)
+          .filter(Boolean);
+        console.log('Mints that just happened', cmId);
+        const mintsToInsert = new Set(
+          ...mints,
+          ...(result.hashList as Prisma.JsonArray[]),
+        );
+        const uniqueMints = [...mintsToInsert] as string[];
+        console.log('Mints to insert', uniqueMints);
+        await prisma.collection.update({
+          where: {
+            id: result.id,
+          },
+          data: {
+            hashList: uniqueMints,
+          },
+        });
+      }
+      
     }
+    
   }
   return res.status(200).json({ data: 'Webhook received' });
 }
