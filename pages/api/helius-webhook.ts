@@ -33,7 +33,6 @@ export default async function handle(req: any, res: any) {
       });
       if (result) {
         const mints: string[] = tx.tokenTransfers
-          .flat()
           .map(tokenTransfer => tokenTransfer.mint)
           .filter(Boolean);
         console.log('Mints that just happened', mints);
