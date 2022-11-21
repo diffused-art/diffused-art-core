@@ -10,19 +10,23 @@ export default async function handle(req: any, res: any) {
   const arrayOfTxs = req.body;
   for (let index = 0; index < arrayOfTxs.length; index++) {
     const tx = arrayOfTxs[index];
-    const accountsList: string[] = tx.accountData.map((accountData) => accountData.account);
+    const accountsList: string[] = tx.accountData.map(
+      accountData => accountData.account,
+    );
     const [collectionFound] = await prisma.collection.findMany({
       where: {
         mintCandyMachineId: {
           in: accountsList,
-        }
+        },
       },
       take: 1,
-    })
+    });
     console.log('Monitoring cmId', collectionFound.mintCandyMachineId);
     if (collectionFound) {
       const result = await prisma.collection.findUnique({
-        where: { mintCandyMachineId: collectionFound.mintCandyMachineId },
+        where: {
+          mintCandyMachineId: collectionFound.mintCandyMachineId || undefined,
+        },
         include: {
           mints: true,
         },
@@ -32,7 +36,10 @@ export default async function handle(req: any, res: any) {
           .flat()
           .map(tokenTransfer => tokenTransfer.mint)
           .filter(Boolean);
-        console.log('Mints that just happened', cmId);
+        console.log(
+          'Mints that just happened',
+          collectionFound.mintCandyMachineId,
+        );
         const mintsToInsert = new Set(
           ...mints,
           ...(result.hashList as Prisma.JsonArray[]),
@@ -48,9 +55,7 @@ export default async function handle(req: any, res: any) {
           },
         });
       }
-      
     }
-    
   }
   return res.status(200).json({ data: 'Webhook received' });
 }
