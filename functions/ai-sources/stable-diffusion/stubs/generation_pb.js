@@ -13,7 +13,13 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = (function() { return this || window || global || self || Function('return this')(); }).call(null);
+var global = (function() {
+  if (this) { return this; }
+  if (typeof window !== 'undefined') { return window; }
+  if (typeof global !== 'undefined') { return global; }
+  if (typeof self !== 'undefined') { return self; }
+  return Function('return this')();
+}.call(null));
 
 var tensors_pb = require('./tensors_pb.js');
 goog.object.extend(proto, tensors_pb);
@@ -40,6 +46,7 @@ goog.exportSymbol('proto.gooseai.GuidanceParameters', null, global);
 goog.exportSymbol('proto.gooseai.GuidancePreset', null, global);
 goog.exportSymbol('proto.gooseai.GuidanceScheduleParameters', null, global);
 goog.exportSymbol('proto.gooseai.ImageParameters', null, global);
+goog.exportSymbol('proto.gooseai.MaskedAreaInit', null, global);
 goog.exportSymbol('proto.gooseai.Model', null, global);
 goog.exportSymbol('proto.gooseai.ModelArchitecture', null, global);
 goog.exportSymbol('proto.gooseai.OnStatus', null, global);
@@ -4932,7 +4939,8 @@ proto.gooseai.ImageParameters.toObject = function(includeInstance, msg) {
     steps: jspb.Message.getFieldWithDefault(msg, 5, 0),
     transform: (f = msg.getTransform()) && proto.gooseai.TransformType.toObject(includeInstance, f),
     parametersList: jspb.Message.toObjectList(msg.getParametersList(),
-    proto.gooseai.StepParameter.toObject, includeInstance)
+    proto.gooseai.StepParameter.toObject, includeInstance),
+    maskedAreaInit: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
 
   if (includeInstance) {
@@ -5000,6 +5008,10 @@ proto.gooseai.ImageParameters.deserializeBinaryFromReader = function(msg, reader
       var value = new proto.gooseai.StepParameter;
       reader.readMessage(value,proto.gooseai.StepParameter.deserializeBinaryFromReader);
       msg.addParameters(value);
+      break;
+    case 8:
+      var value = /** @type {!proto.gooseai.MaskedAreaInit} */ (reader.readEnum());
+      msg.setMaskedAreaInit(value);
       break;
     default:
       reader.skipField();
@@ -5079,6 +5091,13 @@ proto.gooseai.ImageParameters.serializeBinaryToWriter = function(message, writer
       7,
       f,
       proto.gooseai.StepParameter.serializeBinaryToWriter
+    );
+  }
+  f = /** @type {!proto.gooseai.MaskedAreaInit} */ (jspb.Message.getField(message, 8));
+  if (f != null) {
+    writer.writeEnum(
+      8,
+      f
     );
   }
 };
@@ -5337,6 +5356,42 @@ proto.gooseai.ImageParameters.prototype.addParameters = function(opt_value, opt_
  */
 proto.gooseai.ImageParameters.prototype.clearParametersList = function() {
   return this.setParametersList([]);
+};
+
+
+/**
+ * optional MaskedAreaInit masked_area_init = 8;
+ * @return {!proto.gooseai.MaskedAreaInit}
+ */
+proto.gooseai.ImageParameters.prototype.getMaskedAreaInit = function() {
+  return /** @type {!proto.gooseai.MaskedAreaInit} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
+};
+
+
+/**
+ * @param {!proto.gooseai.MaskedAreaInit} value
+ * @return {!proto.gooseai.ImageParameters} returns this
+ */
+proto.gooseai.ImageParameters.prototype.setMaskedAreaInit = function(value) {
+  return jspb.Message.setField(this, 8, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.gooseai.ImageParameters} returns this
+ */
+proto.gooseai.ImageParameters.prototype.clearMaskedAreaInit = function() {
+  return jspb.Message.setField(this, 8, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.gooseai.ImageParameters.prototype.hasMaskedAreaInit = function() {
+  return jspb.Message.getField(this, 8) != null;
 };
 
 
@@ -8226,6 +8281,15 @@ proto.gooseai.ArtifactType = {
 /**
  * @enum {number}
  */
+proto.gooseai.MaskedAreaInit = {
+  MASKED_AREA_INIT_ZERO: 0,
+  MASKED_AREA_INIT_RANDOM: 1,
+  MASKED_AREA_INIT_ORIGINAL: 2
+};
+
+/**
+ * @enum {number}
+ */
 proto.gooseai.WeightMethod = {
   TEXT_ENCODER: 0,
   CROSS_ATTENTION: 1
@@ -8242,7 +8306,9 @@ proto.gooseai.DiffusionSampler = {
   SAMPLER_K_HEUN: 4,
   SAMPLER_K_DPM_2: 5,
   SAMPLER_K_DPM_2_ANCESTRAL: 6,
-  SAMPLER_K_LMS: 7
+  SAMPLER_K_LMS: 7,
+  SAMPLER_K_DPMPP_2S_ANCESTRAL: 8,
+  SAMPLER_K_DPMPP_2M: 9
 };
 
 /**

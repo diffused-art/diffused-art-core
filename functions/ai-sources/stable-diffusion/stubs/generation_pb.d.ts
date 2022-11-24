@@ -635,6 +635,11 @@ export class ImageParameters extends jspb.Message {
   setParametersList(value: Array<StepParameter>): void;
   addParameters(value?: StepParameter, index?: number): StepParameter;
 
+  hasMaskedAreaInit(): boolean;
+  clearMaskedAreaInit(): void;
+  getMaskedAreaInit(): MaskedAreaInitMap[keyof MaskedAreaInitMap];
+  setMaskedAreaInit(value: MaskedAreaInitMap[keyof MaskedAreaInitMap]): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ImageParameters.AsObject;
   static toObject(includeInstance: boolean, msg: ImageParameters): ImageParameters.AsObject;
@@ -654,6 +659,7 @@ export namespace ImageParameters {
     steps: number,
     transform?: TransformType.AsObject,
     parametersList: Array<StepParameter.AsObject>,
+    maskedAreaInit: MaskedAreaInitMap[keyof MaskedAreaInitMap],
   }
 }
 
@@ -1068,6 +1074,14 @@ export interface ArtifactTypeMap {
 
 export const ArtifactType: ArtifactTypeMap;
 
+export interface MaskedAreaInitMap {
+  MASKED_AREA_INIT_ZERO: 0;
+  MASKED_AREA_INIT_RANDOM: 1;
+  MASKED_AREA_INIT_ORIGINAL: 2;
+}
+
+export const MaskedAreaInit: MaskedAreaInitMap;
+
 export interface WeightMethodMap {
   TEXT_ENCODER: 0;
   CROSS_ATTENTION: 1;
@@ -1084,6 +1098,8 @@ export interface DiffusionSamplerMap {
   SAMPLER_K_DPM_2: 5;
   SAMPLER_K_DPM_2_ANCESTRAL: 6;
   SAMPLER_K_LMS: 7;
+  SAMPLER_K_DPMPP_2S_ANCESTRAL: 8;
+  SAMPLER_K_DPMPP_2M: 9;
 }
 
 export const DiffusionSampler: DiffusionSamplerMap;
