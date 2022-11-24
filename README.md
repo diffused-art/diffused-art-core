@@ -11,6 +11,7 @@
 ### Setup Environment
 
 Please check `.env.template` to validate which softwares/database and keys you need in order to succeed running all the cronjobs and BE/FE (NextJS) app successfully.
+
 Also, please do this checklist:
 
 - Configure the Solana CLI: `solana config set -k ~/.config/solana/pathtoyourkeyasInt8Array.json` and `solana config set --url ALCHEMYRPCURL`
