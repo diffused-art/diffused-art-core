@@ -3,7 +3,6 @@ dotenv.config();
 import { PrismaClient } from '@prisma/client';
 import { STABLE_DIFFUSION_DEFAULTS_FOR_METADATA } from '../../functions/ai-sources/stable-diffusion/defaults';
 import { addDays } from 'date-fns';
-import { FontFamilies } from '../generatePlaceholderImage';
 
 const prisma = new PrismaClient();
 
@@ -26,7 +25,7 @@ async function createSampleCollectionOnDb() {
       },
       nftPlaceholderForegroundColor: '#d5d5d5',
       nftPlaceholderBackgroundColor: '#7d1aa5',
-      nftPlaceholderFontFamily: FontFamilies.Roboto,
+      nftPlaceholderFontFamily: `'Roboto', sans-serif;`,
       bannerImageURL:
         'https://bafybeihm3h2slf2iezvcmypwcvoro2r6odtsh3fsrska5pshiqknz5npfq.ipfs.nftstorage.link',
       mintTotalSupply: 100,

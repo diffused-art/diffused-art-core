@@ -12,7 +12,7 @@ import {
   toMetaplexFile,
 } from '@metaplex-foundation/js';
 import { retry } from 'ts-retry-promise';
-import { generatePlaceholderImage } from './generatePlaceholderImage';
+import axios from 'axios';
 
 const prisma = new PrismaClient();
 
@@ -78,21 +78,15 @@ async function createCandyMachineFromDBCollection() {
     throw new Error('Collection not found');
   }
 
-  const nftPlaceholderImage = await generatePlaceholderImage(
-    foundCollection.id,
-    foundCollection.promptPhrase,
-    foundCollection.promptInitImage as any,
-    foundCollection.nftPlaceholderFontFamily as any,
-    foundCollection.nftPlaceholderBackgroundColor as any,
-    foundCollection.nftPlaceholderForegroundColor as any,
-  );
-
-  const { metadata } = await metaplexWriteCli
-    .nfts()
-    .uploadMetadata({
-      image: toMetaplexFile(nftPlaceholderImage, 'nftPlaceholderImage.png'),
+  const nftPlaceholderImage = await axios
+    .get(`/api/collection/${foundCollection.id}/preview`, {
+      responseType: 'arraybuffer',
     })
-    ;
+    .then(response => Buffer.from(response.data, 'binary'));
+
+  const { metadata } = await metaplexWriteCli.nfts().uploadMetadata({
+    image: toMetaplexFile(nftPlaceholderImage, 'nftPlaceholderImage.png'),
+  });
   const nftPlaceholderImageURL = metadata.image;
 
   await prisma.collection.update({
@@ -105,33 +99,30 @@ async function createCandyMachineFromDBCollection() {
   });
 
   if (!foundCollection.collectionOnChainAddress) {
-    const { uri } = await metaplexWriteCli
-      .nfts()
-      .uploadMetadata({
-        name: foundCollection.mintName,
-        image: nftPlaceholderImageURL,
-        description: foundCollection.description,
-        attributes: getAttributes(foundCollection),
-        properties: {
-          files: [
-            {
-              type: 'image/png',
-              uri: nftPlaceholderImageURL,
-            },
-          ],
-          creators: [
-            {
-              address: process.env.FUNDED_WALLET_PUBKEY,
-              share: 10,
-            },
-            {
-              address: foundCollection?.artistRoyaltiesWalletAddress,
-              share: 90,
-            },
-          ],
-        },
-      })
-      ;
+    const { uri } = await metaplexWriteCli.nfts().uploadMetadata({
+      name: foundCollection.mintName,
+      image: nftPlaceholderImageURL,
+      description: foundCollection.description,
+      attributes: getAttributes(foundCollection),
+      properties: {
+        files: [
+          {
+            type: 'image/png',
+            uri: nftPlaceholderImageURL,
+          },
+        ],
+        creators: [
+          {
+            address: process.env.FUNDED_WALLET_PUBKEY,
+            share: 10,
+          },
+          {
+            address: foundCollection?.artistRoyaltiesWalletAddress,
+            share: 90,
+          },
+        ],
+      },
+    });
     console.info(`Collection NFT not found, creating now, please wait...`);
     const collectionNFTAddress: string = await metaplexWriteCli
       .nfts()
@@ -154,7 +145,7 @@ async function createCandyMachineFromDBCollection() {
         ],
         isCollection: true,
       })
-      
+
       .then(res => res.nft.address.toString())
       .catch(e => {
         if (
@@ -227,39 +218,33 @@ async function createCandyMachineFromDBCollection() {
     console.info(
       `Candy machine already created for this collection, fetching!!`,
     );
-    candyMachine = await metaplexWriteCli
-      .candyMachinesV2()
-      .findByAddress({
-        address: new PublicKey(foundCollection.mintCandyMachineId),
-      })
-      ;
+    candyMachine = await metaplexWriteCli.candyMachinesV2().findByAddress({
+      address: new PublicKey(foundCollection.mintCandyMachineId),
+    });
   } else {
     console.info(`Candy machine needs to be created, creating now...`);
     candyMachine = (
       await retry(
         () =>
-          metaplexWriteCli
-            .candyMachinesV2()
-            .create({
-              collection: new PublicKey(
-                foundCollection.collectionOnChainAddress!,
-              ),
-              itemsAvailable: toBigNumber(foundCollection.mintTotalSupply || 0),
-              price: sol(foundCollection.mintPrice.toNumber()),
-              // TODO: Needed to support SPL Tokens
-              // tokenMint: foundCollection?.mintTokenSPL
-              //   ? new PublicKey(foundCollection?.mintTokenSPL)
-              //   : undefined,
-              sellerFeeBasisPoints: foundCollection.mintSellerFeeBasisPoints,
-              creators: creatorsArray,
-              retainAuthority: true,
-              symbol: foundCollection.mintSymbol,
-              maxEditionSupply: toBigNumber(0),
-              goLiveDate: toDateTime(foundCollection.mintOpenAt),
-              isMutable: true,
-              // gatekeeper TODO: Add here to add botting protection
-            })
-            ,
+          metaplexWriteCli.candyMachinesV2().create({
+            collection: new PublicKey(
+              foundCollection.collectionOnChainAddress!,
+            ),
+            itemsAvailable: toBigNumber(foundCollection.mintTotalSupply || 0),
+            price: sol(foundCollection.mintPrice.toNumber()),
+            // TODO: Needed to support SPL Tokens
+            // tokenMint: foundCollection?.mintTokenSPL
+            //   ? new PublicKey(foundCollection?.mintTokenSPL)
+            //   : undefined,
+            sellerFeeBasisPoints: foundCollection.mintSellerFeeBasisPoints,
+            creators: creatorsArray,
+            retainAuthority: true,
+            symbol: foundCollection.mintSymbol,
+            maxEditionSupply: toBigNumber(0),
+            goLiveDate: toDateTime(foundCollection.mintOpenAt),
+            isMutable: true,
+            // gatekeeper TODO: Add here to add botting protection
+          }),
         { retries: 15, delay: 1000, timeout: 1000000 },
       )
     ).candyMachine;
@@ -281,34 +266,30 @@ async function createCandyMachineFromDBCollection() {
   );
 
   if (candyMachine.items.length !== foundCollection.mintTotalSupply) {
-    const { uri } = await metaplexWriteCli
-      .nfts()
-      .uploadMetadata({
-        name: foundCollection.mintName,
-        image: nftPlaceholderImageURL,
-        description: foundCollection.description,
-        attributes: getAttributes(foundCollection),
-        properties: {
-          files: [
-            {
-              type: 'image/png',
-              uri: nftPlaceholderImageURL,
-            },
-          ],
-          creators: [
-            {
-              address: process.env.FUNDED_WALLET_PUBKEY,
-              share: 10,
-            },
-            {
-              address: foundCollection?.artistRoyaltiesWalletAddress,
-              share: 90,
-            },
-          ],
-        },
-      })
-      ;
-
+    const { uri } = await metaplexWriteCli.nfts().uploadMetadata({
+      name: foundCollection.mintName,
+      image: nftPlaceholderImageURL,
+      description: foundCollection.description,
+      attributes: getAttributes(foundCollection),
+      properties: {
+        files: [
+          {
+            type: 'image/png',
+            uri: nftPlaceholderImageURL,
+          },
+        ],
+        creators: [
+          {
+            address: process.env.FUNDED_WALLET_PUBKEY,
+            share: 10,
+          },
+          {
+            address: foundCollection?.artistRoyaltiesWalletAddress,
+            share: 90,
+          },
+        ],
+      },
+    });
     const items = Array(foundCollection.mintTotalSupply)
       .fill(0)
       .map((_, i) => ({
@@ -348,7 +329,7 @@ async function createCandyMachineFromDBCollection() {
                     items: chunkItems,
                     index: toBigNumber(index * chunkSize),
                   })
-                  
+
                   .catch(async e => {
                     if (
                       e.message.includes(

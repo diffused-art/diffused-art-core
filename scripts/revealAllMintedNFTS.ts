@@ -27,7 +27,7 @@ export async function revealAllMintedNFTS() {
     const collection = collections[index];
     const hashList = (collection.hashList as string[]) ?? [];
     if (hashList.length === 0) {
-      console.log(
+      console.warn(
         `No hash list for collection ${collection.collectionOnChainAddress}`,
       );
       continue;
