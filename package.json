@@ -18,7 +18,6 @@
     "download-stable-diffusion-lib": "./scripts/download-and-build-sd-lib.sh",
     "reveal-cronjobs": "nodemon --watch 'src/' --exec 'ts-node ./cronjobs/revealMintsCronjob.ts' -e ts",
     "flush-db": "ts-node ./utils/flushDB.ts",
-    "generate-image": "ts-node ./scripts/generatePlaceholderImage.ts",
     "postinstall": "patch-package"
   },
   "dependencies": {
@@ -38,6 +37,7 @@
     "@solana/wallet-adapter-wallets": "^0.19.6",
     "@solana/web3.js": "^1.66.2",
     "@svgr/webpack": "^6.5.1",
+    "@vercel/og": "^0.0.21",
     "axios": "^1.2.0",
     "bs58": "^5.0.0",
     "canvas-confetti": "^1.6.0",
@@ -55,7 +55,6 @@
     "nodemon": "^2.0.20",
     "patch-package": "^6.5.0",
     "postinstall-postinstall": "^2.1.0",
-    "puppeteer": "^19.3.0",
     "rand-seed": "^1.0.2",
     "react": "^18.2.0",
     "react-countdown": "^2.3.5",

@@ -21,7 +21,7 @@ export default async function handle(req: any, res: any) {
       },
       take: 1,
     });
-    console.log('Monitoring cmId', collectionFound.mintCandyMachineId);
+    console.info('Monitoring cmId', collectionFound.mintCandyMachineId);
     if (collectionFound) {
       const result = await prisma.collection.findUnique({
         where: {
@@ -35,12 +35,12 @@ export default async function handle(req: any, res: any) {
         const mints: string[] = tx.tokenTransfers
           .map(tokenTransfer => tokenTransfer.mint)
           .filter(Boolean);
-        console.log('Mints that just happened', mints);
+        console.info('Mints that just happened', mints);
 
         const uniqueMints = [
           ...new Set([...mints, ...(result.hashList as Prisma.JsonArray[])]),
         ] as string[];
-        console.log('Mints to insert', uniqueMints);
+        console.info('Mints to insert', uniqueMints);
         await prisma.collection.update({
           where: {
             id: result.id,
