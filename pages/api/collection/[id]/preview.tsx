@@ -7,19 +7,126 @@ export const config = {
 };
 
 export enum FontFamilies {
-  Jura = `'Jura', sans-serif;`,
   Roboto = `'Roboto', sans-serif;`,
-  Orbitron = `'Orbitron', sans-serif;`,
-  PTMono = `'PT Mono', monospace;`,
-  ShareTechMono = `'Share Tech Mono', monospace;`,
-  VT323 = `'VT323', monospace;`,
 }
+
+const ROBOTO_FONTS: any[] = [
+  {
+    name: 'Roboto',
+    style: 'normal',
+    weight: 900,
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 900,
+  },
+  {
+    name: 'Roboto',
+    style: 'normal',
+    weight: 700,
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 700,
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 400,
+  },
+  {
+    name: 'Roboto',
+    style: 'normal',
+    weight: 400,
+  },
+  {
+    name: 'Roboto',
+    style: 'normal',
+    weight: 300,
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 300,
+  },
+  {
+    name: 'Roboto',
+    style: 'normal',
+    weight: 500,
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 500,
+  },
+  {
+    name: 'Roboto',
+    style: 'normal',
+    weight: 100,
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 100,
+  },
+];
+
+const ROBOTO_FONTS_BINARIES = Promise.all([
+  fetch(
+    new URL('../../../../assets/Roboto/Roboto-Black.ttf', import.meta.url),
+  ).then(res => res.arrayBuffer()),
+  fetch(
+    new URL(
+      '../../../../assets/Roboto/Roboto-BlackItalic.ttf',
+      import.meta.url,
+    ),
+  ).then(res => res.arrayBuffer()),
+  fetch(
+    new URL('../../../../assets/Roboto/Roboto-Bold.ttf', import.meta.url),
+  ).then(res => res.arrayBuffer()),
+  fetch(
+    new URL('../../../../assets/Roboto/Roboto-BoldItalic.ttf', import.meta.url),
+  ).then(res => res.arrayBuffer()),
+  fetch(
+    new URL('../../../../assets/Roboto/Roboto-Italic.ttf', import.meta.url),
+  ).then(res => res.arrayBuffer()),
+  fetch(
+    new URL('../../../../assets/Roboto/Roboto-Regular.ttf', import.meta.url),
+  ).then(res => res.arrayBuffer()),
+  fetch(
+    new URL('../../../../assets/Roboto/Roboto-Light.ttf', import.meta.url),
+  ).then(res => res.arrayBuffer()),
+  fetch(
+    new URL(
+      '../../../../assets/Roboto/Roboto-LightItalic.ttf',
+      import.meta.url,
+    ),
+  ).then(res => res.arrayBuffer()),
+  fetch(
+    new URL('../../../../assets/Roboto/Roboto-Medium.ttf', import.meta.url),
+  ).then(res => res.arrayBuffer()),
+  fetch(
+    new URL(
+      '../../../../assets/Roboto/Roboto-MediumItalic.ttf',
+      import.meta.url,
+    ),
+  ).then(res => res.arrayBuffer()),
+  fetch(
+    new URL('../../../../assets/Roboto/Roboto-Thin.ttf', import.meta.url),
+  ).then(res => res.arrayBuffer()),
+  fetch(
+    new URL('../../../../assets/Roboto/Roboto-ThinItalic.ttf', import.meta.url),
+  ).then(res => res.arrayBuffer()),
+]);
 
 export default async function handle(req: NextRequest) {
   if (req.method !== 'POST') {
     return new ImageResponse(<div>Not found</div>);
   }
   const { searchParams, origin } = req.nextUrl;
+  const ALL_FONTS_BINARIES = await ROBOTO_FONTS_BINARIES;
 
   const collectionId = searchParams.get('id');
 
@@ -131,6 +238,10 @@ export default async function handle(req: NextRequest) {
     {
       width: 640,
       height: 640,
+      fonts: ROBOTO_FONTS.map((font, i) => ({
+        ...font,
+        data: ALL_FONTS_BINARIES[i],
+      })),
     },
   );
 }

@@ -17,7 +17,7 @@ export default async function handle(req: any, res: any) {
       return res.status(200).json({ data: collection });
     }
     case 'PUT': {
-      // UPDATE PREVIEW IMG FOR EXAMPLE
+      // TODO: Update preview image once there is a trust less mechanism for creating collections
       return res.status(200).json({ data: collection });
     }
     default:
