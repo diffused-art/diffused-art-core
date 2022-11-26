@@ -2,12 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'TestFont';
+  src: local('TestFont'), url(/assets/fonts/test-metric-light.woff2) format('woff2');
+  font-weight: 100;
+}
+
+@font-face {
+  font-family: 'TestFontLight';
+  src: local('TestFontLight'), url(/assets/fonts/test-metric-light-italic.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'TestFontBold';
+  src: local('TestFontBold'), url(/assets/fonts/test-metric-bold.woff2) format('woff2');
+}
+
 html,
 body {
-  background-color: #1a1b1b;
+  background-color: #242424;
   color: #d5d5d5;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'TestFont', sans-serif;
   font-weight: 400;
+  font-size: 18px;
 }
 
 html,
@@ -16,4 +33,70 @@ body > div:first-child,
 div#__next,
 div#__next > div {
   height: 100%;
+}
+
+.nav-link{
+  position: relative;
+}
+
+.nav-link.active::after{
+  content: "";
+  position: absolute;
+  height: 2px;
+  background: theme('colors.secondary');
+  width: 100%;
+  left: 0;
+  bottom: 0;
+}
+
+.nav-link.active:hover::after{
+  opacity: 0.75;
+}
+.btn-setting .icon{
+  @apply transition-transform;
+  @apply ease-in-out;
+  @apply duration-300; 
+}
+
+.btn-setting:hover .icon{
+  @apply rotate-90;
+}
+
+.card{
+  @apply transition-transform;
+  @apply ease-in-out;
+  @apply duration-300; 
+}
+
+.card:hover {
+  @apply -translate-y-4;
+}
+
+.tag:hover .tag-name{
+    @apply text-secondary;
+}
+
+.bread:after{
+  content: '';
+    height: 1px;
+    background-color: white;
+    opacity: 0.5;
+    position: absolute;
+    transform: translateY(-50%);
+    top: 50%;
+    width: 100%;
+}
+
+.bread-item{
+  z-index: 1;
+  @apply px-3;
+  background-color: #242424;
+}
+
+.bread-btn{
+  opacity: 0.30;
+}
+
+.bread-btn.active{
+  opacity: 1;
 }
