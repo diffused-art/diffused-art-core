@@ -42,7 +42,7 @@ export default function Footer({
           rel="noreferrer"
         >
           <span>
-            {/* <TwitterSVG fill="white" className='h-5'/> */}
+            <TwitterSVG fill="white" className='h-5'/>
           </span>
         </a>
       )}
@@ -54,7 +54,7 @@ export default function Footer({
           rel="noreferrer"
         >
           <span>
-            {/* <DiscordSVG fill="white" className='h-5'/> */}
+            <DiscordSVG fill="white" className='h-5'/>
           </span>
         </a>
       )}
