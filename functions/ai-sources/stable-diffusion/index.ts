@@ -41,7 +41,7 @@ type DraftStabilityOptions = Partial<{
     | 'stable-diffusion-v1'
     | 'stable-diffusion-v1-4'
     | 'stable-diffusion-v1-5'
-    | 'stable-diffusion-v2-0';
+    | 'stable-diffusion-512-v2-0';
   host: string;
   seed: number;
   width: number;
