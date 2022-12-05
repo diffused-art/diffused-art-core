@@ -38,7 +38,7 @@ export default async function handle(req: any, res: any) {
         console.info('Mints that just happened', mints);
 
         const uniqueMints = [
-          ...new Set([...mints, ...(result.hashList as Prisma.JsonArray[])]),
+          ...new Set([...mints, ...((result.hashList || []) as Prisma.JsonArray[])]),
         ] as string[];
         console.info('Mints to insert', uniqueMints);
         await prisma.collection.update({
