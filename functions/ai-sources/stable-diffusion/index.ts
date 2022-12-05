@@ -13,6 +13,10 @@ import {
   ArtifactType,
   Artifact,
   ScheduleParameters,
+  GuidanceParameters,
+  GuidanceInstanceParameters,
+  Model,
+  CutoutParameters,
 } from './stubs/generation_pb';
 import { NodeHttpTransport } from '@improbable-eng/grpc-web-node-http-transport';
 import uuid4 from 'uuid4';
@@ -23,7 +27,7 @@ import mkdirp from 'mkdirp';
 import { EventEmitter } from 'events';
 import TypedEmitter from 'typed-emitter';
 
-import { diffusionMap, range } from './utils';
+import { diffusionMap } from './utils';
 import { SpecObject } from '../../../typings';
 import axios from 'axios';
 import { STABLE_DIFFUSION_DEFAULTS } from './defaults';
@@ -36,17 +40,24 @@ type DraftStabilityOptions = Partial<{
   engine:
     | 'stable-diffusion-v1'
     | 'stable-diffusion-v1-4'
-    | 'stable-diffusion-v1-5';
+    | 'stable-diffusion-v1-5'
+    | 'stable-diffusion-v2-0';
   host: string;
   seed: number;
   width: number;
   height: number;
-  diffusion: keyof typeof diffusionMap;
+  diffusion?: keyof typeof diffusionMap;
   steps: number;
   cfgScale: number;
   noStore: boolean;
   start_schedule: number;
   end_schedule: number;
+  guidance_preset: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  guidance_cuts: number;
+  guidance_strength: number;
+  guidance_prompt?: string;
+  guidance_models?: string[];
+
   initImage?: Uint8Array | undefined;
 }>;
 
@@ -78,29 +89,41 @@ const withDefaults: (
   return {
     ...draft,
     host: draft.host ?? STABLE_DIFFUSION_DEFAULTS.host,
-    engine: draft.engine ?? STABLE_DIFFUSION_DEFAULTS.engine as any,
+    engine: draft.engine ?? (STABLE_DIFFUSION_DEFAULTS.engine as any),
     requestId,
     seed: draft.seed as any,
     width: draft.width ?? STABLE_DIFFUSION_DEFAULTS.width,
     height: draft.height ?? STABLE_DIFFUSION_DEFAULTS.height,
-    diffusion: draft.diffusion ?? STABLE_DIFFUSION_DEFAULTS.diffusion as any,
+    diffusion: draft.diffusion ?? (STABLE_DIFFUSION_DEFAULTS.diffusion as any),
     steps: draft.steps ?? STABLE_DIFFUSION_DEFAULTS.steps,
     cfgScale: draft.cfgScale ?? STABLE_DIFFUSION_DEFAULTS.cfgScale,
     samples: draft.samples ?? STABLE_DIFFUSION_DEFAULTS.samples,
     initImage: draft.initImage ?? (undefined as any),
     outDir: draft.outDir ?? path.join(process.cwd(), '.out', requestId),
     debug: Boolean(draft.debug),
-    start_schedule: draft.start_schedule ?? STABLE_DIFFUSION_DEFAULTS.start_schedule,
+    start_schedule:
+      draft.start_schedule ?? STABLE_DIFFUSION_DEFAULTS.start_schedule,
     end_schedule: draft.end_schedule ?? STABLE_DIFFUSION_DEFAULTS.end_schedule,
     noStore: Boolean(draft.noStore),
+    guidance_preset:
+      draft.guidance_preset ?? STABLE_DIFFUSION_DEFAULTS.guidance_preset,
+    guidance_cuts:
+      draft.guidance_cuts ?? STABLE_DIFFUSION_DEFAULTS.guidance_cuts,
+    guidance_strength:
+      draft.guidance_strength ?? STABLE_DIFFUSION_DEFAULTS.guidance_strength,
+    guidance_prompt:
+      (draft.guidance_prompt as any) ??
+      (STABLE_DIFFUSION_DEFAULTS.guidance_prompt as any),
+    guidance_models:
+      (draft.guidance_models as any) ??
+      (STABLE_DIFFUSION_DEFAULTS.guidance_models as any),
   };
 };
 
 export const generateStableDiffImage: (
   opts: DraftStabilityOptions & RequiredStabilityOptions,
 ) => StabilityApi = opts => {
-  
-  const {
+  let {
     host,
     engine,
     requestId,
@@ -119,6 +142,11 @@ export const generateStableDiffImage: (
     debug,
     start_schedule,
     end_schedule,
+    guidance_preset,
+    guidance_prompt,
+    guidance_models,
+    guidance_cuts,
+    guidance_strength,
   } = withDefaults(opts);
 
   if (!promptText) throw new Error('Prompt text is required');
@@ -136,7 +164,42 @@ export const generateStableDiffImage: (
   step.setScaledStep(0);
   const sampler = new SamplerParameters();
   sampler.setCfgScale(cfgScale);
-  step.setSampler(sampler);
+  // Sampler/diffusion is only set if guidance preset is not available
+  if (guidance_preset !== 0) {
+    const guidanceInstanceParam = new GuidanceInstanceParameters();
+    if (guidance_prompt) {
+      let guidancePromptParam = new Prompt();
+      guidancePromptParam.setText(guidance_prompt);
+      guidanceInstanceParam.setPrompt(guidancePromptParam);
+    }
+
+    if (guidance_strength > 0) {
+      guidanceInstanceParam.setGuidanceStrength(guidance_strength);
+    }
+
+    if ((guidance_models?.length || 0) > 0) {
+      guidanceInstanceParam.setModelsList(
+        guidance_models.map(modelAlias => {
+          const model = new Model();
+          model.setAlias(modelAlias);
+          return model;
+        }),
+      );
+    }
+
+    if (guidance_cuts) {
+      const cutoutParams = new CutoutParameters();
+      cutoutParams.setCount(guidance_cuts);
+      guidanceInstanceParam.setCutouts(cutoutParams);
+    }
+
+    const guidanceParam = new GuidanceParameters();
+    guidanceParam.setGuidancePreset(guidance_preset);
+    guidanceParam.addInstances(guidanceInstanceParam);
+    step.setGuidance(guidanceParam);
+  } else {
+    step.setSampler(sampler);
+  }
 
   const prompt = new Prompt();
   prompt.setText(promptText);
@@ -255,7 +318,7 @@ interface StableDiffusionPromptParams extends SpecObject {
 
 export async function generateStableDiffImageAsync(
   promptObject: StableDiffusionPromptParams,
-): Promise<{buffer: Buffer; filePath: String}[]> {
+): Promise<{ buffer: Buffer; filePath: String }[]> {
   let initImage: Uint8Array | undefined = undefined;
   if (promptObject.init_image) {
     const bufferData = await axios
@@ -269,7 +332,7 @@ export async function generateStableDiffImageAsync(
       bufferData.byteLength / Uint8Array.BYTES_PER_ELEMENT,
     );
   }
-  
+
   return new Promise(resolve => {
     const api = generateStableDiffImage({
       apiKey: process.env.DREAMSTUDIO_API_KEY!,

@@ -123,7 +123,7 @@ const ROBOTO_FONTS_BINARIES = Promise.all([
 
 export default async function handle(req: NextRequest) {
   if (req.method !== 'POST') {
-    return new ImageResponse(<div>Not found</div>);
+    return new ImageResponse(<div>Only POST method is supported.</div>);
   }
   const { searchParams, origin } = req.nextUrl;
   const ALL_FONTS_BINARIES = await ROBOTO_FONTS_BINARIES;

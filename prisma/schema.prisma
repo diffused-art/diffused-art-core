@@ -38,22 +38,35 @@ model Collection {
   mintCandyMachineId            String?                @unique
   collectionOnChainAddress      String?                @unique
   mintDiscountPercentage        Int?
-  artistName                    String
-  artistDescription             String
-  artistDiscordUser             String
-  artistRoyaltiesWalletAddress  String
-  artistWebsiteURL              String?
-  artistInstagramURL            String?
-  artistTwitterURL              String?
+  artistId                      String
   isMintOpen                    Boolean                @default(false)
   isFullyRevealed               Boolean                @default(false)
   hashList                      Json?
   createdAt                     DateTime               @default(now()) @map(name: "created_at")
   updatedAt                     DateTime               @updatedAt @map(name: "updated_at")
+  artist                        Artist                 @relation(fields: [artistId], references: [id])
   mints                         Mint[]
   errorsCMChunksUploads         ErrorsCMChunksUpload[]
 
   @@map(name: "collections")
+}
+
+model Artist {
+  id                          String       @id @default(cuid())
+  username                    String       @unique
+  name                        String
+  description                 String
+  discordUser                 String
+  royaltiesWalletAddress      String
+  websiteURL                  String?
+  instagramURL                String?
+  twitterURL                  String?
+  isCollectionCreationEnabled Boolean      @default(false)
+  createdAt                   DateTime     @default(now()) @map(name: "created_at")
+  updatedAt                   DateTime     @updatedAt @map(name: "updated_at")
+  Collection                  Collection[]
+
+  @@map(name: "artists")
 }
 
 model Mint {

@@ -7,6 +7,9 @@ import prisma from '../lib/prisma';
 
 export const getServerSideProps = async () => {
   const collectionsLive = await prisma.collection.findMany({
+    include: {
+      artist: true,
+    },
     where: {
       isFullyRevealed: false,
     },
@@ -19,6 +22,12 @@ export const getServerSideProps = async () => {
         mintOpenAt: collection.mintOpenAt.getTime(),
         createdAt: collection.createdAt.getTime(),
         updatedAt: collection.updatedAt.getTime(),
+        artist: {
+          ...collection.artist,
+          isCollectionCreationEnabled: false,
+          createdAt: collection.artist.createdAt.getTime(),
+          updatedAt: collection.artist.updatedAt.getTime(),
+        },
         hashList: [],
       })),
     },

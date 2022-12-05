@@ -1,4 +1,4 @@
-import { Collection, Mint } from '@prisma/client';
+import { Artist, Collection, Mint } from '@prisma/client';
 import axios from 'axios';
 import Head from 'next/head';
 import { useCallback, useState } from 'react';
@@ -13,6 +13,9 @@ import prisma from '../../lib/prisma';
 
 export const getServerSideProps = async ({ params }) => {
   const collection = await prisma.collection.findUnique({
+    include: {
+      artist: true,
+    },
     where: {
       slugUrl: String(params?.slugUrl),
     },
@@ -26,6 +29,12 @@ export const getServerSideProps = async ({ params }) => {
         mintOpenAt: collection.mintOpenAt.getTime(),
         createdAt: collection.createdAt.getTime(),
         updatedAt: collection.updatedAt.getTime(),
+        artist: {
+          ...collection.artist,
+          isCollectionCreationEnabled: false,
+          createdAt: collection.artist.createdAt.getTime(),
+          updatedAt: collection.artist.updatedAt.getTime(),
+        },
         hashList: [],
       },
     },
@@ -33,7 +42,7 @@ export const getServerSideProps = async ({ params }) => {
 };
 
 interface DropsSlugPageProps {
-  collection: Collection;
+  collection: Collection & { artist: Artist };
 }
 
 const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
@@ -108,12 +117,12 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
           <h2 className="text-lg text-secondary font-bold">
             &quot;{collection.title}&quot; by{'  '}
             <a
-              href={collection.artistTwitterURL!}
+              href={collection.artist.twitterURL!}
               target="_blank"
               rel="noreferrer"
               className="text-gray-400"
             >
-              {collection.artistName}
+              {collection.artist.name}
             </a>
           </h2>
 
@@ -123,7 +132,7 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
             title={
               new Date(Date.now()) > new Date(collection.mintOpenAt)
                 ? 'mint is live.'
-                : `mint will be live starting at:{' '}
+                : `mint will be live starting at:${' '}
                 ${new Date(collection.mintOpenAt).toLocaleString()}`
             }
           >
@@ -158,10 +167,10 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
             title="drop details."
             side="right"
           >
-            {collection.artistWebsiteURL && (
-              <a href={collection.artistWebsiteURL}>
+            {collection.artist.websiteURL && (
+              <a href={collection.artist.websiteURL}>
                 <h2 className="text-lg font-bold">
-                  {collection.artistWebsiteURL}
+                  {collection.artist.websiteURL}
                 </h2>
               </a>
             )}
@@ -188,7 +197,7 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
                   href={collection.promptInitImage}
                   target="_blank"
                   rel="noreferrer"
-                  className='inline'
+                  className="inline"
                 >
                   Click here to see
                 </a>

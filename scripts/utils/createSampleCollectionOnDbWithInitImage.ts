@@ -24,20 +24,32 @@ async function createSampleCollectionOnDb() {
         ...STABLE_DIFFUSION_DEFAULTS_FOR_METADATA,
         start_schedule: 0.6,
       },
-      promptInitImage: 'https://bafybeihzqncear44one6zvf2wqtjsjcu3hoz65ajg2ctmnthjx5qnzptym.ipfs.nftstorage.link',
+      promptInitImage:
+        'https://bafybeihzqncear44one6zvf2wqtjsjcu3hoz65ajg2ctmnthjx5qnzptym.ipfs.nftstorage.link',
       nftPlaceholderForegroundColor: '#4A4945',
       nftPlaceholderBackgroundColor: '#896F60',
       nftPlaceholderFontFamily: `'Roboto', sans-serif;`,
       bannerImageURL:
         'https://bafybeihzqncear44one6zvf2wqtjsjcu3hoz65ajg2ctmnthjx5qnzptym.ipfs.nftstorage.link',
       mintTotalSupply: 100,
-      artistName: 'diffused.',
-      artistDescription: 'Revolutionizing the way we create immutable AI art on-chain',
-      artistDiscordUser: 'Kevcode#9254',
-      artistRoyaltiesWalletAddress:
-        'Dh8M8SKdXN4kmCfF5QnFEHh4v78WApggB7AUnRwCn5hu',
-      artistWebsiteURL: 'https://diffused.art',
-      artistTwitterURL: 'https://twitter.com/diffused_art',
+      artist: {
+        connectOrCreate: {
+          create: {
+            username: 'diffused.art',
+            name: 'diffused.',
+            description:
+              'Revolutionizing the way we create immutable AI art on-chain',
+            discordUser: 'Kevcode#9254',
+            royaltiesWalletAddress:
+              'Dh8M8SKdXN4kmCfF5QnFEHh4v78WApggB7AUnRwCn5hu',
+            websiteURL: 'https://diffused.art',
+            twitterURL: 'https://twitter.com/diffused_art',
+          },
+          where: {
+            username: 'diffused.art',
+          }
+        },
+      },
     },
   });
 }
