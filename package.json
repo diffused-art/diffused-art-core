@@ -19,7 +19,7 @@
     "reveal-cronjobs": "nodemon --watch 'src/' --exec 'ts-node ./cronjobs/revealMintsCronjob.ts' -e ts",
     "flush-db": "ts-node ./utils/flushDB.ts",
     "refresh-webhook-monitor": "ts-node ./scripts/helius/refresh-webhook-monitor.ts",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package && npx prisma generate"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.4",
