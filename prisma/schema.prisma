@@ -39,7 +39,6 @@ model Collection {
   collectionOnChainAddress      String?                @unique
   mintDiscountPercentage        Int?
   artistId                      String
-  isMintOpen                    Boolean                @default(false)
   isFullyRevealed               Boolean                @default(false)
   hashList                      Json?
   createdAt                     DateTime               @default(now()) @map(name: "created_at")
