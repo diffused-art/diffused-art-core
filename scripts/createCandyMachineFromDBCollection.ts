@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
-import { Collection, PrismaClient } from '@prisma/client';
+import { Artist, Collection, PrismaClient } from '@prisma/client';
 import { getWriteCli } from '../functions/getMetaplexCli';
 import { AISource } from '../typings';
 import { PublicKey } from '@solana/web3.js';
@@ -12,7 +12,7 @@ import {
   toMetaplexFile,
 } from '@metaplex-foundation/js';
 import { retry } from 'ts-retry-promise';
-import axios from 'axios';
+import { GUIDANCE_PRESETS } from '../functions/ai-sources/stable-diffusion/defaults';
 
 const prisma = new PrismaClient();
 
@@ -49,6 +49,32 @@ function getAttributes(collection) {
     delete collection.promptSourceParams.end_schedule;
   }
 
+  if (
+    collection.promptSourceParams.guidance_preset ===
+    GUIDANCE_PRESETS.GUIDANCE_PRESET_NONE
+  ) {
+    delete collection.promptSourceParams.guidance_preset;
+    delete collection.promptSourceParams.guidance_cuts;
+    delete collection.promptSourceParams.guidance_strength;
+    delete collection.promptSourceParams.guidance_prompt;
+    delete collection.promptSourceParams.guidance_models;
+  } else {
+    collection.promptSourceParams.guidance_cuts === 0
+      ? delete collection.promptSourceParams.guidance_cuts
+      : undefined;
+    collection.promptSourceParams.guidance_strength === 0
+      ? delete collection.promptSourceParams.guidance_strength
+      : undefined;
+    collection.promptSourceParams.guidance_prompt === 0
+      ? delete collection.promptSourceParams.guidance_prompt
+      : undefined;
+    collection.promptSourceParams.guidance_models === 0
+      ? delete collection.promptSourceParams.guidance_models
+      : undefined;
+
+    delete collection.promptSourceParams.diffusion;
+  }
+
   attributes.push(
     ...(Object.entries(collection.promptSourceParams as any).map(
       ([key, value]) => {
@@ -67,25 +93,32 @@ async function createCandyMachineFromDBCollection() {
   const slugUrl = result.slugUrl || '/sample-collection-cyberpunk-dragon';
   const metaplexWriteCli = await getWriteCli();
 
-  let [foundCollection] = await prisma.collection.findMany({
+  let [foundCollection] = (await prisma.collection.findMany({
+    include: {
+      artist: true,
+    },
     where: {
       slugUrl,
       isFullyRevealed: false,
     },
-  });
+  })) as (Collection & { artist: Artist })[];
 
   if (!foundCollection) {
     throw new Error('Collection not found');
   }
 
-  const nftPlaceholderImage = await axios
-    .get(`/api/collection/${foundCollection.id}/preview`, {
-      responseType: 'arraybuffer',
-    })
-    .then(response => Buffer.from(response.data, 'binary'));
+  const nftPlaceholderImage = await fetch(
+    `http://localhost:3000/api/collection/${foundCollection.id}/preview`,
+    { method: 'POST' },
+  ).then(res => {
+    return res.arrayBuffer();
+  });
 
   const { metadata } = await metaplexWriteCli.nfts().uploadMetadata({
-    image: toMetaplexFile(nftPlaceholderImage, 'nftPlaceholderImage.png'),
+    image: toMetaplexFile(
+      Buffer.from(nftPlaceholderImage),
+      'nftPlaceholderImage.png',
+    ),
   });
   const nftPlaceholderImageURL = metadata.image;
 
@@ -117,7 +150,7 @@ async function createCandyMachineFromDBCollection() {
             share: 10,
           },
           {
-            address: foundCollection?.artistRoyaltiesWalletAddress,
+            address: foundCollection?.artist.royaltiesWalletAddress,
             share: 90,
           },
         ],
@@ -138,7 +171,7 @@ async function createCandyMachineFromDBCollection() {
           },
           {
             address: new PublicKey(
-              foundCollection?.artistRoyaltiesWalletAddress,
+              foundCollection?.artist.royaltiesWalletAddress,
             ),
             share: 90,
           },
@@ -195,10 +228,13 @@ async function createCandyMachineFromDBCollection() {
   }
 
   foundCollection = (await prisma.collection.findUnique({
+    include: {
+      artist: true,
+    },
     where: {
       slugUrl,
     },
-  })) as Collection;
+  })) as Collection & { artist: Artist };
 
   const creatorsArray = [
     {
@@ -207,7 +243,7 @@ async function createCandyMachineFromDBCollection() {
       verified: true,
     },
     {
-      address: new PublicKey(foundCollection?.artistRoyaltiesWalletAddress),
+      address: new PublicKey(foundCollection?.artist.royaltiesWalletAddress),
       share: 90,
       verified: false,
     },
@@ -245,7 +281,7 @@ async function createCandyMachineFromDBCollection() {
             isMutable: true,
             // gatekeeper TODO: Add here to add botting protection
           }),
-        { retries: 15, delay: 1000, timeout: 1000000 },
+        { retries: 15, delay: 1000, timeout: 1000000, logger: console.log },
       )
     ).candyMachine;
   }
@@ -284,7 +320,7 @@ async function createCandyMachineFromDBCollection() {
             share: 10,
           },
           {
-            address: foundCollection?.artistRoyaltiesWalletAddress,
+            address: foundCollection?.artist.royaltiesWalletAddress,
             share: 90,
           },
         ],
