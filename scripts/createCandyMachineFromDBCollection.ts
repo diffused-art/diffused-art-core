@@ -154,6 +154,10 @@ async function createCandyMachineFromDBCollection() {
         ],
       },
     });
+    if ((uri?.length || 0) === 0) {
+      console.error(`Couldnt generate unrevealed NFT`);
+      return;
+    }
     console.info(`Collection NFT not found, creating now, please wait...`);
     const collectionNFTAddress: string = await metaplexWriteCli
       .nfts()
