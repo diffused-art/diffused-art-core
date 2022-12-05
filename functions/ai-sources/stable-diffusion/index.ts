@@ -230,7 +230,6 @@ export const generateStableDiffImage: (
   image.setSeedList([seed]);
   image.setSteps(steps);
   image.setSamples(samples);
-
   const transform = new TransformType();
   transform.setDiffusion(diffusionMap[diffusion]);
   image.setTransform(transform);

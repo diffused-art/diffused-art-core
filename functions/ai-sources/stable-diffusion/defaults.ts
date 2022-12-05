@@ -5,13 +5,13 @@ export enum GUIDANCE_PRESETS {
   GUIDANCE_PRESET_FAST_GREEN = 3,
   GUIDANCE_PRESET_SLOW = 4,
   GUIDANCE_PRESET_SLOWER = 5,
-  GUIDANCE_PRESET_SLOWEST = 6
+  GUIDANCE_PRESET_SLOWEST = 6,
 }
 export const STABLE_DIFFUSION_DEFAULTS_FOR_METADATA = {
-  engine: 'stable-diffusion-v1-5',
+  engine: 'stable-diffusion-v2-0',
   width: 640,
   height: 640,
-  diffusion: 'k_lms',
+  diffusion: 'k_lms' as "ddim" | "plms" | "k_euler" | "k_euler_ancestral" | "k_heun" | "k_dpm_2" | "k_dpm_2_ancestral" | "k_lms",
   steps: 50,
   cfgScale: 7,
   samples: 1,
@@ -22,10 +22,10 @@ export const STABLE_DIFFUSION_DEFAULTS_FOR_METADATA = {
   guidance_strength: 0.25,
   guidance_prompt: undefined,
   guidance_models: undefined,
-}
+};
 
 export const STABLE_DIFFUSION_DEFAULTS = {
   ...STABLE_DIFFUSION_DEFAULTS_FOR_METADATA,
   host: 'https://grpc.stability.ai:443',
-  initImage: (undefined as any),
-}
+  initImage: undefined as any,
+};

@@ -22,6 +22,7 @@ async function createSampleCollectionOnDb() {
         'Dream of a thousand cats on the colors of purple, blue and pink, ukiyo-e art',
       promptSourceParams: {
         ...STABLE_DIFFUSION_DEFAULTS_FOR_METADATA,
+        diffusion: 'k_euler_ancestral',
         guidance_preset: GUIDANCE_PRESETS.GUIDANCE_PRESET_FAST_BLUE,
       },
       nftPlaceholderForegroundColor: '#d5d5d5',
