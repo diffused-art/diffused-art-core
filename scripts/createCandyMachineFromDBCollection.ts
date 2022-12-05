@@ -71,8 +71,6 @@ function getAttributes(collection) {
     collection.promptSourceParams.guidance_models === 0
       ? delete collection.promptSourceParams.guidance_models
       : undefined;
-
-    delete collection.promptSourceParams.diffusion;
   }
 
   attributes.push(
