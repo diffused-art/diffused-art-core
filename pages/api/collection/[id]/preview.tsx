@@ -204,12 +204,14 @@ export default async function handle(req: NextRequest) {
           {init_image ? (
             <div
               style={{
+                display: 'flex',
                 fontFamily: font_family || undefined,
                 color: textColor || undefined,
                 width: '80%',
                 textAlign: 'center',
                 marginTop: '10px',
                 marginBottom: '10px',
+                justifyContent: 'center',
               }}
             >
               <img
