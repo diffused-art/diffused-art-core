@@ -1,4 +1,4 @@
-import NextAuth, { User } from 'next-auth';
+import NextAuth, { AuthOptions, User } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 const nacl = require('tweetnacl');
 const bs58 = require('bs58');
@@ -83,7 +83,7 @@ const nextAuthOptions = req => {
         },
       }),
     ],
-  };
+  } as AuthOptions;
 };
 
 const route = (req, res) => {

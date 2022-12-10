@@ -6,8 +6,11 @@ import {
 import Link from 'next/link';
 import React from 'react';
 import ClientOnly from './client-only';
+import LoginButton from './login-button';
+import { signOut, useSession } from 'next-auth/react';
 
 export default function Header() {
+  const { data: session } = useSession();
   const wallet = useWallet();
   return (
     <div className="w-full relative z-50 pb-20">
@@ -22,7 +25,12 @@ export default function Header() {
       <ClientOnly>
         <div className="absolute right-3 top-3">
           {wallet.connected ? (
-            <WalletDisconnectButton className="!bg-secondary !text-primary" />
+            <div className="flex space-x-2">
+              <LoginButton />
+              <div onClick={() => (session ? signOut() : null)}>
+                <WalletDisconnectButton className="!bg-secondary !text-primary" />
+              </div>
+            </div>
           ) : (
             <WalletMultiButton className="!bg-secondary !text-primary" />
           )}
