@@ -15,62 +15,7 @@ const ROBOTO_FONTS: any[] = [
     name: 'Roboto',
     style: 'normal',
     weight: 900,
-  },
-  {
-    name: 'Roboto',
-    style: 'italic',
-    weight: 900,
-  },
-  {
-    name: 'Roboto',
-    style: 'normal',
-    weight: 700,
-  },
-  {
-    name: 'Roboto',
-    style: 'italic',
-    weight: 700,
-  },
-  {
-    name: 'Roboto',
-    style: 'italic',
-    weight: 400,
-  },
-  {
-    name: 'Roboto',
-    style: 'normal',
-    weight: 400,
-  },
-  {
-    name: 'Roboto',
-    style: 'normal',
-    weight: 300,
-  },
-  {
-    name: 'Roboto',
-    style: 'italic',
-    weight: 300,
-  },
-  {
-    name: 'Roboto',
-    style: 'normal',
-    weight: 500,
-  },
-  {
-    name: 'Roboto',
-    style: 'italic',
-    weight: 500,
-  },
-  {
-    name: 'Roboto',
-    style: 'normal',
-    weight: 100,
-  },
-  {
-    name: 'Roboto',
-    style: 'italic',
-    weight: 100,
-  },
+  }
 ];
 
 const ROBOTO_FONTS_BINARIES = Promise.all([
