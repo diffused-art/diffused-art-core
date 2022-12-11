@@ -1,6 +1,4 @@
-import { Collection } from '@prisma/client';
 import { ImageResponse } from '@vercel/og';
-import { NextRequest } from 'next/server';
 
 export const config = {
   runtime: 'experimental-edge',
@@ -66,7 +64,7 @@ const ROBOTO_FONTS_BINARIES = Promise.all([
   ).then(res => res.arrayBuffer()),
 ]);
 
-export default async function handle(req: NextRequest) {
+export default async function handle(req: any) {
   const { searchParams, origin } = req.nextUrl;
   const adminPassword = searchParams.get('adminPassword');
 
@@ -90,7 +88,7 @@ export default async function handle(req: NextRequest) {
   }
 
   const { data: collection } = (await resCollection.json()) as {
-    data: Collection;
+    data: any;
   };
   const prompt_phrase = collection.promptPhrase;
   const init_image = collection.promptInitImage;
