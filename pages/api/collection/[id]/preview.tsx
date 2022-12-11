@@ -1,4 +1,7 @@
+import { Collection } from '@prisma/client';
 import { ImageResponse } from '@vercel/og';
+import { NextRequest } from 'next/server';
+// import { getToken } from 'next-auth/jwt';
 
 export const config = {
   runtime: 'experimental-edge',
@@ -13,7 +16,62 @@ const ROBOTO_FONTS: any[] = [
     name: 'Roboto',
     style: 'normal',
     weight: 900,
-  }
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 900,
+  },
+  {
+    name: 'Roboto',
+    style: 'normal',
+    weight: 700,
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 700,
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 400,
+  },
+  {
+    name: 'Roboto',
+    style: 'normal',
+    weight: 400,
+  },
+  {
+    name: 'Roboto',
+    style: 'normal',
+    weight: 300,
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 300,
+  },
+  {
+    name: 'Roboto',
+    style: 'normal',
+    weight: 500,
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 500,
+  },
+  {
+    name: 'Roboto',
+    style: 'normal',
+    weight: 100,
+  },
+  {
+    name: 'Roboto',
+    style: 'italic',
+    weight: 100,
+  },
 ];
 
 const ROBOTO_FONTS_BINARIES = Promise.all([
@@ -64,9 +122,21 @@ const ROBOTO_FONTS_BINARIES = Promise.all([
   ).then(res => res.arrayBuffer()),
 ]);
 
-export default async function handle(req: any) {
+export default async function handle(req: NextRequest) {
   const { searchParams, origin } = req.nextUrl;
   const adminPassword = searchParams.get('adminPassword');
+  const isAdmin = adminPassword === process.env.MINT_PREVIEW_ADMIN_PASSWORD;
+  // Only add together with trustless CM
+  // if (!isAdmin) {
+  //   const token = await getToken({ req });
+  //   const isExpirated = new Date().getTime() / 1000 > (token as any)?.exp;
+  //   if (token === null) {
+  //     return new ImageResponse(<div>Must be authenticated as artist</div>);
+  //   }
+  //   if (isExpirated) {
+  //     return new ImageResponse(<div>Token expirated</div>);
+  //   }
+  // }
 
   if (req.method !== 'POST') {
     return new ImageResponse(<div>Only POST method is supported.</div>);
@@ -88,7 +158,7 @@ export default async function handle(req: any) {
   }
 
   const { data: collection } = (await resCollection.json()) as {
-    data: any;
+    data: Collection;
   };
   const prompt_phrase = collection.promptPhrase;
   const init_image = collection.promptInitImage;
