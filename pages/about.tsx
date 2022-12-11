@@ -1,17 +1,8 @@
-import { getCsrfToken } from 'next-auth/react';
 import Head from 'next/head';
 import Footer from '../components/footer';
 import Header from '../components/header';
 
-export async function getServerSideProps(context) {
-  return {
-    props: {
-      csrfToken: await getCsrfToken(context),
-    },
-  }
-}
-
-const About = ({ csrfToken }) => {
+const About = () => {
   return (
     <div>
       <Head>
@@ -23,7 +14,7 @@ const About = ({ csrfToken }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex flex-col min-h-full justify-center items-center justify-items-center">
-        <Header csrfToken={csrfToken} />
+        <Header />
 
         <main className="flex flex-col space-y-5 justify-center items-center !min-h-[80vh] px-20 text-center container">
           <div className="space-y-1">

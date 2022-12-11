@@ -1,6 +1,5 @@
 import { Artist, Collection, Mint } from '@prisma/client';
 import axios from 'axios';
-import { getCsrfToken } from 'next-auth/react';
 import Head from 'next/head';
 import { useCallback, useState } from 'react';
 import { useInterval } from 'usehooks-ts';
