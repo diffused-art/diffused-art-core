@@ -27,7 +27,9 @@ export default function Header() {
           {wallet.connected ? (
             <div className="flex space-x-2">
               <LoginButton />
-              <div onClick={() => (session ? signOut() : null)}>
+              <div
+                onClick={() => (session ? signOut({ redirect: false }) : null)}
+              >
                 <WalletDisconnectButton className="!bg-secondary !text-primary" />
               </div>
             </div>

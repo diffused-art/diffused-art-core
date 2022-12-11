@@ -1,4 +1,4 @@
-import { SpecObject } from "../typings";
+import { SpecObject } from "../types";
 
 
 export function getV1SpecFromAttributes(attributes: {

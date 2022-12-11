@@ -1,11 +1,12 @@
 import { Collection } from '@prisma/client';
+import { getCsrfToken } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Footer from '../components/footer';
 import Header from '../components/header';
 import prisma from '../lib/prisma';
 
-export const getServerSideProps = async () => {
+export const getServerSideProps = async context => {
   const collectionsLive = await prisma.collection.findMany({
     include: {
       artist: true,
@@ -57,9 +58,16 @@ const Home = ({ collectionsLive }: HomeProps) => {
           </h2>
 
           <h3 className="text-base">
-            Mint one of the latest AI art drops powered by <i><b>diffused.</b></i> platform below:
+            Mint one of the latest AI art drops powered by{' '}
+            <i>
+              <b>diffused.</b>
+            </i>{' '}
+            platform below:
           </h3>
-          <div id="collections-live" className="flex flex-col md:flex-row space-y-5 space-x-0 md:space-y-0 md:space-x-5 py-5">
+          <div
+            id="collections-live"
+            className="flex flex-col md:flex-row space-y-5 space-x-0 md:space-y-0 md:space-x-5 py-5"
+          >
             {collectionsLive.map(collection => (
               <Link key={collection.id} href={`/drops/${collection.slugUrl}`}>
                 <div className="relative group">

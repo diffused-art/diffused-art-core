@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import { Artist, Collection, PrismaClient } from '@prisma/client';
 import { getWriteCli } from '../functions/getMetaplexCli';
-import { AISource } from '../typings';
+import { AISource } from '../types';
 import { PublicKey } from '@solana/web3.js';
 import {
   CandyMachineV2,

@@ -1,14 +1,13 @@
 import { useWallet } from '@solana/wallet-adapter-react';
-import React from 'react';
+import React, { useState } from 'react';
 import signInMessage from '../utils/signInMessage';
 import { signIn, useSession } from 'next-auth/react';
 const bs58 = require('bs58');
 
 export default function LoginButton() {
   const { signMessage, publicKey } = useWallet();
-  // TODO: Check if username fields are available here.. If so, add a type for this.
-  const { data: session, status } = useSession();
-
+  const { data: session } = useSession({ required: false });
+  const [loading, setLoading] = useState(false);
   async function fetchNonce() {
     const response = await fetch('/api/auth');
 
@@ -20,7 +19,10 @@ export default function LoginButton() {
   }
 
   async function login() {
+    setLoading(true);
+
     if (!publicKey || !signMessage) {
+      setLoading(false);
       return;
     }
 
@@ -31,34 +33,41 @@ export default function LoginButton() {
       walletAddress: publicKey.toBase58(),
     });
     const encodedMessage = new TextEncoder().encode(message);
-    const signature = await signMessage(encodedMessage);
+    const signature = await signMessage(encodedMessage).catch(() => false);
 
-    const signInResult = await signIn('credentials', {
+    if (!signature) {
+      setLoading(false);
+      console.debug('User did not sign the message.');
+      return;
+    }
+
+    const signInResult = await signIn('solana-login', {
+      redirect: false,
       publicKey: publicKey.toBase58(),
       signature: bs58.encode(signature),
-      callbackUrl: `${window.location.origin}/`,
     });
 
-    if (!signInResult?.ok) {
-      console.error(
-        'User did not sign or there was a server error',
-        signInResult?.error,
-      );
+    if (signInResult?.error) {
+      console.debug('Could not authenticate the message', signInResult?.error);
     }
+
+    setLoading(false);
   }
+
+  const btnLabel = session
+    ? `Logged in as ${session.user?.name}`
+    : 'Click to login as an artist';
 
   return (
     <div>
       <button
         className={`flex justify-center items-center rounded-md p-5 bg-secondary text-primary font-bold h-12 ${
-          status === 'loading' ? 'opacity-50' : ''
+          loading ? 'opacity-50' : ''
         }`}
-        disabled={status === 'loading'}
+        disabled={loading}
         onClick={session ? () => null : login}
       >
-        {session
-          ? `Logged in as ${session.user?.name}`
-          : 'Click to login as an artist'}
+        {loading ? 'Loading...' : btnLabel}
       </button>
     </div>
   );

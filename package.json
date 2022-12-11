@@ -49,7 +49,7 @@
     "minimist": "^1.2.7",
     "mkdirp": "^1.0.4",
     "next": "13.0.6",
-    "next-auth": "^4.18.4",
+    "next-auth": "0.0.0-pr.6004.b96e4fbf",
     "nft.storage": "^7.0.0",
     "node-cron": "^3.0.2",
     "nodemon": "^2.0.20",

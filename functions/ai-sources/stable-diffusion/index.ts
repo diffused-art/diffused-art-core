@@ -28,7 +28,7 @@ import { EventEmitter } from 'events';
 import TypedEmitter from 'typed-emitter';
 
 import { diffusionMap } from './utils';
-import { SpecObject } from '../../../typings';
+import { SpecObject } from '../../../types';
 import axios from 'axios';
 import { STABLE_DIFFUSION_DEFAULTS } from './defaults';
 
