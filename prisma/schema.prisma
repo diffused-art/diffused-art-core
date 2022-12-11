@@ -50,6 +50,14 @@ model Collection {
   @@map(name: "collections")
 }
 
+model NonceTrashBin {
+  id        String   @id @default(cuid())
+  nonce     String   @unique
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+}
+
 model Artist {
   id                          String       @id @default(cuid())
   username                    String       @unique
@@ -57,6 +65,8 @@ model Artist {
   description                 String
   discordUser                 String
   royaltiesWalletAddress      String
+  walletAddress               String
+  email                       String?
   websiteURL                  String?
   instagramURL                String?
   twitterURL                  String?

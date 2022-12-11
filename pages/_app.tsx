@@ -12,11 +12,11 @@ import {
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 import React, { useMemo } from 'react';
-
+import { SessionProvider } from 'next-auth/react';
 require('@solana/wallet-adapter-react-ui/styles.css');
 require('../styles/globals.css');
 
-function MyApp({ Component, pageProps }: AppProps) {
+function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const endpoint = useMemo(() => process.env.NEXT_PUBLIC_RPC_URL!, []);
 
   const wallets = useMemo(
@@ -32,7 +32,9 @@ function MyApp({ Component, pageProps }: AppProps) {
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
-          <Component {...pageProps} />
+          <SessionProvider session={session}>
+            <Component {...pageProps} />
+          </SessionProvider>
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

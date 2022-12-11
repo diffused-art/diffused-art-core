@@ -5,6 +5,7 @@ import fs from 'fs';
 import shell from 'shelljs';
 const prisma = new PrismaClient();
 
+// Use Helius NFT API to fetch hash list for each collection
 export async function refreshHashLists() {
   const collections = await prisma.collection.findMany({
     where: {

@@ -6,7 +6,7 @@ dotenv.config();
 
 const prisma = new PrismaClient();
 
-async function refreshWebhookMonitor() {
+export async function refreshWebhookMonitor() {
   let collections = await prisma.collection.findMany({
     where: {
       isFullyRevealed: false,
@@ -33,5 +33,3 @@ async function refreshWebhookMonitor() {
     },
   );
 }
-
-refreshWebhookMonitor();

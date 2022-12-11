@@ -5,7 +5,7 @@ let v1SpecSchemaStableDiffusion = object({
   init_image: string(),
   source: string().matches(/(stable_diffusion)/).required(),
   sourceParams: object({
-    engine: string().matches(/(stable-diffusion-v1|stable-diffusion-v1-4|stable-diffusion-v1-5|stable-diffusion-v2-0)/).required(),
+    engine: string().matches(/(stable-diffusion-v1|stable-diffusion-v1-4|stable-diffusion-v1-5|stable-diffusion-512-v2-0|stable-diffusion-512-v2-1)/).required(),
     width: number().integer().min(512).max(1024).required(),
     height: number().integer().min(512).max(1024).required(),
     diffusion: string().matches(/(k_lms|ddim|plms|k_euler|k_euler_ancestral|k_heun|k_dpm_2|k_dpm_2_ancestral)/),

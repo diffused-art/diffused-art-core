@@ -1,6 +1,7 @@
 import { Collection } from '@prisma/client';
 import { ImageResponse } from '@vercel/og';
 import { NextRequest } from 'next/server';
+// import { getToken } from 'next-auth/jwt';
 
 export const config = {
   runtime: 'experimental-edge',
@@ -122,23 +123,43 @@ const ROBOTO_FONTS_BINARIES = Promise.all([
 ]);
 
 export default async function handle(req: NextRequest) {
+  const { searchParams, origin } = req.nextUrl;
+  const adminPassword = searchParams.get('adminPassword');
+  const isAdmin = adminPassword === process.env.MINT_PREVIEW_ADMIN_PASSWORD;
+  // Only add together with trustless CM
+  // if (!isAdmin) {
+  //   const token = await getToken({ req });
+  //   const isExpirated = new Date().getTime() / 1000 > (token as any)?.exp;
+  //   if (token === null) {
+  //     return new ImageResponse(<div>Must be authenticated as artist</div>);
+  //   }
+  //   if (isExpirated) {
+  //     return new ImageResponse(<div>Token expirated</div>);
+  //   }
+  // }
+
   if (req.method !== 'POST') {
     return new ImageResponse(<div>Only POST method is supported.</div>);
   }
-  const { searchParams, origin } = req.nextUrl;
   const ALL_FONTS_BINARIES = await ROBOTO_FONTS_BINARIES;
 
   const collectionId = searchParams.get('id');
 
-  const res = await fetch(
-    new URL(`${origin}/api/collection/${collectionId}`, import.meta.url),
+  const extraParam = adminPassword ? `adminPassword=${adminPassword}` : '';
+  const resCollection = await fetch(
+    new URL(
+      `${origin}/api/collection/${collectionId}?${extraParam}`,
+      import.meta.url,
+    ),
   ).then(res => res);
 
-  if (res.status !== 200) {
+  if (resCollection.status !== 200) {
     return new ImageResponse(<div>Collection not found</div>);
   }
 
-  const { data: collection } = (await res.json()) as { data: Collection };
+  const { data: collection } = (await resCollection.json()) as {
+    data: Collection;
+  };
   const prompt_phrase = collection.promptPhrase;
   const init_image = collection.promptInitImage;
   const font_family = collection.nftPlaceholderFontFamily;

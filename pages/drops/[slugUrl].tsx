@@ -11,13 +11,13 @@ import MintModal from '../../components/mint-modal';
 import { useCandyMachine } from '../../lib/candy-machine';
 import prisma from '../../lib/prisma';
 
-export const getServerSideProps = async ({ params }) => {
+export const getServerSideProps = async context => {
   const collection = await prisma.collection.findUnique({
     include: {
       artist: true,
     },
     where: {
-      slugUrl: String(params?.slugUrl),
+      slugUrl: String(context.params?.slugUrl),
     },
   });
   if (!collection) return { notFound: true };

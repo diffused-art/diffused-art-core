@@ -28,7 +28,7 @@ import { EventEmitter } from 'events';
 import TypedEmitter from 'typed-emitter';
 
 import { diffusionMap } from './utils';
-import { SpecObject } from '../../../typings';
+import { SpecObject } from '../../../types';
 import axios from 'axios';
 import { STABLE_DIFFUSION_DEFAULTS } from './defaults';
 
@@ -41,7 +41,8 @@ type DraftStabilityOptions = Partial<{
     | 'stable-diffusion-v1'
     | 'stable-diffusion-v1-4'
     | 'stable-diffusion-v1-5'
-    | 'stable-diffusion-v2-0';
+    | 'stable-diffusion-512-v2-0'
+    | 'stable-diffusion-512-v2-1'
   host: string;
   seed: number;
   width: number;

@@ -41,7 +41,8 @@ async function createSampleCollectionOnDb() {
               'Revolutionizing the way we create immutable AI art on-chain',
             discordUser: 'Kevcode#9254',
             royaltiesWalletAddress:
-              'Dh8M8SKdXN4kmCfF5QnFEHh4v78WApggB7AUnRwCn5hu',
+              '7127qt51Yw8NWAEnKKVwmLfWRMv88VMQmVCw1eqRjjWh',
+            walletAddress: '7127qt51Yw8NWAEnKKVwmLfWRMv88VMQmVCw1eqRjjWh',
             websiteURL: 'https://diffused.art',
             twitterURL: 'https://twitter.com/diffused_art',
           },
