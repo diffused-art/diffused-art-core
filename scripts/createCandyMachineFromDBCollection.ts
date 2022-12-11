@@ -325,7 +325,7 @@ async function createCandyMachineFromDBCollection() {
   const candyMachine = await retry(
     () =>
       metaplexWriteCli.candyMachinesV2().findByAddress({
-        address: new PublicKey(candyMachineAddress),
+        address: new PublicKey(candyMachineAddress || ''),
       }),
     {
       retries: 'INFINITELY',
