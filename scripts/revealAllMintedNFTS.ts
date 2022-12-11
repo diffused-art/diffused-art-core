@@ -4,7 +4,6 @@ import { revealNFT } from '../functions/revealNFT';
 import { Prisma, PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-// TODO: Long term solution is to use something like Holaplex indexer, tho, and store on the DB as unrevealed item as the quicknode fetch mints is unreliable
 export async function revealAllMintedNFTS() {
   const collections = await prisma.collection.findMany({
     where: {

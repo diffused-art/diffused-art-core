@@ -1,3 +1,4 @@
+import { getToken } from 'next-auth/jwt';
 import prisma from '../../../../lib/prisma';
 
 export default async function handle(req: any, res: any) {
@@ -5,6 +6,25 @@ export default async function handle(req: any, res: any) {
     res.status(405).send({ message: 'Only GET requests allowed' });
     return;
   }
+
+  const isAdmin =
+    req.query.adminPassword === process.env.MINT_PREVIEW_ADMIN_PASSWORD;
+
+  if (!isAdmin) {
+    const token = await getToken({ req });
+    if (token === null) {
+      return res.status(401).json({
+        message: 'Not authenticated',
+      });
+    }
+    const isExpirated = new Date().getTime() / 1000 > (token as any)?.exp;
+    if (isExpirated) {
+      return res.status(401).json({
+        message: 'Token expired, refresh the page and try again',
+      });
+    }
+  }
+
   const collection = await prisma.collection.findUnique({
     where: { id: req.query.id },
   });

@@ -106,7 +106,7 @@ async function createCandyMachineFromDBCollection() {
   }
 
   const nftPlaceholderImage = await fetch(
-    `http://localhost:3000/api/collection/${foundCollection.id}/preview`,
+    `http://localhost:3000/api/collection/${foundCollection.id}/preview?adminPassword=${process.env.MINT_PREVIEW_ADMIN_PASSWORD}`,
     { method: 'POST' },
   ).then(res => {
     return res.arrayBuffer();

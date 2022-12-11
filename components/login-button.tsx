@@ -1,7 +1,8 @@
 import { useWallet } from '@solana/wallet-adapter-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import signInMessage from '../utils/signInMessage';
 import { signIn, useSession } from 'next-auth/react';
+import axios from 'axios';
 const bs58 = require('bs58');
 
 export default function LoginButton() {
