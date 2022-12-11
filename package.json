@@ -18,7 +18,6 @@
     "download-stable-diffusion-lib": "./scripts/download-and-build-sd-lib.sh",
     "reveal-cronjobs": "nodemon --watch 'src/' --exec 'ts-node ./cronjobs/revealMintsCronjob.ts' -e ts",
     "flush-db": "ts-node ./utils/flushDB.ts",
-    "refresh-webhook-monitor": "ts-node ./scripts/helius/refresh-webhook-monitor.ts",
     "postinstall": "patch-package && npx prisma generate"
   },
   "dependencies": {
@@ -67,9 +66,6 @@
     "usehooks-ts": "^2.9.1",
     "uuid4": "^2.0.3",
     "yup": "^0.32.11"
-  },
-  "resolutions": {
-    "@metaplex-foundation/mpl-token-metadata": "2.3.3"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",

@@ -1,7 +1,7 @@
 import { Collection } from '@prisma/client';
 import { ImageResponse } from '@vercel/og';
 import { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+// import { getToken } from 'next-auth/jwt';
 
 export const config = {
   runtime: 'experimental-edge',
@@ -126,16 +126,17 @@ export default async function handle(req: NextRequest) {
   const { searchParams, origin } = req.nextUrl;
   const adminPassword = searchParams.get('adminPassword');
   const isAdmin = adminPassword === process.env.MINT_PREVIEW_ADMIN_PASSWORD;
-  if (!isAdmin) {
-    const token = await getToken({ req });
-    const isExpirated = new Date().getTime() / 1000 > (token as any)?.exp;
-    if (token === null) {
-      return new ImageResponse(<div>Must be authenticated as artist</div>);
-    }
-    if (isExpirated) {
-      return new ImageResponse(<div>Token expirated</div>);
-    }
-  }
+  // Only add together with trustless CM
+  // if (!isAdmin) {
+  //   const token = await getToken({ req });
+  //   const isExpirated = new Date().getTime() / 1000 > (token as any)?.exp;
+  //   if (token === null) {
+  //     return new ImageResponse(<div>Must be authenticated as artist</div>);
+  //   }
+  //   if (isExpirated) {
+  //     return new ImageResponse(<div>Token expirated</div>);
+  //   }
+  // }
 
   if (req.method !== 'POST') {
     return new ImageResponse(<div>Only POST method is supported.</div>);
@@ -145,7 +146,6 @@ export default async function handle(req: NextRequest) {
   const collectionId = searchParams.get('id');
 
   const extraParam = adminPassword ? `adminPassword=${adminPassword}` : '';
-  // TODO: When adding trustless candy machine, this will break if token submission does not work
   const resCollection = await fetch(
     new URL(
       `${origin}/api/collection/${collectionId}?${extraParam}`,

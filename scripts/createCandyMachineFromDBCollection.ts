@@ -181,7 +181,6 @@ async function createCandyMachineFromDBCollection() {
         ],
         isCollection: true,
       })
-
       .then(res => res.nft.address.toString())
       .catch(e => {
         if (
@@ -201,7 +200,7 @@ async function createCandyMachineFromDBCollection() {
               'The account of type [MintAccount] was not found at the provided address [',
               '',
             )
-            .replace(']', '');
+            .replace('].', '');
         }
       });
 
@@ -252,20 +251,19 @@ async function createCandyMachineFromDBCollection() {
     },
   ];
 
-  let candyMachine: CandyMachineV2 | undefined = undefined;
+  let candyMachineAddress: string | undefined = undefined;
   if (foundCollection.mintCandyMachineId) {
     console.info(
       `Candy machine already created for this collection, fetching!!`,
     );
-    candyMachine = await metaplexWriteCli.candyMachinesV2().findByAddress({
-      address: new PublicKey(foundCollection.mintCandyMachineId),
-    });
+    candyMachineAddress = foundCollection.mintCandyMachineId;
   } else {
     console.info(`Candy machine needs to be created, creating now...`);
-    candyMachine = (
-      await retry(
-        () =>
-          metaplexWriteCli.candyMachinesV2().create({
+    candyMachineAddress = await retry(
+      () =>
+        metaplexWriteCli
+          .candyMachinesV2()
+          .create({
             collection: new PublicKey(
               foundCollection.collectionOnChainAddress!,
             ),
@@ -283,10 +281,30 @@ async function createCandyMachineFromDBCollection() {
             goLiveDate: toDateTime(foundCollection.mintOpenAt),
             isMutable: true,
             // gatekeeper TODO: Add here to add botting protection
+          })
+          .then(data => data.candyMachine.address.toString())
+          .catch(e => {
+            if (
+              e?.problem.includes(
+                'No account was found at the provided address',
+              )
+            ) {
+              return e?.problem
+                ?.replace('No account was found at the provided address [', '')
+                .replace('].', '');
+            } else {
+              console.error('Error when creating candy machine >', e);
+              throw new Error('Error when creating candy machine');
+            }
           }),
-        { retries: 15, delay: 1000, timeout: 1000000, logger: console.log },
-      )
-    ).candyMachine;
+      {
+        retries: 'INFINITELY',
+        delay: 1000,
+        backoff: 'LINEAR',
+        timeout: 1000000,
+        logger: console.log,
+      },
+    );
   }
 
   await prisma.collection.update({
@@ -294,14 +312,28 @@ async function createCandyMachineFromDBCollection() {
       slugUrl,
     },
     data: {
-      mintCandyMachineId: candyMachine.address.toString(),
+      mintCandyMachineId: candyMachineAddress,
     },
   });
 
-  console.info(`DB updated with the CM ID! ${candyMachine.address.toString()}`);
+  console.info(`DB updated with the CM ID! ${candyMachineAddress}`);
 
   console.info(
-    `Candy Machine for collection created here: Hash: https://solana.fm/address/${candyMachine.address.toString()} `,
+    `Candy Machine for collection created here: Hash: https://solana.fm/address/${candyMachineAddress} `,
+  );
+
+  const candyMachine = await retry(
+    () =>
+      metaplexWriteCli.candyMachinesV2().findByAddress({
+        address: new PublicKey(candyMachineAddress),
+      }),
+    {
+      retries: 'INFINITELY',
+      backoff: 'LINEAR',
+      delay: 1000,
+      timeout: 1000000,
+      logger: console.log,
+    },
   );
 
   if (candyMachine.items.length !== foundCollection.mintTotalSupply) {

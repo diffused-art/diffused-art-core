@@ -1773,21 +1773,20 @@
   resolved "https://registry.yarnpkg.com/@metaplex-foundation/cusper/-/cusper-0.0.2.tgz#dc2032a452d6c269e25f016aa4dd63600e2af975"
   integrity sha512-S9RulC2fFCFOQraz61bij+5YCHhSO9llJegK8c8Y6731fSi6snUSQJdCUqYS8AIgR0TKbQvdvgSyIIdbDFZbBA==
 
-"@metaplex-foundation/js-plugin-nft-storage@^0.17.9":
-  version "0.17.9"
-  resolved "https://registry.yarnpkg.com/@metaplex-foundation/js-plugin-nft-storage/-/js-plugin-nft-storage-0.17.9.tgz#e49ad933e6290d5107da5a3a734bf7bf4f0524cb"
-  integrity sha512-xxAgRkgJ48WUNJDMjnbazUnXJcORUBScFyOS6wshFNZF4nLfgYvMr9rVKfLyV7s7E6H4zuFT8ZfYRgRJ2OHMmQ==
+"@metaplex-foundation/js-plugin-nft-storage@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@metaplex-foundation/js-plugin-nft-storage/-/js-plugin-nft-storage-0.1.1.tgz#62218802792379f48d19f77a12eda090f83f8b9a"
+  integrity sha512-5V+K6t0qQgzV+siU6WE4ogJLnEEUhCtHrApPz/CJk0upCbVyeP9nzNittqV3HjgHINQaryFb3m9j0YmAzCVPyQ==
   dependencies:
     "@ipld/dag-pb" "^2.1.17"
-    "@metaplex-foundation/js" "0.17.9"
+    "@metaplex-foundation/js" "*"
     "@nftstorage/metaplex-auth" "^1.2.0"
     ipfs-car "^0.7.0"
     ipfs-unixfs "^6.0.9"
     multiformats "^9.7.0"
     nft.storage "^6.4.1"
-    node-fetch "^2.6.7"
 
-"@metaplex-foundation/js@0.17.9", "@metaplex-foundation/js@^0.17.9":
+"@metaplex-foundation/js@*", "@metaplex-foundation/js@^0.17.6":
   version "0.17.9"
   resolved "https://registry.yarnpkg.com/@metaplex-foundation/js/-/js-0.17.9.tgz#2dfa77bfe23acc118d35ff8678825036391eb7a1"
   integrity sha512-msMGWSYetSVWmIXpDKI5Y3WZtTrCjF6QRQ8BpsXKoNs6xAKPvSuT9OGay/mbOs+/pMNHVPt8lFfl281yBN/MxA==
@@ -1859,7 +1858,7 @@
     "@solana/spl-token" "^0.3.6"
     "@solana/web3.js" "^1.66.2"
 
-"@metaplex-foundation/mpl-token-metadata@2.3.3", "@metaplex-foundation/mpl-token-metadata@^2.3.3":
+"@metaplex-foundation/mpl-token-metadata@^2.3.3":
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/@metaplex-foundation/mpl-token-metadata/-/mpl-token-metadata-2.3.3.tgz#f7ce99689ff1fdfc5d382781f50943692f1ebb77"
   integrity sha512-BUn95TWj1U9g91WEtn4z4oZdHOnrT7qgwzUaIZ6Im9l9V8G2prNVvQjkoD86WLXjtR0Dgu378Er0A3mVtPmlzg==
