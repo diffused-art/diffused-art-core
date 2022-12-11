@@ -13,6 +13,7 @@ import {
 } from '@metaplex-foundation/js';
 import { retry } from 'ts-retry-promise';
 import { GUIDANCE_PRESETS } from '../functions/ai-sources/stable-diffusion/defaults';
+import { refreshWebhookMonitor } from './helius/refresh-webhook-monitor';
 
 const prisma = new PrismaClient();
 
@@ -417,6 +418,10 @@ async function createCandyMachineFromDBCollection() {
   } else {
     console.info('All items already inserted into the CM');
   }
+
+  console.info('Refreshing Helius webhooks');
+  await refreshWebhookMonitor();
+  console.info('Helius webhooks refreshed');
 
   return;
 }
