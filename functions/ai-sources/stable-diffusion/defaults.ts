@@ -8,7 +8,7 @@ export enum GUIDANCE_PRESETS {
   GUIDANCE_PRESET_SLOWEST = 6,
 }
 export const STABLE_DIFFUSION_DEFAULTS_FOR_METADATA = {
-  engine: 'stable-diffusion-512-v2-0',
+  engine: 'stable-diffusion-512-v2-1',
   width: 640,
   height: 640,
   diffusion: 'k_lms' as "ddim" | "plms" | "k_euler" | "k_euler_ancestral" | "k_heun" | "k_dpm_2" | "k_dpm_2_ancestral" | "k_lms",
