@@ -18,7 +18,9 @@
     "download-stable-diffusion-lib": "./scripts/download-and-build-sd-lib.sh",
     "reveal-cronjobs": "nodemon --watch 'src/' --exec 'ts-node ./cronjobs/revealMintsCronjob.ts' -e ts",
     "flush-db": "ts-node ./utils/flushDB.ts",
-    "postinstall": "patch-package && npx prisma generate"
+    "postinstall": "patch-package && npx prisma generate",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.5",
@@ -68,6 +70,15 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@babel/core": "^7.20.5",
+    "@storybook/addon-actions": "^6.5.14",
+    "@storybook/addon-essentials": "^6.5.14",
+    "@storybook/addon-interactions": "^6.5.14",
+    "@storybook/addon-links": "^6.5.14",
+    "@storybook/builder-webpack5": "^6.5.14",
+    "@storybook/manager-webpack5": "^6.5.14",
+    "@storybook/react": "^6.5.14",
+    "@storybook/testing-library": "^0.0.13",
     "@tailwindcss/forms": "^0.5.3",
     "@types/google-protobuf": "^3.15.6",
     "@types/mime": "^3.0.1",
@@ -78,6 +89,7 @@
     "@types/react-dom": "18.0.9",
     "@types/uuid4": "^2.0.0",
     "autoprefixer": "^10.4.13",
+    "babel-loader": "^8.3.0",
     "eslint": "8.29.0",
     "eslint-config-next": "13.0.6",
     "file-loader": "^6.2.0",
