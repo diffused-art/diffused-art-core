@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import IconDiffused from '../icons/icon-diffused';
+import TextInput from './text-input';
 
 export default function Menu() {
   return (
@@ -15,27 +16,38 @@ export default function Menu() {
       <div className="bg-primary-100 rounded-md w-full px-2 flex items-center  h-full">
         <IconDiffused />
 
-        <input
+        <TextInput
           placeholder="Type your prompt here..."
-          className="ml-auto mr-auto rounded-md bg-secondary-100 h-8 py-3 px-4 w-96 outline-none"
           aria-label="prompt search"
+          className="ml-auto mr-auto"
         />
 
         <div className="flex items-center space-x-2 h-full">
           {[
             {
               label: 'About',
+              href: '#',
+              isActive: false,
             },
             {
               label: 'Explore',
+              href: '#',
+              isActive: true,
             },
             {
               label: 'Create',
+              href: '#',
+              isActive: false,
             },
           ].map(item => (
             <a
-              href="#"
-              className="text-main-yellow border-b-4 border-main-yellow w-16 h-full flex items-center justify-center"
+              href={item.href}
+              key={item.href}
+              className={`text-main-yellow w-16 h-full flex items-center justify-center relative ${
+                item.isActive
+                  ? 'after:absolute after:bottom-0 after:w-full after:h-1 after:bg-main-yellow'
+                  : ''
+              }`}
             >
               {item.label}
             </a>
@@ -60,7 +72,7 @@ export default function Menu() {
               { icon: AdjustmentsHorizontalIcon, label: 'Settings' },
               { icon: SunIcon, label: 'Darkmode' },
             ].map(item => (
-              <DropdownMenu.Item className="flex items-center">
+              <DropdownMenu.Item className="flex items-center cursor-pointer">
                 <item.icon className="h-6 w-6 pr-2 opacity-50" />
                 {item.label}
               </DropdownMenu.Item>
