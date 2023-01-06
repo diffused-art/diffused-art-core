@@ -19,7 +19,7 @@ export default function Menu() {
         <TextInput
           placeholder="Type your prompt here..."
           aria-label="prompt search"
-          className="ml-auto mr-auto"
+          className="ml-auto mr-auto w-96"
         />
 
         <div className="flex items-center space-x-2 h-full">
