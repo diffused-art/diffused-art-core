@@ -5,6 +5,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Head from 'next/head';
 import React from 'react';
+import LabeledImageUploadInput from '../components/LabeledImageUploadInput';
 import LabeledTextInput from '../components/LabeledTextInput';
 import Menu from '../components/menu';
 import PrimaryButton from '../components/primary-button';
@@ -70,13 +71,19 @@ export default function CreatePage() {
           <div className="w-full pt-6">
             <h2 className="text-base">More options</h2>
 
-            <div className="w-full bg-secondary-100 px-4 py-2 border-t-2 border-t-secondary-90">
-              <LabeledTextInput
-                type="file"
-                label="Initial image"
-                sublabel="Upload a reference for your prompt"
-                className="h-auto px-0"
-              />
+            <div className="w-full grid grid-cols-2 gap-4 bg-secondary-90 px-8 py-4 border-t-2 border-t-secondary-90">
+              <div className="w-full">
+                <LabeledImageUploadInput
+                  label="Initial image"
+                  sublabel="Upload a reference for your prompt"
+                />
+              </div>
+              <div className="w-full">
+                <LabeledTextInput
+                  label="Engine"
+                  sublabel="The AI engine use for your prompt"
+                />
+              </div>
             </div>
           </div>
         </form>
