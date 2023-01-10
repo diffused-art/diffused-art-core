@@ -7,7 +7,7 @@ import ConnectButton from './connect-button';
 
 export default function Menu() {
   const { pathname } = useRouter();
-  
+
   return (
     <div className="flex items-center justify-evenly space-x-2 min-h-[70px] h-[70px] w-full px-6 my-4">
       <div className="bg-primary-100 rounded-md w-full px-2 flex items-center  h-full">
@@ -39,7 +39,7 @@ export default function Menu() {
               isActive: pathname.startsWith('/create-collection'),
             },
           ].map(item => (
-            <a
+            <Link
               href={item.href}
               key={item.href}
               className={`text-main-yellow w-16 h-full flex items-center justify-center relative ${
@@ -49,7 +49,7 @@ export default function Menu() {
               }`}
             >
               {item.label}
-            </a>
+            </Link>
           ))}
         </div>
       </div>
