@@ -16,7 +16,6 @@ import cns from 'classnames';
 import { useLocalStorage } from '@solana/wallet-adapter-react';
 import LabeledSelectInput from '../components/LabeledSelectInput';
 import { StableDiffusionVersions } from '../enums/stable-diffusion';
-import IconWrapper from '../components/IconWrapper';
 import { Disclosure, Transition } from '@headlessui/react';
 
 const AIOPTIONS = [
@@ -108,13 +107,11 @@ export default function CreatePage() {
                           More options
                         </h2>
                         <Disclosure.Button>
-                          <IconWrapper>
                             {open ? (
                               <MinusCircleIcon width={20} height={20} />
                             ) : (
                               <PlusCircleIcon width={20} height={20} />
                             )}
-                          </IconWrapper>
                         </Disclosure.Button>
                       </div>
                     </>
