@@ -1,20 +1,19 @@
 import React from 'react';
-import {
-  AdjustmentsHorizontalIcon,
-  CogIcon,
-  StarIcon,
-  SunIcon,
-  UserIcon,
-} from '@heroicons/react/24/outline';
 import IconDiffused from '../icons/icon-diffused';
 import TextInput from './text-input';
-import { Menu as HeadlessMenu, Transition } from '@headlessui/react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import ConnectButton from './connect-button';
 
 export default function Menu() {
+  const { pathname } = useRouter();
+  
   return (
-    <div className="flex items-center justify-evenly space-x-2 h-16">
+    <div className="flex items-center justify-evenly space-x-2 min-h-[70px] h-[70px] w-full px-6 my-4">
       <div className="bg-primary-100 rounded-md w-full px-2 flex items-center  h-full">
-        <IconDiffused />
+        <Link href="/">
+          <IconDiffused />
+        </Link>
 
         <TextInput
           placeholder="Type your prompt here..."
@@ -27,17 +26,17 @@ export default function Menu() {
             {
               label: 'About',
               href: '/about',
-              isActive: false,
+              isActive: pathname.startsWith('/about'),
             },
             {
               label: 'Explore',
               href: '/',
-              isActive: true,
+              isActive: pathname === '/',
             },
             {
               label: 'Create',
               href: '/create-collection',
-              isActive: false,
+              isActive: pathname.startsWith('/create-collection'),
             },
           ].map(item => (
             <a
@@ -54,6 +53,7 @@ export default function Menu() {
           ))}
         </div>
       </div>
+      {/* TODO: Reenable this once we have these features
       <HeadlessMenu as="div" className="h-full">
         <HeadlessMenu.Button className="w-16 rounded px-2 h-full bg-primary-100  outline-none flex items-center justify-center">
           <CogIcon className="h-6 w-6 text-main-yellow hover:rotate-180 transition-transform ease-in" />
@@ -85,13 +85,8 @@ export default function Menu() {
             ))}
           </HeadlessMenu.Items>
         </Transition>
-      </HeadlessMenu>
-      <button
-        aria-label="connect wallet"
-        className="rounded-md px-4 h-full bg-main-yellow text-black "
-      >
-        Connect
-      </button>
+      </HeadlessMenu> */}
+      <ConnectButton />
     </div>
   );
 }

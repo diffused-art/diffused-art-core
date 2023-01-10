@@ -18,7 +18,6 @@ export default function SelectInput({
   onValueChange,
   options,
 }: SelectInputProps) {
-  console.log(`selectedOption`, selectedOption);
   return (
     <div className="w-full">
       <Listbox value={selectedOption} onChange={onValueChange}>

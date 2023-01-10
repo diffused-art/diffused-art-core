@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { useInterval } from 'usehooks-ts';
 import CornerCard from '../../components/corner-card';
 import Footer from '../../components/footer';
-import Header from '../../components/header';
+import Menu from '../../components/menu';
 import MintButton from '../../components/mint-button';
 import MintModal from '../../components/mint-modal';
 import { useCandyMachine } from '../../lib/candy-machine';
@@ -87,7 +87,7 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
   );
   const pageTitle = `diffused. "${collection.title}"`;
   return (
-    <div>
+    <div className="bg-secondary-50">
       <Head>
         <title>{pageTitle}</title>
         <meta name="description" content={collection.description} />
@@ -95,7 +95,7 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
       </Head>
 
       <div className="flex flex-col justify-center items-center justify-items-center">
-        <Header />
+        <Menu />
 
         <MintModal
           isMinting={isMinting}

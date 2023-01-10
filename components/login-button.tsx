@@ -1,12 +1,12 @@
 import { useWallet } from '@solana/wallet-adapter-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import signInMessage from '../utils/signInMessage';
 import { signIn, useSession } from 'next-auth/react';
-import axios from 'axios';
+import ConnectButton from './connect-button';
 const bs58 = require('bs58');
 
 export default function LoginButton() {
-  const { signMessage, publicKey } = useWallet();
+  const { signMessage, publicKey, connected } = useWallet();
   const { data: session } = useSession({ required: false });
   const [loading, setLoading] = useState(false);
   async function fetchNonce() {
@@ -57,12 +57,18 @@ export default function LoginButton() {
 
   const btnLabel = session
     ? `Logged in as ${session.user?.name}`
-    : 'Click to login as an artist';
+    : 'Login as artist';
 
+  if (!connected)
+    return (
+      <div>
+        <ConnectButton className="!w-full" label="Connect wallet in order to login as artist" />
+      </div>
+    );
   return (
     <div>
       <button
-        className={`flex justify-center items-center rounded-md p-5 bg-secondary text-primary font-bold h-12 ${
+        className={`rounded-md px-4 h-[40px] bg-main-yellow text-black ${
           loading ? 'opacity-50' : ''
         }`}
         disabled={loading}

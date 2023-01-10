@@ -2,7 +2,7 @@ import { Collection } from '@prisma/client';
 import Head from 'next/head';
 import Link from 'next/link';
 import Footer from '../components/footer';
-import Header from '../components/header';
+import Menu from '../components/menu';
 import prisma from '../lib/prisma';
 
 export const getServerSideProps = async context => {
@@ -40,7 +40,7 @@ interface HomeProps {
 
 const Home = ({ collectionsLive }: HomeProps) => {
   return (
-    <div>
+    <div className="bg-secondary-50">
       <Head>
         <title>diffused.</title>
         <meta
@@ -50,7 +50,7 @@ const Home = ({ collectionsLive }: HomeProps) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex flex-col h-full">
-        <Header />
+        <Menu />
         <main className="flex flex-col space-y-5 justify-center items-center h-full px-20 text-center">
           <h2 className="text-xl">
             Truly immutable on-chain 1/1 AI art generated in real time

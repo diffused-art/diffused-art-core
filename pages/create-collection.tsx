@@ -17,6 +17,7 @@ import { useLocalStorage } from '@solana/wallet-adapter-react';
 import LabeledSelectInput from '../components/LabeledSelectInput';
 import { StableDiffusionVersions } from '../enums/stable-diffusion';
 import { Disclosure, Transition } from '@headlessui/react';
+import ArtistLoginRequired from '../components/artist-login-required';
 
 const AIOPTIONS = [
   ...(Object.keys(StableDiffusionVersions)
@@ -36,7 +37,7 @@ export default function CreatePage() {
   );
 
   return (
-    <div className="px-6 py-4 bg-secondary-50">
+    <div className="bg-secondary-50">
       <Head>
         <title>diffused.</title>
         <meta
@@ -48,115 +49,119 @@ export default function CreatePage() {
 
       <Menu />
 
-      <div className="pt-16 flex justify-center">
-        <div className="w-full container">
-          <WizardStepsHeader
-            items={[
-              {
-                label: 'Prompt',
-                icon: (
-                  <PencilIcon width={iconDimension} height={iconDimension} />
-                ),
-                isActive: true,
-              },
-              {
-                label: 'Configure',
-                icon: (
-                  <AdjustmentsHorizontalIcon
-                    width={iconDimension}
-                    height={iconDimension}
-                  />
-                ),
-                isActive: false,
-              },
-              {
-                label: 'Publish',
-                icon: <EyeIcon width={iconDimension} height={iconDimension} />,
-                isActive: false,
-              },
-            ]}
-          />
+      <ArtistLoginRequired>
+        <div className="pt-16 flex justify-center">
+          <div className="w-full container">
+            <WizardStepsHeader
+              items={[
+                {
+                  label: 'Prompt',
+                  icon: (
+                    <PencilIcon width={iconDimension} height={iconDimension} />
+                  ),
+                  isActive: true,
+                },
+                {
+                  label: 'Configure',
+                  icon: (
+                    <AdjustmentsHorizontalIcon
+                      width={iconDimension}
+                      height={iconDimension}
+                    />
+                  ),
+                  isActive: false,
+                },
+                {
+                  label: 'Publish',
+                  icon: (
+                    <EyeIcon width={iconDimension} height={iconDimension} />
+                  ),
+                  isActive: false,
+                },
+              ]}
+            />
 
-          <Title className="pt-8">Prompt your imagination</Title>
+            <Title className="pt-8">Prompt your imagination</Title>
 
-          <form action="#" className="w-full pt-6">
-            <div className="w-full relative">
-              <TextInput
-                className="w-full"
-                placeholder="A portrait of a cosmonaut riding a cat in the style of Monet"
-              />
+            <form action="#" className="w-full pt-6">
+              <div className="w-full relative">
+                <TextInput
+                  className="w-full"
+                  placeholder="A portrait of a cosmonaut riding a cat in the style of Monet"
+                />
 
-              <PrimaryButton className="absolute right-0 w-32 h-full">
-                Preview
-              </PrimaryButton>
-            </div>
+                <PrimaryButton className="absolute right-0 w-32 h-full">
+                  Preview
+                </PrimaryButton>
+              </div>
 
-            <Disclosure>
-              {({ open }) => (
-                <>
-                  <div className="w-full pt-6 text-white">
-                    <>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                        }}
-                      >
-                        <h2 className="text-[19px] leading-[23.75px] font-[400]">
-                          More options
-                        </h2>
-                        <Disclosure.Button>
+              <Disclosure>
+                {({ open }) => (
+                  <>
+                    <div className="w-full pt-6 text-white">
+                      <>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <h2 className="text-[19px] leading-[23.75px] font-[400]">
+                            More options
+                          </h2>
+                          <Disclosure.Button>
                             {open ? (
                               <MinusCircleIcon width={20} height={20} />
                             ) : (
                               <PlusCircleIcon width={20} height={20} />
                             )}
-                        </Disclosure.Button>
-                      </div>
-                    </>
-                  </div>
-                  <Transition
-                    enter="transition duration-100 ease-out"
-                    enterFrom="transform scale-95 opacity-0"
-                    enterTo="transform scale-100 opacity-100"
-                    leave="transition duration-75 ease-out"
-                    leaveFrom="transform scale-100 opacity-100"
-                    leaveTo="transform scale-95 opacity-0"
-                  >
-                    <Disclosure.Panel
-                      className={cns(
-                        `w-full grid grid-cols-2 gap-4 bg-secondary-90 border-t-secondary-100 border-b-secondary-100 px-8 py-4 border-t-2 border-b-2 rounded-sm`,
-                        { '!p-0 !border-none': !open },
-                      )}
+                          </Disclosure.Button>
+                        </div>
+                      </>
+                    </div>
+                    <Transition
+                      enter="transition duration-100 ease-out"
+                      enterFrom="transform scale-95 opacity-0"
+                      enterTo="transform scale-100 opacity-100"
+                      leave="transition duration-75 ease-out"
+                      leaveFrom="transform scale-100 opacity-100"
+                      leaveTo="transform scale-95 opacity-0"
                     >
-                      {open && (
-                        <>
-                          <div className="w-full">
-                            <LabeledImageUploadInput
-                              label="Initial image"
-                              sublabel="Upload a reference for your prompt"
-                            />
-                          </div>
-                          <div className="w-full">
-                            <LabeledSelectInput
-                              label="Engine"
-                              sublabel="The AI engine use for your prompt"
-                              options={AIOPTIONS}
-                              onValueChange={setSelectedAIOption}
-                              selectedOption={selectedAIOption}
-                            />
-                          </div>
-                        </>
-                      )}
-                    </Disclosure.Panel>
-                  </Transition>
-                </>
-              )}
-            </Disclosure>
-          </form>
+                      <Disclosure.Panel
+                        className={cns(
+                          `w-full grid grid-cols-2 gap-4 bg-secondary-90 border-t-secondary-100 border-b-secondary-100 px-8 py-4 border-t-2 border-b-2 rounded-sm`,
+                          { '!p-0 !border-none': !open },
+                        )}
+                      >
+                        {open && (
+                          <>
+                            <div className="w-full">
+                              <LabeledImageUploadInput
+                                label="Initial image"
+                                sublabel="Upload a reference for your prompt"
+                              />
+                            </div>
+                            <div className="w-full">
+                              <LabeledSelectInput
+                                label="Engine"
+                                sublabel="The AI engine use for your prompt"
+                                options={AIOPTIONS}
+                                onValueChange={setSelectedAIOption}
+                                selectedOption={selectedAIOption}
+                              />
+                            </div>
+                          </>
+                        )}
+                      </Disclosure.Panel>
+                    </Transition>
+                  </>
+                )}
+              </Disclosure>
+            </form>
+          </div>
         </div>
-      </div>
+      </ArtistLoginRequired>
     </div>
   );
 }
