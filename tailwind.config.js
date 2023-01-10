@@ -13,7 +13,8 @@ module.exports = {
         'secondary-50': '#242424',
         'secondary-90': '#3A3A3A',
         'secondary-100': '#3E3E3E',
-        'main-yellow': '#FFC700',
+        "input-bg": 'rgba(241, 241, 241, 0.1)',
+        'main-yellow': '#FFC700'
       },
     },
   },

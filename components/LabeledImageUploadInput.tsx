@@ -25,7 +25,7 @@ export default function LabeledImageUploadInput({
   };
 
   return (
-    <div className={`${wrapperClassName || ''}`}>
+    <div className={`px-5 ${wrapperClassName || ''}`}>
       <input
         ref={inputRef}
         onChange={onChange}
@@ -33,19 +33,21 @@ export default function LabeledImageUploadInput({
         type="file"
         accept="image/*"
       />
-      <div className="flex items-baseline">
-        <h2 className="text-base font-semibold text-white">{label}</h2>
-        <span className="ml-4 opacity-50 text-white text-sm">{sublabel}</span>
+      <div className="flex items-baseline mb-[10px]">
+        <h2 className="text-[19px] font-normal text-white">{label}</h2>
+        <span className="ml-4 opacity-50 text-white italic font-light text-[16px] leading-[20px]">
+          {sublabel}
+        </span>
       </div>
       <div
         onClick={handleClick}
-        className="flex items-center w-full rounded-md bg-secondary-100 h-8 py-3 px-4 cursor-pointer"
+        className="flex items-center w-full rounded-md bg-input-bg h-[40px] py-3 px-4 cursor-pointer"
       >
-        <div className={`text-white italic ${image ? '' : 'opacity-25'}`}>
+        <div className="text-white opacity-25 italic">
           {image ? image.name : 'select an image'}
         </div>
         <div className="ml-auto">
-          <PhotoIcon width={16} height={16} />
+          <PhotoIcon width={20} height={20} color="#FFFFFF" />
         </div>
       </div>
     </div>

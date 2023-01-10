@@ -23,7 +23,7 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
-    "@headlessui/react": "^1.7.5",
+    "@headlessui/react": "^1.7.7",
     "@heroicons/react": "^2.0.13",
     "@improbable-eng/grpc-web": "^0.15.0",
     "@improbable-eng/grpc-web-node-http-transport": "^0.15.0",
@@ -31,8 +31,6 @@
     "@metaplex-foundation/js-plugin-nft-storage": "^0.17.9",
     "@metaplex-foundation/mpl-candy-machine": "^5.0.0",
     "@prisma/client": "^4.7.1",
-    "@radix-ui/react-dropdown-menu": "^2.0.1",
-    "@radix-ui/react-popover": "1.0.2",
     "@solana-mobile/wallet-adapter-mobile": "^0.9.9",
     "@solana/wallet-adapter-base": "^0.9.19",
     "@solana/wallet-adapter-react": "^0.15.25",
@@ -45,6 +43,7 @@
     "axios": "^1.2.1",
     "bs58": "^5.0.0",
     "canvas-confetti": "^1.6.0",
+    "classnames": "^2.3.2",
     "date-fns": "^2.29.3",
     "dotenv": "^16.0.3",
     "google-protobuf": "^3.21.2",
