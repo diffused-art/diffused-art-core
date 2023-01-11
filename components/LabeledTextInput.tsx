@@ -15,9 +15,9 @@ export default function LabeledTextInput({
 }: Props) {
   return (
     <div className={`px-5 ${wrapperClassName || ''}`}>
-      <div className="flex items-baseline mb-[10px]">
+      <div className="flex flex-col lg:flex-row items-baseline mb-[10px]">
         <h2 className="text-[19px] font-normal text-white">{label}</h2>
-        <span className="ml-4 opacity-50 text-white italic font-light text-[16px] leading-[20px]">{sublabel}</span>
+        <span className="lg:ml-4 opacity-50 text-white italic font-light text-[16px] leading-[20px]">{sublabel}</span>
       </div>
       <TextInput {...inputProps} />
     </div>

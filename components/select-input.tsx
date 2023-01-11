@@ -19,10 +19,10 @@ export default function SelectInput({
   options,
 }: SelectInputProps) {
   return (
-    <div className="w-full">
+    <div className="w-full z-10">
       <Listbox value={selectedOption} onChange={onValueChange}>
         <Listbox.Button className="relative w-full cursor-pointer rounded-lg h-[40px] bg-input-bg py-2 pl-3 pr-10 text-left">
-          <span className="block truncate font-light italic text-[19px]">
+          <span className="block truncate font-light italic text-[14px] lg:text-[18px]">
             {selectedOption?.label ?? placeholder}
           </span>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -40,7 +40,7 @@ export default function SelectInput({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-secondary-90 py-1 text-[16px] italic">
+          <Listbox.Options className="z-10 absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-secondary-90 py-1 text-[14px] lg:text-[18px] italic">
             {options.map(option => (
               <Listbox.Option
                 key={option.value}
