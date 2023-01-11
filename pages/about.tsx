@@ -1,10 +1,10 @@
 import Head from 'next/head';
 import Footer from '../components/footer';
-import Header from '../components/header';
+import Menu from '../components/menu';
 
 const About = () => {
   return (
-    <div>
+    <div className="bg-secondary-50">
       <Head>
         <title>diffused. about.</title>
         <meta
@@ -13,8 +13,10 @@ const About = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      
+      <Menu />
+
       <div className="flex flex-col min-h-full justify-center items-center justify-items-center">
-        <Header />
 
         <main className="flex flex-col space-y-5 justify-center items-center !min-h-[80vh] px-20 text-center container">
           <div className="space-y-1">
