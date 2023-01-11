@@ -1,6 +1,16 @@
 import crypto from 'crypto';
 import { serialize } from 'cookie';
 import prisma from '../../../lib/prisma';
+import { Amplify } from 'aws-amplify';
+import awsConfig from '../../../src/aws-exports.js';
+Amplify.configure({ ...awsConfig, ssr: true });
+
+export const config = {
+  runtime: 'experimental-edge',
+  unstable_allowDynamic: [
+    '/node_modules/**',
+  ],
+}
 
 export default async function getNonce(req, res) {
   if (req.method === 'GET') {

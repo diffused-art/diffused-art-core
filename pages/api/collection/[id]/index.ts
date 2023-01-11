@@ -1,5 +1,14 @@
 import { getToken } from 'next-auth/jwt';
 import prisma from '../../../../lib/prisma';
+import { Amplify } from 'aws-amplify';
+import awsConfig from '../../../../src/aws-exports.js';
+Amplify.configure({ ...awsConfig, ssr: true });
+export const config = {
+  runtime: 'experimental-edge',
+  unstable_allowDynamic: [
+    '/node_modules/**',
+  ],
+}
 
 export default async function handle(req: any, res: any) {
   if (req.method !== 'GET') {

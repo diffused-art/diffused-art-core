@@ -4,6 +4,16 @@ const nacl = require('tweetnacl');
 const bs58 = require('bs58');
 import prisma from '../../../lib/prisma';
 import signInMessage from '../../../utils/signInMessage';
+import { Amplify } from 'aws-amplify';
+import awsConfig from '../../../src/aws-exports.js';
+Amplify.configure({ ...awsConfig, ssr: true });
+
+export const config = {
+  runtime: 'experimental-edge',
+  unstable_allowDynamic: [
+    '/node_modules/**',
+  ],
+}
 
 export default async function auth(req: any, res: any) {
   const providers = [

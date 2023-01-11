@@ -1,10 +1,15 @@
 import { Collection } from '@prisma/client';
 import { ImageResponse } from '@vercel/og';
 import { NextRequest } from 'next/server';
-// import { getToken } from 'next-auth/jwt';
+import { Amplify } from 'aws-amplify';
+import awsConfig from '../../../../src/aws-exports.js';
+Amplify.configure({ ...awsConfig, ssr: true });
 
 export const config = {
   runtime: 'experimental-edge',
+  unstable_allowDynamic: [
+    '/node_modules/**',
+  ],
 };
 
 export enum FontFamilies {
