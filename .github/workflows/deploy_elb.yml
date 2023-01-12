@@ -9,6 +9,7 @@ env:
   APPLICATION_NAME: diffused-art
   ENVIRONMENT_NAME: diffused-art-prod
   ELASTIC_BEANSTALK_BUCKET: elasticbeanstalk-us-east-2-831812516802
+  NEXT_PUBLIC_RPC_URL: ${{ vars.NEXT_PUBLIC_RPC_URL }}
 
 jobs:
   deploy-to-elastic-beanstalk:
