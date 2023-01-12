@@ -44,7 +44,7 @@ jobs:
         # NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Zip project
-        run: zip -1 -rq deploy.zip . -x *.git*
+        run: zip -1 -rq deploy.zip .
 
       - name: Get timestamp
         uses: gerred/actions/current-time@master
