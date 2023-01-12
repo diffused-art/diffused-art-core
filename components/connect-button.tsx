@@ -25,7 +25,7 @@ export default function ConnectButton({
         if (wallet.connected) {
           if (confirm('Are you sure you want to disconnect?')) {
             wallet.disconnect();
-            signOut({ redirect: false });
+            signOut({ redirect: false }).catch((e) => console.log('e', e));
           }
         } else {
           walletModel.setVisible(true);

@@ -46,7 +46,7 @@ export default function LoginButton() {
       redirect: false,
       publicKey: publicKey.toBase58(),
       signature: bs58.encode(signature),
-    });
+    }).catch((e) => console.log('e', e));
 
     if (signInResult?.error) {
       console.debug('Could not authenticate the message', signInResult?.error);
