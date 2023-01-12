@@ -38,11 +38,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install dependencies
-        run: npm ci
+      # - name: Install dependencies
+      #   run: npm ci
 
       - name: Zip project
-        run: zip -1 -rq --symlinks deploy.zip .
+        run: zip -9 -rq --symlinks deploy.zip .
 
       - name: Get timestamp
         uses: gerred/actions/current-time@master
