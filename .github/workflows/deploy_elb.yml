@@ -46,10 +46,10 @@ jobs:
         run: npm run build
 
       - name: Remove node_modules files and create a placeholder
-        run: rm -r ./node_modules/* && rm -rf ./node_modules/.* && touch ./node_modules/.placeholder
+        run: sudo rm -r ./node_modules/* && sudo rm -rf ./node_modules/.* && sudo touch ./node_modules/.placeholder
 
       - name: Delete all files except build related ones
-        run: find . -type df -not \( -name '.next' -or -name 'node_modules' -or -name 'package.json' -or -name 'package-lock.json' \) -delete
+        run: sudo find . -type df -not \( -name '.next' -or -name 'node_modules' -or -name 'package.json' -or -name 'package-lock.json' \) -delete
 
       - name: Zip project
         run: zip -9 -rq --symlinks deploy.zip .
