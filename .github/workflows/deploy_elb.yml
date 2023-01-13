@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           always-auth: true
-          registry-url: "https://registry.npmjs.org"
+          registry-url: 'https://registry.npmjs.org'
           node-version: 16
 
       - name: Cache node_modules
@@ -38,8 +38,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # - name: Install dependencies
-      #   run: npm ci
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Remove node_modules files and create a placeholder
+        run: rm -r ./node_modules/* && rm -rf ./node_modules/.* && touch ./node_modules/.placeholder
+
+      - name: Delete all files except build related ones
+        run: find . -type df -not \( -name '.next' -or -name 'node_modules' -or -name 'package.json' -or -name 'package-lock.json' \) -delete
 
       - name: Zip project
         run: zip -9 -rq --symlinks deploy.zip .
@@ -53,9 +62,9 @@ jobs:
         id: format-time
         with:
           pattern: '[:\.]+'
-          string: "${{ steps.current-time.outputs.time }}"
-          replace-with: "-"
-          flags: "g"
+          string: '${{ steps.current-time.outputs.time }}'
+          replace-with: '-'
+          flags: 'g'
 
       - name: Deploy for app
         uses: einaregilsson/beanstalk-deploy@v21
@@ -66,9 +75,9 @@ jobs:
           environment_name: ${{ env.ENVIRONMENT_NAME }}
           existing_bucket_name: ${{ env.ELASTIC_BEANSTALK_BUCKET }}
           region: us-east-2
-          version_label: "${{ env.APPLICATION_NAME }}-${{ steps.short-sha.outputs.sha }}-[${{ steps.format-time.outputs.replaced }}]"
+          version_label: '${{ env.APPLICATION_NAME }}-${{ steps.short-sha.outputs.sha }}-[${{ steps.format-time.outputs.replaced }}]'
           deployment_package: deploy.zip
-          version_description: "[${{ github.actor }}] [GH Actions] [${{ steps.short-sha.outputs.sha }}] ${{ github.event.head_commit.message }}"
+          version_description: '[${{ github.actor }}] [GH Actions] [${{ steps.short-sha.outputs.sha }}] ${{ github.event.head_commit.message }}'
 
       - name: Deployed!
         run: echo App deployed to ELB
