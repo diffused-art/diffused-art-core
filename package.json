@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "license": "UNLICENSED",
+  "engines" : { 
+    "npm" : ">=8.0.0",
+    "node" : ">=18.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build && cp -r ./public ./.next/standalone && cp -r ./.next/static ./.next/standalone/.next",

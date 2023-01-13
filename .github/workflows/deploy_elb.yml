@@ -52,7 +52,7 @@ jobs:
         run: rm -rf ./deploy && mkdir ./deploy && cp -r .next ./deploy && mkdir ./deploy/node_modules && touch ./deploy/node_modules/.placeholder && cp -r package.json ./deploy && cp -r package-lock.json ./deploy
 
       - name: Zip project
-        run: zip -9 -rq --symlinks deploy.zip ./deploy/.
+        run: cd ./deploy && zip -9 -rq --symlinks deploy.zip . && cp deploy.zip ../
 
       - name: Get timestamp
         uses: gerred/actions/current-time@master
