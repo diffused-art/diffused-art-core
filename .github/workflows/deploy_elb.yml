@@ -48,14 +48,11 @@ jobs:
       - name: See folder
         run: ls
 
-      - name: Remove node_modules files and create a placeholder
-        run: find ./node_modules/* -delete && find ./node_modules/.* -delete && touch ./node_modules/.placeholder
-
-      - name: Delete all files except build related ones
-        run: find . -type df -not \( -name '.next' -or -name 'node_modules' -or -name 'package.json' -or -name 'package-lock.json' \) -delete
+      - name: Create deploy folder
+        run: rm -rf ./deploy && mkdir ./deploy && cp -r .next ./deploy && mkdir ./deploy/node_modules && touch ./deploy/node_modules/.placeholder && cp -r package.json ./deploy && cp -r package-lock.json ./deploy
 
       - name: Zip project
-        run: zip -9 -rq --symlinks deploy.zip .
+        run: zip -9 -rq --symlinks deploy.zip ./deploy/.
 
       - name: Get timestamp
         uses: gerred/actions/current-time@master
