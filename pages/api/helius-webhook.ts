@@ -2,7 +2,14 @@ import { Prisma } from '@prisma/client';
 import prisma from '../../lib/prisma';
 
 export default async function handle(req: any, res: any) {
-  console.log(`req headers`, req.headers);
+  if (
+    req.method === 'POST' &&
+    req.headers.authorization === process.env.HELIUS_WEBHOOK_AUTHENTICATION
+  ) {
+    res.status(403).send({ message: 'Not authenticated' });
+    return;
+  }
+
   if (req.method !== 'POST') {
     res.status(405).send({ message: 'Only POST requests allowed' });
     return;
@@ -39,7 +46,10 @@ export default async function handle(req: any, res: any) {
         console.info('Mints that just happened', mints);
 
         const uniqueMints = [
-          ...new Set([...mints, ...((result.hashList || []) as Prisma.JsonArray[])]),
+          ...new Set([
+            ...mints,
+            ...((result.hashList || []) as Prisma.JsonArray[]),
+          ]),
         ] as string[];
         console.info('Mints to insert', uniqueMints);
         await prisma.collection.update({
