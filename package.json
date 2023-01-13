@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build && cp -r ./public ./.next/standalone && cp -r ./.next/static ./.next/standalone/.next",
-    "start": "PORT=3000 node ./.next/standalone/server.js",
+    "start": "PORT=80 node ./.next/standalone/server.js",
     "lint": "next lint",
     "generate-prisma-cli": "npx prisma generate",
     "db-push": "npx prisma db push",
