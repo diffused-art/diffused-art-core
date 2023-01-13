@@ -5,8 +5,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start -p 3000",
+    "build": "next build && cp ./public ./.next/standalone && cp ./.next/static ./.next/standalone/static",
+    "start": "PORT=8080 node ./.next/standalone/server.js",
     "lint": "next lint",
     "generate-prisma-cli": "npx prisma generate",
     "db-push": "npx prisma db push",
