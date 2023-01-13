@@ -45,14 +45,11 @@ jobs:
       - name: Build project
         run: npx next telemetry disable && npm run build
 
-      - name: See folder
-        run: ls
-
       - name: Create deploy folder
         run: rm -rf ./deploy && mkdir ./deploy && cp -r .next ./deploy && mkdir ./deploy/node_modules && touch ./deploy/node_modules/.placeholder && cp -r package.json ./deploy && cp -r package-lock.json ./deploy
 
       - name: Zip project
-        run: cd ./deploy && zip -9 -rq --symlinks deploy.zip . && cp deploy.zip ../
+        run: cd ./deploy && zip -9 -rq --symlinks deploy.zip . && cp deploy.zip ../ && cd ..
 
       - name: Get timestamp
         uses: gerred/actions/current-time@master
