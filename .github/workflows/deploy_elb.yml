@@ -45,6 +45,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: See folder
+        run: ls
+
       - name: Remove node_modules files and create a placeholder
         run: find ./node_modules/* -delete && find ./node_modules/.* -delete && touch ./node_modules/.placeholder
 
