@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { revealNFT } from '../../functions/revealNFT';
 import prisma from '../../lib/prisma';
 
 export default async function handle(req: any, res: any) {
@@ -60,6 +61,13 @@ export default async function handle(req: any, res: any) {
             hashList: uniqueMints,
           },
         });
+
+        // Reveal NFTs as they come in from the webhook
+        // TODO: Add to a bull worker queue
+        for (let index = 0; index < mints.length; index++) {
+          const mint_address = mints[index];
+          revealNFT(mint_address);
+        }
       }
     }
   }

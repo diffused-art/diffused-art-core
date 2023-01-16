@@ -17,7 +17,8 @@ type PossibleResults =
   | 'uri_metadata_not_found'
   | 'invalid_collection_address'
   | 'nft_does_not_follow_morpheus_spec'
-  | 'unknown_error';
+  | 'unknown_error'
+  | 'candy_machine_not_managed_by_diffused_art';
 
 async function updateNFTOnChain(
   newImage: Buffer,
@@ -40,7 +41,6 @@ async function updateNFTOnChain(
   await metaplexWriteCli.nfts().update({
     nftOrSft: currentNft,
     uri: newUri,
-    collection: new PublicKey(currentNft.collection?.address.toString()!),
     isMutable: false,
   });
 
@@ -117,7 +117,7 @@ async function updateNFTOnChain(
   }
 }
 
-export async function revealNFT(
+async function revealNFTCore(
   mint_address: string,
 ): Promise<{ status: number; message: PossibleResults }> {
   if (!isValidPublicKey(mint_address)) {
@@ -136,6 +136,18 @@ export async function revealNFT(
     .findByMint({ mintAddress: new PublicKey(mint_address) })) as unknown as
     | Nft
     | NftWithToken;
+
+  // TODO: Change to use collection update authority, currently not implemented on the DB
+  if (
+    nftOnChainData.updateAuthorityAddress.toString() !==
+    process.env.FUNDED_WALLET_PUBKEY
+  ) {
+    prisma.$disconnect();
+    return {
+      status: 400,
+      message: 'candy_machine_not_managed_by_diffused_art',
+    };
+  }
 
   if (!nftOnChainData.isMutable) {
     const collectionId = (
@@ -267,4 +279,88 @@ export async function revealNFT(
   }
   prisma.$disconnect();
   return { status: 400, message: 'unknown_error' };
+}
+
+// ERROR WITH UPDATE INSTRUCTION AND COLLECTION NFT DELETED ON CHAIN (CHECK LOGS TO DEBUG)
+export async function revealNFT(mint_address: string) {
+  if (!isValidPublicKey(mint_address)) {
+    prisma.$disconnect();
+    return { status: 400, message: 'invalid_public_key' };
+  }
+
+  const foundMint = await prisma.mint.findUnique({ where: { mint_address } });
+  if (foundMint?.isRevealing) {
+    prisma.$disconnect();
+    return { status: 400, message: 'nft_revealing_wait_for_conclusion' };
+  } else {
+    const collectionFound = await prisma.collection.findFirst({
+      where: {
+        hashList: { array_contains: [mint_address] },
+      },
+    });
+    await prisma.mint.upsert({
+      where: { mint_address },
+      create: {
+        mint_address,
+        collection: {
+          connect: {
+            id: collectionFound?.id as any,
+          },
+        },
+        title: collectionFound?.title ?? 'Collection NFT',
+        description: `Collection NFT - ${collectionFound?.description}`,
+        image: collectionFound?.nftPlaceholderImageURL as any,
+        isRevealing: true,
+      },
+      update: {
+        collection: {
+          connect: {
+            id: collectionFound?.id as any,
+          },
+        },
+        isRevealing: true,
+      },
+    });
+
+    const result: null | { status: number; message: PossibleResults } =
+      await new Promise((resolve, reject) =>
+        revealNFTCore(mint_address)
+          .then(result => {
+            return resolve(result);
+          })
+          .catch(async e => {
+            console.error(`Error revealing NFT ${mint_address}`, e);
+            await prisma.mint.update({
+              where: { mint_address },
+              data: {
+                isRevealed: false,
+                isRevealing: false,
+              },
+            });
+            return reject(null);
+          }),
+      );
+
+    if (result?.status === 200) {
+      await prisma.mint.update({
+        where: { mint_address },
+        data: {
+          isRevealed: true,
+          isRevealing: false,
+        },
+      });
+    } else {
+      await prisma.mint.update({
+        where: { mint_address },
+        data: {
+          isRevealed: false,
+          isRevealing: false,
+        },
+      });
+    }
+
+    prisma.$disconnect();
+
+    return result;
+  }
 }
