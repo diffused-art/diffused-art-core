@@ -2,6 +2,7 @@ import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { applyMiddleware } from './applyMiddleware';
 import RedisClient from 'ioredis';
+import { useInterval } from 'usehooks-ts';
 
 const getIP = request =>
   request.ip ||
@@ -13,6 +14,12 @@ const client = new RedisClient({
   host: process.env.REDIS_HOST!,
   port: 6379,
 });
+
+setInterval(() => {
+  console.log('Printing redis CLI')
+  console.log(client)
+  console.log(`STATUS REDIS>`, client.status);
+}, 30000);
 
 export const getRateLimitMiddlewares = ({
   limit = 100,

@@ -83,7 +83,7 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
         })
         .catch(() => setActiveMint(null));
     },
-    activeMintHash && !activeMint ? 60000 : null,
+    activeMintHash && !activeMint ? 30000 : null,
   );
   const pageTitle = `diffused. "${collection.title}"`;
   return (
