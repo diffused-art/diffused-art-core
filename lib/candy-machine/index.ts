@@ -21,7 +21,7 @@ export function useCandyMachine(candyMachineId: string) {
     metaplex
       .candyMachinesV2()
       .findByAddress({ address: new PublicKey(candyMachineId) })
-      
+
       .then(cm => setCandyMachine(cm))
       .catch(() => setCandyMachine(null))
       .then(() => setIsLoadingState(false));
@@ -31,23 +31,36 @@ export function useCandyMachine(candyMachineId: string) {
     setIsMinting(true);
     let mintHash: string | null = null;
     if (candyMachine) {
-      const mintResult = await metaplex
+      mintHash = await metaplex
         .use(walletAdapterIdentity(wallet))
         .candyMachinesV2()
-        .mint({ 
-          candyMachine, 
+        .mint({
+          candyMachine,
         })
-        
-        .catch((e) => {
-          console.error(e);
-          return null;
+        .then(res => res.nft.address.toString())
+        .catch(e => {
+          if (
+            e.message.includes(
+              'raised an error that is not recognized by the programs registered by the SDK',
+            )
+          ) {
+            console.error('Error >', e);
+            return null;
+          } else if (
+            e?.message.includes(
+              'The account of type [MintAccount] was not found at the provided address',
+            )
+          ) {
+            const message = e?.message.substring(e?.message.indexOf('The account of type [MintAccount] was not found at the provided address ['))
+            return message
+              ?.replace(
+                'The account of type [MintAccount] was not found at the provided address [',
+                '',
+              )
+              .split('.]')[0]
+              .replace('].', '');
+          }
         });
-
-      if (mintResult) {
-        mintHash = mintResult.nft.mint.address.toString();
-      } else {
-        mintHash = null;
-      }
     }
     setIsMinting(false);
     return mintHash;

@@ -1,8 +1,15 @@
 import { getToken } from 'next-auth/jwt';
+import NextCors from 'nextjs-cors';
 import prisma from '../../../../lib/prisma';
 
 export default async function handle(req: any, res: any) {
-  if (req.method !== 'GET') {
+  await NextCors(req, res, {
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    origin: process.env.ALLOWED_ORIGIN,
+    optionsSuccessStatus: 200,
+  });
+
+  if (req.method !== 'PUT') {
     res.status(405).send({ message: 'Only GET requests allowed' });
     return;
   }
@@ -33,9 +40,6 @@ export default async function handle(req: any, res: any) {
   }
 
   switch (req.method) {
-    case 'GET': {
-      return res.status(200).json({ data: collection });
-    }
     case 'PUT': {
       // TODO: Update preview image once there is a trust less mechanism for creating collections
       return res.status(200).json({ data: collection });

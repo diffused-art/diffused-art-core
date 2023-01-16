@@ -280,6 +280,7 @@ async function createCandyMachineFromDBCollection() {
             maxEditionSupply: toBigNumber(0),
             goLiveDate: toDateTime(foundCollection.mintOpenAt),
             isMutable: true,
+            authority: new PublicKey(process.env.FUNDED_WALLET_PUBKEY!),
             // gatekeeper TODO: Add here to add botting protection
           })
           .then(data => data.candyMachine.address.toString())
