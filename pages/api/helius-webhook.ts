@@ -3,6 +3,7 @@ import { revealNFT } from '../../functions/revealNFT';
 import prisma from '../../lib/prisma';
 
 export default async function handle(req: any, res: any) {
+  console.log(`req.headers`, req.headers)
   if (
     req.method === 'POST' &&
     req.headers.authorization === process.env.HELIUS_WEBHOOK_AUTHENTICATION
