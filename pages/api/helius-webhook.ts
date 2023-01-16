@@ -3,17 +3,13 @@ import { revealNFT } from '../../functions/revealNFT';
 import prisma from '../../lib/prisma';
 
 export default async function handle(req: any, res: any) {
-  console.log(`req.headers`, req.headers)
-  if (
-    req.method === 'POST' &&
-    req.headers.authorization === process.env.HELIUS_WEBHOOK_AUTHENTICATION
-  ) {
-    res.status(403).send({ message: 'Not authenticated' });
+  if (req.method !== 'POST') {
+    res.status(405).send({ message: 'Only POST requests allowed' });
     return;
   }
 
-  if (req.method !== 'POST') {
-    res.status(405).send({ message: 'Only POST requests allowed' });
+  if (req.headers.authorization !== process.env.HELIUS_WEBHOOK_AUTHENTICATION) {
+    res.status(403).send({ message: 'Not authenticated' });
     return;
   }
 

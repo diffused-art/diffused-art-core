@@ -55,7 +55,7 @@ export default function CreatePage() {
   // the image file to NFTSTORAGE using a real time generated seed phrase, thus setting the image_URL state
   // If no preview, when clicking Next should set the image_url (by uploading to NFT storage)
   const [previewImage, setPreviewImage] = useState<string>(
-    'https://bafybeihhkdhv6zrupshzlolegygd6bgsyvvkqt7azeqayopkmew5qvkhta.ipfs.nftstorage.link/',
+    'http://d2zsqulv16efzu.cloudfront.net//image-generation/stable-diffusion-512-v2-1/placeholder-wuiahsduhwdya54656.png',
   );
 
   const generateAIPreviewImage = useCallback(async () => {
