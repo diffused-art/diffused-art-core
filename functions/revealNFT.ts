@@ -2,6 +2,7 @@ import { Nft, NftWithToken, toMetaplexFile } from '@metaplex-foundation/js';
 import { PrismaClient } from '@prisma/client';
 import { PublicKey } from '@solana/web3.js';
 import { unlinkSync } from 'fs';
+import { retry } from 'ts-retry-promise';
 import { getV1SpecFromAttributes } from '../utils/getV1SpecFromAttributes';
 import { isValidPublicKey } from '../utils/isValidPublicKey';
 import { isValidV1SpecStableDiffusion } from '../utils/isValidV1Spec';
@@ -134,11 +135,16 @@ async function revealNFTCore(
     return { status: 400, message: 'already_revealed' };
   }
   const metaplexCli = getReadonlyCli();
-  const nftOnChainData: Nft | NftWithToken = (await metaplexCli
-    .nfts()
-    .findByMint({ mintAddress: new PublicKey(mint_address) })) as unknown as
-    | Nft
-    | NftWithToken;
+  const nftOnChainData: Nft | NftWithToken = await retry(
+    () => metaplexCli.nfts().findByMint({ mintAddress: new PublicKey(mint_address) }),
+    {
+      retries: 'INFINITELY',
+      delay: 1000,
+      backoff: 'LINEAR',
+      timeout: 1000000,
+      logger: console.log,
+    },
+  ) as unknown as Nft | NftWithToken;
 
   // TODO: Change to use collection update authority, currently not implemented on the DB
   if (
