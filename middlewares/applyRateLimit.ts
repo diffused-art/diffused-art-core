@@ -9,7 +9,10 @@ const getIP = request =>
   request.headers['x-real-ip'] ||
   request.connection.remoteAddress;
 
-const client = new RedisClient(process.env.REDIS_URL!);
+const client = new RedisClient({
+  host: process.env.REDIS_HOST!,
+  port: 6379,
+});
 
 export const getRateLimitMiddlewares = ({
   limit = 100,
