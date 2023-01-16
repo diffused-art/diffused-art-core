@@ -276,6 +276,7 @@ async function revealNFTCore(
       await prisma.mint.update({
         where: { mint_address: nftOnChainData.address.toString() },
         data: {
+          image: lastGeneratedImage.filePathCDN,
           rawMetadataCDN: {
             ...nft.json,
             image: lastGeneratedImage.filePathCDN,
