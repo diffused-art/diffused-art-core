@@ -1,8 +1,21 @@
 import { getToken } from 'next-auth/jwt';
 import NextCors from 'nextjs-cors';
 import prisma from '../../../../lib/prisma';
+import {
+  applyRateLimit,
+  getRateLimitMiddlewares,
+} from '../../../../middlewares/applyRateLimit';
+import { applyRequireAuth } from '../../../../middlewares/applyRequireAuth';
+
+const middlewares = getRateLimitMiddlewares();
 
 export default async function handle(req: any, res: any) {
+  try {
+    await applyRateLimit(req, res, middlewares);
+  } catch {
+    return res.status(429).send('Too Many Requests');
+  }
+
   await NextCors(req, res, {
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
     origin: process.env.ALLOWED_ORIGIN,
@@ -10,7 +23,7 @@ export default async function handle(req: any, res: any) {
   });
 
   if (req.method !== 'PUT') {
-    res.status(405).send({ message: 'Only GET requests allowed' });
+    res.status(405).send({ message: 'Only PUT requests allowed' });
     return;
   }
 
@@ -18,17 +31,10 @@ export default async function handle(req: any, res: any) {
     req.query.adminPassword === process.env.MINT_PREVIEW_ADMIN_PASSWORD;
 
   if (!isAdmin) {
-    const token = await getToken({ req });
-    if (token === null) {
-      return res.status(401).json({
-        message: 'Not authenticated',
-      });
-    }
-    const isExpirated = new Date().getTime() / 1000 > (token as any)?.exp;
-    if (isExpirated) {
-      return res.status(401).json({
-        message: 'Token expired, refresh the page and try again',
-      });
+    try {
+      applyRequireAuth(req);
+    } catch (error) {
+      return res.status(401).send(error);
     }
   }
 

@@ -321,6 +321,8 @@ export async function generateStableDiffImageAsync(
 ): Promise<{ buffer: Buffer; filePath: String }[]> {
   let initImage: Uint8Array | undefined = undefined;
   if (promptObject.init_image) {
+    // Send an options to get image size before fetching... 
+    // Only accept that are less than 2MB
     const bufferData = await axios
       .get(promptObject.init_image, {
         responseType: 'arraybuffer',

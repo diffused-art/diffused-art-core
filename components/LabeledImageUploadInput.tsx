@@ -1,5 +1,5 @@
 import { PhotoIcon } from '@heroicons/react/24/outline';
-import { ReactNode, useRef, useState } from 'react';
+import { ReactNode, useRef } from 'react';
 
 type Props = {
   label: ReactNode;
@@ -7,6 +7,7 @@ type Props = {
   wrapperClassName?: string;
   image: File | null;
   setImage: (image: File | null) => void;
+  required?: boolean;
 };
 
 export default function LabeledImageUploadInput({
@@ -15,6 +16,7 @@ export default function LabeledImageUploadInput({
   wrapperClassName,
   image,
   setImage,
+  required,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -28,17 +30,17 @@ export default function LabeledImageUploadInput({
   };
 
   return (
-    <div className={`md:px-5 opacity-25 ${wrapperClassName || ''}`}>
+    <div className={`md:px-5 ${wrapperClassName || ''}`}>
       <input
         ref={inputRef}
         onChange={onChange}
         className="hidden"
         type="file"
-        disabled
         accept="image/*"
+        required={required}
       />
       <div className="flex flex-col lg:flex-row items-baseline mb-[10px]">
-        <h2 className="text-[16px] lg:text-[19px]font-normal text-white">{label}</h2>
+        <h2 className="text-[16px] lg:text-[19px] font-normal text-white">{label}</h2>
         <span className="lg:ml-4 opacity-50 text-white italic font-light text-[12px] lg:text-[16px] leading-[20px]">
           {sublabel}
         </span>

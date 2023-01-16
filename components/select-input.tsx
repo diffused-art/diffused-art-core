@@ -40,7 +40,7 @@ export default function SelectInput({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <Listbox.Options className="z-10 absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-secondary-90 py-1 text-[14px] lg:text-[18px] italic">
+          <Listbox.Options className="z-10 shadow-lg shadow-yellow-50/50 absolute max-h-60 w-full overflow-auto rounded-md bg-secondary-90 py-1 text-[14px] lg:text-[18px] italic">
             {options.map(option => (
               <Listbox.Option
                 key={option.value}

@@ -1,8 +1,20 @@
 import NextCors from 'nextjs-cors';
 import prisma from '../../../../lib/prisma';
+import {
+  applyRateLimit,
+  getRateLimitMiddlewares,
+} from '../../../../middlewares/applyRateLimit';
 import { isValidPublicKey } from '../../../../utils/isValidPublicKey';
 
+const middlewares = getRateLimitMiddlewares({ limit: 50 });
+
 export default async function handle(req: any, res: any) {
+  try {
+    await applyRateLimit(req, res, middlewares);
+  } catch {
+    return res.status(429).send('Too Many Requests');
+  }
+
   await NextCors(req, res, {
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
     origin: process.env.ALLOWED_ORIGIN,
