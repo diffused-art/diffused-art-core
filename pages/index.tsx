@@ -12,6 +12,8 @@ export const getServerSideProps = async context => {
     },
     where: {
       isFullyRevealed: false,
+      mintCandyMachineId: { not: null },
+      isPublished: true,
     },
   });
   return {
