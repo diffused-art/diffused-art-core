@@ -5,7 +5,7 @@ import Footer from '../components/footer';
 import Menu from '../components/menu';
 import prisma from '../lib/prisma';
 
-export const getServerSideProps = async context => {
+export const getServerSideProps = async () => {
   const collectionsLive = await prisma.collection.findMany({
     include: {
       artist: true,
