@@ -12,7 +12,8 @@ export default function LoginButton() {
   async function fetchNonce() {
     const response = await fetch('/api/auth');
 
-    if (response.status != 200) throw new Error('nonce could not be retrieved');
+    if (response.status != 200)
+      return console.error('nonce could not be retrieved');
 
     const { nonce } = await response.json();
 
@@ -46,7 +47,7 @@ export default function LoginButton() {
       redirect: false,
       publicKey: publicKey.toBase58(),
       signature: bs58.encode(signature),
-    }).catch((e) => console.log('e', e));
+    }).catch(e => console.log('e', e));
 
     if (signInResult?.error) {
       console.debug('Could not authenticate the message', signInResult?.error);
@@ -62,7 +63,10 @@ export default function LoginButton() {
   if (!connected)
     return (
       <div>
-        <ConnectButton className="!w-full" label="Connect wallet in order to login as artist" />
+        <ConnectButton
+          className="!w-full"
+          label="Connect wallet in order to login as artist"
+        />
       </div>
     );
   return (

@@ -62,11 +62,8 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
       setActiveMintHash(null);
     } else {
       setActiveMintHash(mintHash);
-      axios.put(`/api/collection/${collection.id}/reveal`, {
-        address: mintHash,
-      });
     }
-  }, [onMint, collection.id]);
+  }, [onMint]);
 
   const onCloseModal = useCallback(() => {
     setIsMintModalOpen(false);

@@ -3,9 +3,21 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 const nacl = require('tweetnacl');
 const bs58 = require('bs58');
 import prisma from '../../../lib/prisma';
+import {
+  applyRateLimit,
+  getRateLimitMiddlewares,
+} from '../../../middlewares/applyRateLimit';
 import signInMessage from '../../../utils/signInMessage';
 
+const middlewares = getRateLimitMiddlewares();
+
 export default async function auth(req: any, res: any) {
+  try {
+    await applyRateLimit(req, res, middlewares);
+  } catch {
+    return res.status(429).send('Too Many Requests');
+  }
+
   const providers = [
     CredentialsProvider({
       id: 'solana-login',

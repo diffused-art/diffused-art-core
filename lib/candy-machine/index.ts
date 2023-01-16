@@ -51,14 +51,18 @@ export function useCandyMachine(candyMachineId: string) {
               'The account of type [MintAccount] was not found at the provided address',
             )
           ) {
-            const message = e?.message.substring(e?.message.indexOf('The account of type [MintAccount] was not found at the provided address ['))
+            const message = e?.message.substring(
+              e?.message.indexOf(
+                'The account of type [MintAccount] was not found at the provided address [',
+              ),
+            );
+
             return message
               ?.replace(
                 'The account of type [MintAccount] was not found at the provided address [',
                 '',
               )
-              .split('.]')[0]
-              .replace('].', '');
+              .split('].')[0];
           }
         });
     }

@@ -1,8 +1,20 @@
 import crypto from 'crypto';
 import { serialize } from 'cookie';
 import prisma from '../../../lib/prisma';
+import {
+  applyRateLimit,
+  getRateLimitMiddlewares,
+} from '../../../middlewares/applyRateLimit';
+
+const middlewares = getRateLimitMiddlewares();
 
 export default async function getNonce(req, res) {
+  try {
+    await applyRateLimit(req, res, middlewares);
+  } catch {
+    return res.status(429).send('Too Many Requests');
+  }
+
   if (req.method === 'GET') {
     const nonce = crypto.randomBytes(32).toString('base64');
 

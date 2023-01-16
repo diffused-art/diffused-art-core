@@ -10,6 +10,7 @@ export interface NumberInputProps {
   suffixComponent?: string | JSX.Element;
   className?: string;
   onChange?: ChangeEventHandler<HTMLInputElement> | undefined;
+  required?: boolean;
 }
 
 export function NumberInput({
@@ -21,6 +22,7 @@ export function NumberInput({
   max,
   suffixComponent,
   className = '',
+  required,
 }: NumberInputProps) {
   return (
     <div
@@ -30,7 +32,8 @@ export function NumberInput({
       )}
     >
       <input
-      defaultValue={defaultValue}
+        required={required}
+        defaultValue={defaultValue}
         min={min}
         max={max}
         step={step}

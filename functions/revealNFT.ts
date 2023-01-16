@@ -1,6 +1,7 @@
 import { Nft, NftWithToken, toMetaplexFile } from '@metaplex-foundation/js';
 import { PrismaClient } from '@prisma/client';
 import { PublicKey } from '@solana/web3.js';
+import { unlinkSync } from 'fs';
 import { getV1SpecFromAttributes } from '../utils/getV1SpecFromAttributes';
 import { isValidPublicKey } from '../utils/isValidPublicKey';
 import { isValidV1SpecStableDiffusion } from '../utils/isValidV1Spec';
@@ -115,6 +116,8 @@ async function updateNFTOnChain(
       },
     });
   }
+
+  return updatedNFT;
 }
 
 async function revealNFTCore(
@@ -265,11 +268,21 @@ async function revealNFTCore(
           value: value,
         };
       }) as any;
-      await updateNFTOnChain(
+      const nft = await updateNFTOnChain(
         lastGeneratedImage.buffer,
         nftOnChainData,
         nftAttributes,
       );
+      await prisma.mint.update({
+        where: { mint_address: nftOnChainData.address.toString() },
+        data: {
+          rawMetadataCDN: {
+            ...nft.json,
+            image: lastGeneratedImage.filePathCDN,
+          } as any,
+        },
+      });
+      unlinkSync(lastGeneratedImage.filePath as string);
       prisma.$disconnect();
       return { status: 200, message: 'success' };
     } else {

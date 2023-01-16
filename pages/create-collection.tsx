@@ -4,7 +4,7 @@ import {
   PencilIcon,
 } from '@heroicons/react/24/outline';
 import Head from 'next/head';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import LabeledImageUploadInput from '../components/LabeledImageUploadInput';
 import Menu from '../components/menu';
 import PrimaryButton from '../components/primary-button';
@@ -18,6 +18,8 @@ import ArtistLoginRequired from '../components/artist-login-required';
 import LabeledSizeInput from '../components/LabeledSizeInput';
 import LabeledNumberInput from '../components/LabeledNumberInput';
 import classNames from 'classnames';
+import { useQuery } from 'react-query';
+import axios from 'axios';
 
 const AIOPTIONS = [
   ...(Object.keys(StableDiffusionVersions)
@@ -47,9 +49,27 @@ export default function CreatePage() {
     if (cfgScale <= 20) return 'As much like your prompt as possible';
     return 'Almost nothing like your prompt';
   }, [cfgScale]);
+  // TODO: Inside this hook, track the last time the preview image was fetched, and if it was fetched less than 30 seconds ago, don't fetch again
+  // TODO: Add overlay over the image "it might take up to 1 minute to render the preview image"
+  // TODO: If a image is select, and a preview is clicked, it should upload
+  // the image file to NFTSTORAGE using a real time generated seed phrase, thus setting the image_URL state
+  // If no preview, when clicking Next should set the image_url (by uploading to NFT storage)
   const [previewImage, setPreviewImage] = useState<string>(
     'https://bafybeihhkdhv6zrupshzlolegygd6bgsyvvkqt7azeqayopkmew5qvkhta.ipfs.nftstorage.link/',
   );
+
+  const generateAIPreviewImage = useCallback(async () => {
+    return axios
+      .post('/api/collection/create/ai-generate', {
+        prompt,
+        init_image: '',
+        width,
+        height,
+        cfgScale,
+        engine: selectedAIOption.value,
+      })
+      .then(({ data }) => setPreviewImage(data.imageURL));
+  }, [cfgScale, height, prompt, selectedAIOption.value, width]);
 
   return (
     <div className="bg-secondary-50">
@@ -99,6 +119,7 @@ export default function CreatePage() {
             <div className="w-full relative mt-5">
               <TextInput
                 onChange={e => setPrompt(e.target.value)}
+                required
                 className="w-full"
                 placeholder="A portrait of a cosmonaut riding a cat in the style of Monet"
               />
@@ -108,6 +129,7 @@ export default function CreatePage() {
                   'opacity-25': !prompt,
                 })}
                 disabled={!prompt}
+                onClick={generateAIPreviewImage}
               >
                 Preview
               </PrimaryButton>
@@ -118,14 +140,25 @@ export default function CreatePage() {
                 <form action="#" className="w-full pt-6">
                   <div className="w-full flex flex-col space-y-5 bg-secondary-90 border-t-secondary-100 border-b-secondary-100 px-8 py-4 border-t-2 border-b-2 rounded-sm">
                     <div className="w-full">
+                      <LabeledSelectInput
+                        label="Engine"
+                        sublabel="AI to use for your prompt"
+                        options={AIOPTIONS}
+                        onValueChange={setSelectedAIOption}
+                        selectedOption={selectedAIOption}
+                      />
+                    </div>
+                    <div className="w-full">
                       <LabeledImageUploadInput
-                        label="Initial/reference image support coming soon..."
+                        label="Initial image"
+                        sublabel="Reference to start from (optional)"
                         image={image}
                         setImage={setImage}
                       />
                     </div>
                     <div className="w-full">
                       <LabeledNumberInput
+                        required
                         label="CFG Scale"
                         sublabel="Adjust how much the image will be like your prompt. max: 20; min: 1"
                         min={1}
@@ -137,21 +170,13 @@ export default function CreatePage() {
                     </div>
                     <div className="w-full">
                       <LabeledSizeInput
+                        required
                         label="Size"
                         sublabel="max: 1024px width / 1024 px height"
                         onChangeHeight={e => setHeight(Number(e.target.value))}
                         onChangeWidth={e => setWidth(Number(e.target.value))}
                         defaultValueHeight={height}
                         defaultValueWidth={width}
-                      />
-                    </div>
-                    <div className="w-full">
-                      <LabeledSelectInput
-                        label="Engine"
-                        sublabel="The AI engine use for your prompt"
-                        options={AIOPTIONS}
-                        onValueChange={setSelectedAIOption}
-                        selectedOption={selectedAIOption}
                       />
                     </div>
                     <div className="w-full md:px-5 z-0">
