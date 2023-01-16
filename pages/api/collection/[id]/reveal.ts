@@ -42,7 +42,6 @@ export default async function handle(req: any, res: any) {
       ...((result.hashList || []) as Prisma.JsonArray[]),
     ]),
   ] as string[];
-  console.info('Mints to insert', uniqueMints);
   await prisma.collection.update({
     where: {
       id: result.id,

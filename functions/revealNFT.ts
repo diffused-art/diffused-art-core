@@ -1,6 +1,7 @@
 import { Nft, NftWithToken, toMetaplexFile } from '@metaplex-foundation/js';
 import { PrismaClient } from '@prisma/client';
 import { PublicKey } from '@solana/web3.js';
+import { unlinkSync } from 'fs';
 import { getV1SpecFromAttributes } from '../utils/getV1SpecFromAttributes';
 import { isValidPublicKey } from '../utils/isValidPublicKey';
 import { isValidV1SpecStableDiffusion } from '../utils/isValidV1Spec';
@@ -270,6 +271,7 @@ async function revealNFTCore(
         nftOnChainData,
         nftAttributes,
       );
+      unlinkSync(lastGeneratedImage.filePath as string);
       prisma.$disconnect();
       return { status: 200, message: 'success' };
     } else {
