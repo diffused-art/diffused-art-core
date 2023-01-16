@@ -10,8 +10,8 @@ interface UploadStreamOptions {
 export const uploadStream = ({ Key, Metadata = {}, ContentType }: UploadStreamOptions) => {
   const s3 = new AWS.S3({
     credentials: {
-      accessKeyId: process.env.S3_AWS_ACCESS_ID,
-      secretAccessKey: process.env.S3_AWS_ACCESS_SECRET,
+      accessKeyId: process.env.S3_AWS_ACCESS_ID as string,
+      secretAccessKey: process.env.S3_AWS_ACCESS_SECRET as string,
     },
   });
 
@@ -22,7 +22,7 @@ export const uploadStream = ({ Key, Metadata = {}, ContentType }: UploadStreamOp
     promise: s3
       .upload({
         ContentType,
-        Bucket: process.env.S3_METADATA_BUCKET,
+        Bucket: process.env.S3_METADATA_BUCKET as string,
         Key,
         Body: pass,
         Metadata,
