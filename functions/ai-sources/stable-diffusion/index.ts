@@ -31,6 +31,9 @@ import { diffusionMap } from './utils';
 import { SpecObject } from '../../../types';
 import axios from 'axios';
 import { STABLE_DIFFUSION_DEFAULTS } from './defaults';
+import { uploadStream } from '../../../utils/uploadStreamAWS';
+import { Readable } from 'stream';
+import { nanoid } from 'nanoid';
 
 type DraftStabilityOptions = Partial<{
   outDir: string;
@@ -42,7 +45,7 @@ type DraftStabilityOptions = Partial<{
     | 'stable-diffusion-v1-4'
     | 'stable-diffusion-v1-5'
     | 'stable-diffusion-512-v2-0'
-    | 'stable-diffusion-512-v2-1'
+    | 'stable-diffusion-512-v2-1';
   host: string;
   seed: number;
   width: number;
@@ -318,14 +321,13 @@ interface StableDiffusionPromptParams extends SpecObject {
 
 export async function generateStableDiffImageAsync(
   promptObject: StableDiffusionPromptParams,
-): Promise<{ buffer: Buffer; filePath: String }[]> {
+): Promise<{ buffer: Buffer; filePath: string; filePathCDN: string }[]> {
   let initImage: Uint8Array | undefined = undefined;
   if (promptObject.init_image) {
-    // Send an options to get image size before fetching... 
-    // Only accept that are less than 2MB
     const bufferData = await axios
       .get(promptObject.init_image, {
         responseType: 'arraybuffer',
+        maxContentLength: 5000000,
       })
       .then(response => Buffer.from(response.data, 'binary'));
     initImage = new Uint8Array(
@@ -335,7 +337,9 @@ export async function generateStableDiffImageAsync(
     );
   }
 
-  return new Promise(resolve => {
+  const images = await new Promise<
+    { buffer: Buffer; filePath: string; filePathCDN: string }[]
+  >(resolve => {
     const api = generateStableDiffImage({
       apiKey: process.env.DREAMSTUDIO_API_KEY!,
       prompt: promptObject.prompt,
@@ -358,4 +362,51 @@ export async function generateStableDiffImageAsync(
       resolve(images);
     });
   });
+
+  for (let index = 0; index < images.length; index++) {
+    const image = images[index];
+    const metadata = Object.entries(promptObject).reduce(
+      (acc, [key, value]) => {
+        if (key === 'sourceParams') return acc;
+        return {
+          ...acc,
+          [key]: String(value),
+        };
+      },
+      {},
+    );
+    const sourceParamsMetadata = Object.entries(
+      promptObject.sourceParams,
+    ).reduce((acc, [key, value]) => {
+      return {
+        ...acc,
+        [key]: String(value),
+      };
+    }, {});
+    const { writeStream, promise } = uploadStream({
+      Key: `/image-generation/${promptObject.sourceParams.engine}/${
+        promptObject.seed
+      }-${nanoid()}`,
+      ContentType: 'image/png',
+      Metadata: {
+        ...metadata,
+        ...sourceParamsMetadata,
+      },
+    });
+    const readStream = fs.createReadStream(image.filePath as string);
+    readStream.pipe(writeStream);
+    const result: any = await promise;
+    images[index] = {
+      ...image,
+      filePathCDN: result.Location.replace(
+        'https://stored-metadatas.s3.amazonaws.com/',
+        process.env.CLOUDFRONT_DOMAIN,
+      ).replace(
+        'https://stored-metadatas.s3.us-east-2.amazonaws.com/',
+        process.env.CLOUDFRONT_DOMAIN,
+      ),
+    };
+  }
+
+  return images;
 }

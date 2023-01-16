@@ -81,19 +81,20 @@ model Artist {
 }
 
 model Mint {
-  id           String     @id @default(cuid())
-  collectionId String
-  collection   Collection @relation(fields: [collectionId], references: [id])
-  mint_address String     @unique
-  title        String
-  description  String
-  image        String
-  attributes   Json?
-  rawMetadata  Json?
-  isRevealing  Boolean    @default(false)
-  isRevealed   Boolean    @default(false)
-  createdAt    DateTime   @default(now()) @map(name: "created_at")
-  updatedAt    DateTime   @updatedAt @map(name: "updated_at")
+  id             String     @id @default(cuid())
+  collectionId   String
+  collection     Collection @relation(fields: [collectionId], references: [id])
+  mint_address   String     @unique
+  title          String
+  description    String
+  image          String
+  attributes     Json?
+  rawMetadata    Json?
+  rawMetadataCDN Json?
+  isRevealing    Boolean    @default(false)
+  isRevealed     Boolean    @default(false)
+  createdAt      DateTime   @default(now()) @map(name: "created_at")
+  updatedAt      DateTime   @updatedAt @map(name: "updated_at")
 
   @@map(name: "mints")
 }

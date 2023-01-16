@@ -4,7 +4,7 @@ import {
   PencilIcon,
 } from '@heroicons/react/24/outline';
 import Head from 'next/head';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import LabeledImageUploadInput from '../components/LabeledImageUploadInput';
 import Menu from '../components/menu';
 import PrimaryButton from '../components/primary-button';
@@ -18,6 +18,8 @@ import ArtistLoginRequired from '../components/artist-login-required';
 import LabeledSizeInput from '../components/LabeledSizeInput';
 import LabeledNumberInput from '../components/LabeledNumberInput';
 import classNames from 'classnames';
+import { useQuery } from 'react-query';
+import axios from 'axios';
 
 const AIOPTIONS = [
   ...(Object.keys(StableDiffusionVersions)
@@ -47,9 +49,7 @@ export default function CreatePage() {
     if (cfgScale <= 20) return 'As much like your prompt as possible';
     return 'Almost nothing like your prompt';
   }, [cfgScale]);
-  // TODO: Add hook that keeps fetching preview image when it is clicked, as well as useState to track
   // TODO: Inside this hook, track the last time the preview image was fetched, and if it was fetched less than 30 seconds ago, don't fetch again
-  // TODO: Introduce rate limiting on the server side using redis
   // TODO: Add overlay over the image "it might take up to 1 minute to render the preview image"
   // TODO: If a image is select, and a preview is clicked, it should upload
   // the image file to NFTSTORAGE using a real time generated seed phrase, thus setting the image_URL state
@@ -57,6 +57,19 @@ export default function CreatePage() {
   const [previewImage, setPreviewImage] = useState<string>(
     'https://bafybeihhkdhv6zrupshzlolegygd6bgsyvvkqt7azeqayopkmew5qvkhta.ipfs.nftstorage.link/',
   );
+
+  const generateAIPreviewImage = useCallback(async () => {
+    return axios
+      .post('/api/collection/create/ai-generate', {
+        prompt,
+        init_image: '',
+        width,
+        height,
+        cfgScale,
+        engine: selectedAIOption.value,
+      })
+      .then(({ data }) => setPreviewImage(data.imageURL));
+  }, [cfgScale, height, prompt, selectedAIOption.value, width]);
 
   return (
     <div className="bg-secondary-50">
@@ -116,6 +129,7 @@ export default function CreatePage() {
                   'opacity-25': !prompt,
                 })}
                 disabled={!prompt}
+                onClick={generateAIPreviewImage}
               >
                 Preview
               </PrimaryButton>

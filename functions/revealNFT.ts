@@ -116,6 +116,8 @@ async function updateNFTOnChain(
       },
     });
   }
+
+  return updatedNFT;
 }
 
 async function revealNFTCore(
@@ -266,11 +268,20 @@ async function revealNFTCore(
           value: value,
         };
       }) as any;
-      await updateNFTOnChain(
+      const nft = await updateNFTOnChain(
         lastGeneratedImage.buffer,
         nftOnChainData,
         nftAttributes,
       );
+      await prisma.mint.update({
+        where: { mint_address: nftOnChainData.address.toString() },
+        data: {
+          rawMetadataCDN: {
+            ...nft.json,
+            image: lastGeneratedImage.filePathCDN,
+          } as any,
+        },
+      });
       unlinkSync(lastGeneratedImage.filePath as string);
       prisma.$disconnect();
       return { status: 200, message: 'success' };

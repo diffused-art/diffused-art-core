@@ -18,11 +18,11 @@ export const getRateLimitMiddlewares = ({
   rateLimit({
     keyGenerator: getIP,
     windowMs,
-    max: limit,
+    max: process.env.NODE_ENV === 'development' ? 1000000 : limit,
     store: new RedisStore({
       // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
       sendCommand: (...args: string[]) => client.call(...args),
-      prefix: 'rateLimit-'
+      prefix: 'rateLimit-',
     }),
   }),
 ];
