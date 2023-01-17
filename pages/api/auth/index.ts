@@ -12,8 +12,9 @@ const middlewares = getRateLimitMiddlewares();
 export default async function getNonce(req, res) {
   console.log('Printing getIP', getIP(req));
   try {
-    await applyRateLimit(req, res, middlewares).catch((e) => console.log(`Error on applyRateLimit`, e));
-  } catch {
+    await applyRateLimit(req, res, middlewares);
+  } catch (e) {
+    console.log(`Error on applyRateLimit`, e);
     return res.status(429).send('Too Many Requests');
   }
 
