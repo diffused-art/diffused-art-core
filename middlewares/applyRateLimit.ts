@@ -14,11 +14,6 @@ const client = new RedisClient({
   port: 6379,
 });
 
-setInterval(() => {
-  console.log('Printing redis CLI')
-  console.log(`STATUS REDIS>`, client.status);
-}, 30000);
-
 export const getRateLimitMiddlewares = ({
   limit = 100,
   windowMs = 60 * 1000,
