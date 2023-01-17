@@ -2,9 +2,8 @@ import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { applyMiddleware } from './applyMiddleware';
 import RedisClient from 'ioredis';
-import { useInterval } from 'usehooks-ts';
 
-const getIP = request =>
+export const getIP = request =>
   request.ip ||
   request.headers['x-forwarded-for'] ||
   request.headers['x-real-ip'] ||
@@ -17,7 +16,6 @@ const client = new RedisClient({
 
 setInterval(() => {
   console.log('Printing redis CLI')
-  console.log(client)
   console.log(`STATUS REDIS>`, client.status);
 }, 30000);
 

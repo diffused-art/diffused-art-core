@@ -3,12 +3,14 @@ import { serialize } from 'cookie';
 import prisma from '../../../lib/prisma';
 import {
   applyRateLimit,
+  getIP,
   getRateLimitMiddlewares,
 } from '../../../middlewares/applyRateLimit';
 
 const middlewares = getRateLimitMiddlewares();
 
 export default async function getNonce(req, res) {
+  console.log('Printing getIP', getIP(req));
   try {
     await applyRateLimit(req, res, middlewares);
   } catch {
