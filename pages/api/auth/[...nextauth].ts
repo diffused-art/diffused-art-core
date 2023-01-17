@@ -13,7 +13,6 @@ import signInMessage from '../../../utils/signInMessage';
 const middlewares = getRateLimitMiddlewares();
 
 export default async function auth(req: any, res: any) {
-  console.log('Printing getIP', getIP(req));
   try {
     await applyRateLimit(req, res, middlewares);
   } catch (e) {

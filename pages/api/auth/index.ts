@@ -10,7 +10,6 @@ import {
 const middlewares = getRateLimitMiddlewares();
 
 export default async function getNonce(req, res) {
-  console.log('Printing getIP', getIP(req));
   try {
     await applyRateLimit(req, res, middlewares);
   } catch (e) {
