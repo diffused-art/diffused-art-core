@@ -5,6 +5,7 @@ const bs58 = require('bs58');
 import prisma from '../../../lib/prisma';
 import {
   applyRateLimit,
+  getIP,
   getRateLimitMiddlewares,
 } from '../../../middlewares/applyRateLimit';
 import signInMessage from '../../../utils/signInMessage';
@@ -12,6 +13,7 @@ import signInMessage from '../../../utils/signInMessage';
 const middlewares = getRateLimitMiddlewares();
 
 export default async function auth(req: any, res: any) {
+  console.log('Printing getIP', getIP(req));
   try {
     await applyRateLimit(req, res, middlewares);
   } catch {
