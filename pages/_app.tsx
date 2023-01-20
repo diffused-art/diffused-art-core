@@ -1,5 +1,6 @@
 import '../styles/globals.css';
 import type { AppProps } from 'next/app';
+import { GoogleAnalytics, event } from 'nextjs-google-analytics';
 
 import {
   ConnectionProvider,
@@ -19,6 +20,15 @@ require('../styles/globals.css');
 
 const queryClient = new QueryClient();
 
+export function reportWebVitals({ id, name, label, value }) {
+  event(name, {
+    category: label === 'web-vital' ? 'Web Vitals' : 'Next.js custom metric',
+    value: Math.round(name === 'CLS' ? value * 1000 : value),
+    label: id,
+    nonInteraction: true,
+  });
+}
+
 function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const endpoint = useMemo(() => process.env.NEXT_PUBLIC_RPC_URL!, []);
 
@@ -37,6 +47,10 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>
             <SessionProvider session={session}>
+              <GoogleAnalytics
+                trackPageViews
+                gaMeasurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}
+              />
               <Component {...pageProps} />
             </SessionProvider>
           </WalletModalProvider>
