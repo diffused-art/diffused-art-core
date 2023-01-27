@@ -3,7 +3,7 @@
 - Need to have a valid .env.template file (WIP: Docker Compose file that will generate this for you)
 
 For running locally, run:
-```javascript
+```bash
 npm run install
 npm run dev
 ```
