@@ -22,9 +22,7 @@
     "download-stable-diffusion-lib": "./scripts/download-and-build-sd-lib.sh",
     "reveal-cronjobs": "nodemon --watch 'src/' --exec 'ts-node ./cronjobs/revealMintsCronjob.ts' -e ts",
     "flush-db": "ts-node ./utils/flushDB.ts",
-    "postinstall": "patch-package && npx prisma generate",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "postinstall": "patch-package && npx prisma generate"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.8",
