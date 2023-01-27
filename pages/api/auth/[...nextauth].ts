@@ -16,7 +16,7 @@ export default async function auth(req: any, res: any) {
   try {
     await applyRateLimit(req, res, middlewares);
   } catch (e) {
-    console.log(`Error on applyRateLimit`, e);
+    console.debug(`Error on applyRateLimit`, e);
     return res.status(429).send('Too Many Requests');
   }
 
@@ -107,6 +107,9 @@ export default async function auth(req: any, res: any) {
   return await NextAuth(req, res, {
     secret: process.env.NEXTAUTH_SECRET,
     providers,
+    session: {
+      maxAge: 5 * 60,
+    },
     callbacks: {
       async jwt({ token, account, user }) {
         if (account) {

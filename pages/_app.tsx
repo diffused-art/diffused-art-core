@@ -31,7 +31,7 @@ export function reportWebVitals({ id, name, label, value }) {
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const endpoint = useMemo(() => process.env.NEXT_PUBLIC_RPC_URL!, []);
-
+  
   const wallets = useMemo(
     () => [
       new SolflareWalletAdapter(),
@@ -46,7 +46,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>
-            <SessionProvider session={session}>
+            <SessionProvider session={session} refetchInterval={4 * 60}>
               <GoogleAnalytics
                 trackPageViews
                 gaMeasurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}
