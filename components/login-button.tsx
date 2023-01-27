@@ -3,9 +3,12 @@ import React, { useState } from 'react';
 import signInMessage from '../utils/signInMessage';
 import { signIn, useSession } from 'next-auth/react';
 import ConnectButton from './connect-button';
+import useToast, { ToastIconEnum } from '../hooks/useToast';
+import { Toaster } from 'react-hot-toast';
 const bs58 = require('bs58');
 
 export default function LoginButton() {
+  const toast = useToast();
   const { signMessage, publicKey, connected } = useWallet();
   const { data: session } = useSession({ required: false });
   const [loading, setLoading] = useState(false);
@@ -47,10 +50,22 @@ export default function LoginButton() {
       redirect: false,
       publicKey: publicKey.toBase58(),
       signature: bs58.encode(signature),
-    }).catch(e => console.log('e', e));
+    }).catch(e => {
+      toast({
+        message: 'Unknown error happened, please try again later',
+        icon: ToastIconEnum.ERROR,
+      });
+      console.debug(e);
+    });
 
     if (signInResult?.error) {
       console.debug('Could not authenticate the message', signInResult?.error);
+      if (signInResult?.error.includes('user can not be authenticated')) {
+        toast({
+          message: `Unable to log in. Please make sure you are using the correct wallet.`,
+          icon: ToastIconEnum.FAILURE,
+        });
+      }
     }
 
     setLoading(false);
@@ -80,6 +95,7 @@ export default function LoginButton() {
       >
         {loading ? 'Loading...' : btnLabel}
       </button>
+      <Toaster />
     </div>
   );
 }

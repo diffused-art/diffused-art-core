@@ -1,5 +1,4 @@
 import { useSession } from 'next-auth/react';
-import { ReactNode } from 'react';
 import LoginButton from './login-button';
 
 interface ArtistLoginRequiredProps {
