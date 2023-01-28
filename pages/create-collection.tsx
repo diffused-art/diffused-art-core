@@ -18,8 +18,9 @@ import ArtistLoginRequired from '../components/artist-login-required';
 import LabeledSizeInput from '../components/LabeledSizeInput';
 import LabeledNumberInput from '../components/LabeledNumberInput';
 import classNames from 'classnames';
-import { useQuery } from 'react-query';
 import axios from 'axios';
+import useToast, { ToastIconEnum } from '../hooks/useToast';
+import { Toaster } from 'react-hot-toast';
 
 const AIOPTIONS = [
   ...(Object.keys(StableDiffusionVersions)
@@ -32,6 +33,7 @@ const AIOPTIONS = [
 ];
 
 export default function CreatePage() {
+  const toast = useToast();
   const iconDimension = 16;
   const [selectedAIOption, setSelectedAIOption] = useLocalStorage(
     'selected-ai-version',
@@ -49,16 +51,13 @@ export default function CreatePage() {
     if (cfgScale <= 20) return 'As much like your prompt as possible';
     return 'Almost nothing like your prompt';
   }, [cfgScale]);
-  // TODO: Inside this hook, track the last time the preview image was fetched, and if it was fetched less than 30 seconds ago, don't fetch again
-  // TODO: Add overlay over the image "it might take up to 1 minute to render the preview image"
-  // TODO: If a image is select, and a preview is clicked, it should upload
-  // the image file to NFTSTORAGE using a real time generated seed phrase, thus setting the image_URL state
-  // If no preview, when clicking Next should set the image_url (by uploading to NFT storage)
   const [previewImage, setPreviewImage] = useState<string>(
-    'http://d2zsqulv16efzu.cloudfront.net//image-generation/stable-diffusion-512-v2-1/placeholder-wuiahsduhwdya54656.png',
+    'https://d2zsqulv16efzu.cloudfront.net//image-generation/stable-diffusion-512-v2-1/placeholder-wuiahsduhwdya54656.png',
   );
+  const [loadingPreviewImage, setLoadingPreviewImage] = useState(false);
 
   const generateAIPreviewImage = useCallback(async () => {
+    setLoadingPreviewImage(true);
     return axios
       .post('/api/collection/create/ai-generate', {
         prompt,
@@ -68,8 +67,17 @@ export default function CreatePage() {
         cfgScale,
         engine: selectedAIOption.value,
       })
-      .then(({ data }) => setPreviewImage(data.imageURL));
-  }, [cfgScale, height, prompt, selectedAIOption.value, width]);
+      .then(({ data }) => {
+        setPreviewImage(data.imageURL);
+      })
+      .catch(error => {
+        toast({
+          message: error.response.data || 'Server error',
+          icon: ToastIconEnum.ERROR,
+        });
+        setLoadingPreviewImage(false);
+      });
+  }, [cfgScale, height, prompt, selectedAIOption.value, width, toast]);
 
   return (
     <div className="bg-secondary-50">
@@ -125,13 +133,13 @@ export default function CreatePage() {
               />
 
               <PrimaryButton
-                className={classNames(`absolute right-0 w-32 h-full`, {
-                  'opacity-25': !prompt,
+                className={classNames(`absolute right-0 w-40 h-full `, {
+                  'opacity-25': !prompt || loadingPreviewImage,
                 })}
-                disabled={!prompt}
+                disabled={!prompt || loadingPreviewImage}
                 onClick={generateAIPreviewImage}
               >
-                Preview
+                {loadingPreviewImage ? 'Loading preview...' : 'Preview'}
               </PrimaryButton>
             </div>
 
@@ -191,12 +199,26 @@ export default function CreatePage() {
                 </form>
               </div>
               <div className="flex-1">
-                <div className="pt-6">
-                  <img
-                    src={previewImage}
-                    alt="Preview image"
-                    className="max-h-[530px] w-full rounded-md"
-                  />
+                <div className="pt-6 rounded-sm">
+                  <div className="relative">
+                    {loadingPreviewImage && (
+                      <>
+                        <div className="absolute w-full h-full bg-gray-100 opacity-20"></div>
+                        <div className="absolute font-bold ml-[10%] flex justify-center items-center h-full">
+                          Loading preview, please wait...
+                        </div>
+                      </>
+                    )}
+                    <img
+                      src={previewImage}
+                      alt="Preview image"
+                      onLoad={() => setLoadingPreviewImage(false)}
+                      className={classNames('max-h-[530px] w-full rounded-md', {
+                        'opacity-25': loadingPreviewImage,
+                      })}
+                    />
+                  </div>
+
                   <h4 className="opacity-25 text-[16px] font-light italic text-center">
                     This is a preview of your prompt
                   </h4>
@@ -206,6 +228,7 @@ export default function CreatePage() {
           </div>
         </div>
       </ArtistLoginRequired>
+      <Toaster />
     </div>
   );
 }

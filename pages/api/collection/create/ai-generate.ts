@@ -73,7 +73,9 @@ export default async function handle(
     return [];
   });
   if (imageData.length === 0) {
-    return res.status(200).json({ data: 'Couldnt generate image' });
+    return res
+      .status(500)
+      .json({ data: 'Error while generating image, please try again later!' });
   }
   const lastGeneratedImage = imageData[imageData.length - 1];
   unlinkSync(lastGeneratedImage.filePath as string);
