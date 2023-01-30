@@ -7,7 +7,7 @@ import { Fragment } from 'react';
 
 export interface SelectInputProps {
   placeholder?: string;
-  selectedOption?: { value: string; label: string };
+  selectedOption?: string;
   options: { value: string; label: string }[];
   onValueChange: (value: { value: string; label: string }) => void;
 }
@@ -18,12 +18,15 @@ export default function SelectInput({
   onValueChange,
   options,
 }: SelectInputProps) {
+  const selectedOptionObject = options.find(
+    ({ value }) => value === selectedOption,
+  );
   return (
     <div className="w-full z-10">
-      <Listbox value={selectedOption} onChange={onValueChange}>
+      <Listbox value={selectedOptionObject} onChange={onValueChange}>
         <Listbox.Button className="relative w-full cursor-pointer rounded-lg h-[40px] bg-input-bg py-2 pl-3 pr-10 text-left">
           <span className="block truncate font-light italic text-[14px] lg:text-[18px]">
-            {selectedOption?.label ?? placeholder}
+            {selectedOptionObject?.label ?? placeholder}
           </span>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
             <ChevronDownIcon
