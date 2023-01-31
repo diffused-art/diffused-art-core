@@ -17,7 +17,7 @@ export default function LabeledNumberInput({
 }: Props) {
   return (
     <div className={`md:px-5 ${wrapperClassName || ''}`}>
-      <div className="flex flex-col mb-[10px]">
+      <div className="flex flex-col mb-[10px] px-3">
         <h2 className="text-[16px] lg:text-[19px] font-normal text-white">{label}</h2>
         <div className="opacity-50 text-white italic font-light text-[12px] lg:text-[16px] leading-[20px]">
           {sublabel}

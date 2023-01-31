@@ -1,3 +1,5 @@
+// Inspired by https://eips.ethereum.org/EIPS/eip-4361
+
 export default function signInMessage(params: {
   nonce: string;
   walletAddress: string;

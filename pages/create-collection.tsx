@@ -5,9 +5,6 @@ import { Toaster } from 'react-hot-toast';
 import CreateCollectionStoreProvider from '../hooks/useCreateCollectionStore';
 import CreateCollectionFormPrompt from '../components/create-collection-form/prompt';
 
-// TODO: Add local storage to this reducer (use wallet address as composable on the key): https://www.benmvp.com/blog/sync-localstorage-react-usereducer-hook/
-// TODO: Proper clean up of creating collection (trahs icon, on this page), with modal are you sure
-// TODO: Add warning like all your chnages are persisted on your browser for the specific logged in wallet
 // TODO: Should have multiple create pages for each stage
 // TODO: All pages should have an warning that all changes are only published at the last step, publish
 // TODO: Allow to go back on the other pages that are not the prompt one

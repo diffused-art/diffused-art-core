@@ -28,7 +28,7 @@ export default function useAnonymousNFTStorage() {
         image: await toMetaplexFileFromBrowser(image),
       });
       const imageURL = metadata.image;
-      return imageURL;
+      return imageURL || '';
     },
     [metaplexCli],
   );

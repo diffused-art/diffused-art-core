@@ -1,10 +1,14 @@
 import axios from 'axios';
 import classNames from 'classnames';
-import React, { useCallback, useMemo, useState } from 'react';
-import { StableDiffusionVersions } from '../../enums/stable-diffusion';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import {
+  StableDiffusionValidDimensions,
+  StableDiffusionVersions,
+} from '../../enums/stable-diffusion';
 import useAnonymousNFTStorage from '../../hooks/useAnonymousNFTStorage';
 import {
   ActionTypesCreateCollectionStore,
+  createCollectionStoreInitialState,
   useCreateCollectionStore,
 } from '../../hooks/useCreateCollectionStore';
 import useToast, { ToastIconEnum } from '../../hooks/useToast';
@@ -16,6 +20,7 @@ import PrimaryButton from '../primary-button';
 import TextInput from '../text-input';
 import Title from '../title';
 import { CreateCollectionFormSteps } from '../wizard-steps-header';
+import equal from 'fast-deep-equal';
 
 const AIOPTIONS = [
   ...(Object.keys(StableDiffusionVersions)
@@ -29,8 +34,13 @@ const AIOPTIONS = [
 
 export default function CreateCollectionFormPrompt() {
   const toast = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
   const [loadingPreviewImage, setLoadingPreviewImage] = useState(false);
   const { state, dispatch } = useCreateCollectionStore();
+  const isInitialFormState = useMemo(
+    () => equal(state, createCollectionStoreInitialState),
+    [state],
+  );
   const cfgLabel = useMemo(() => {
     if (state.cfgScale <= 5) return 'Almost nothing like your prompt';
     if (state.cfgScale <= 10) return 'Somewhat like your prompt';
@@ -39,6 +49,7 @@ export default function CreateCollectionFormPrompt() {
     return 'Almost nothing like your prompt';
   }, [state.cfgScale]);
   const generateAIPreviewImage = useCallback(async () => {
+    if (!formRef.current?.reportValidity()) return;
     setLoadingPreviewImage(true);
     return axios
       .post('/api/collection/create/ai-generate', {
@@ -50,7 +61,6 @@ export default function CreateCollectionFormPrompt() {
         engine: state.engine,
       })
       .then(({ data }) => {
-        console.log(data.imageURL);
         dispatch({
           type: ActionTypesCreateCollectionStore.SetFieldValue,
           payload: {
@@ -79,17 +89,21 @@ export default function CreateCollectionFormPrompt() {
 
   const { uploadImage } = useAnonymousNFTStorage();
 
+  const [uploadingInitImage, setUploadingInitImage] = useState(false);
+
   const uploadInitImage = useCallback(
     async (value: File | null) => {
-      dispatch({
-        type: ActionTypesCreateCollectionStore.SetFieldValue,
-        payload: {
-          field: 'initImageFile',
-          value,
-        },
-      });
-
-      if (!value) return;
+      if (!value) {
+        dispatch({
+          type: ActionTypesCreateCollectionStore.SetFieldValue,
+          payload: {
+            field: 'initImage',
+            value: '',
+          },
+        });
+        return;
+      }
+      setUploadingInitImage(true);
       const imageUrl = await uploadImage(value);
       dispatch({
         type: ActionTypesCreateCollectionStore.SetFieldValue,
@@ -98,9 +112,21 @@ export default function CreateCollectionFormPrompt() {
           value: imageUrl,
         },
       });
+      setUploadingInitImage(false);
     },
     [dispatch, uploadImage],
   );
+
+  const onClickReset = useCallback(() => {
+    if (
+      confirm('Are you sure you want to reset the form? All data will be lost!')
+    ) {
+      dispatch({
+        type: ActionTypesCreateCollectionStore.Reset,
+      });
+      formRef.current?.reset();
+    }
+  }, [dispatch]);
 
   if (state.step !== 'prompt') return null;
 
@@ -112,171 +138,192 @@ export default function CreateCollectionFormPrompt() {
     state.width > 0 &&
     state.height > 0;
 
+  console.log(state);
   return (
-    <div className="py-10 flex justify-center">
-      <div className="w-full container mx-auto">
-        <CreateCollectionFormSteps activeStep={1} />
-        <Title className="pt-8">Prompt your imagination</Title>
-        <div className="w-full relative mt-5">
-          <TextInput
-            onChange={e =>
+    <>
+      <div className="py-10 flex justify-center">
+        <div className="w-full container mx-auto">
+          <CreateCollectionFormSteps activeStep={1} />
+          <Title className="pt-8">Prompt your imagination</Title>
+          <form
+            ref={formRef}
+            action="#"
+            onSubmit={e => {
+              e.preventDefault();
               dispatch({
-                type: ActionTypesCreateCollectionStore.SetFieldValue,
-                payload: {
-                  field: 'prompt',
-                  value: e.target.value,
-                },
-              })
-            }
-            required
-            className="w-full"
-            placeholder="A portrait of a cosmonaut riding a cat in the style of Monet"
-          />
-
-          <PrimaryButton
-            className={classNames(`absolute right-0 w-40 h-full `, {
-              'opacity-25': !state.prompt || loadingPreviewImage,
-            })}
-            disabled={!state.prompt || loadingPreviewImage}
-            onClick={generateAIPreviewImage}
+                type: ActionTypesCreateCollectionStore.SetStep,
+                payload: 'configuration',
+              });
+            }}
           >
-            {loadingPreviewImage ? 'Loading preview...' : 'Preview'}
-          </PrimaryButton>
-        </div>
-
-        <div className="flex space-x-5">
-          <div className="flex-1">
-            <form
-              action="#"
-              className="w-full pt-6"
-              onSubmit={() =>
-                dispatch({
-                  type: ActionTypesCreateCollectionStore.SetStep,
-                  payload: 'configuration',
-                })
-              }
-            >
-              <div className="w-full flex flex-col space-y-5 bg-secondary-90 border-t-secondary-100 border-b-secondary-100 px-8 py-4 border-t-2 border-b-2 rounded-sm">
-                <div className="w-full">
-                  <LabeledSelectInput
-                    label="Engine"
-                    sublabel="AI to use for your prompt"
-                    options={AIOPTIONS}
-                    onValueChange={value =>
-                      dispatch({
-                        type: ActionTypesCreateCollectionStore.SetFieldValue,
-                        payload: {
-                          field: 'engine',
-                          value: value.value,
-                        },
-                      })
-                    }
-                    selectedOption={state.engine}
-                  />
-                </div>
-                <div className="w-full">
-                  <LabeledImageUploadInput
-                    label="Initial image"
-                    sublabel="Reference to start from (optional)"
-                    image={state.initImageFile}
-                    setImage={uploadInitImage}
-                  />
-                </div>
-                <div className="w-full">
-                  <LabeledNumberInput
-                    required
-                    label="CFG Scale"
-                    sublabel="Adjust how much the image will be like your prompt. max: 20; min: 1"
-                    min={1}
-                    max={20}
-                    onChange={e =>
-                      dispatch({
-                        type: ActionTypesCreateCollectionStore.SetFieldValue,
-                        payload: {
-                          field: 'cfgScale',
-                          value: Number(e.target.value),
-                        },
-                      })
-                    }
-                    defaultValue={state.cfgScale}
-                    suffixComponent={cfgLabel}
-                  />
-                </div>
-                <div className="w-full">
-                  <LabeledSizeInput
-                    required
-                    label="Size"
-                    sublabel="max: 1024px width / 1024 px height"
-                    onChangeHeight={e =>
-                      dispatch({
-                        type: ActionTypesCreateCollectionStore.SetFieldValue,
-                        payload: {
-                          field: 'height',
-                          value: Number(e.target.value),
-                        },
-                      })
-                    }
-                    onChangeWidth={e =>
-                      dispatch({
-                        type: ActionTypesCreateCollectionStore.SetFieldValue,
-                        payload: {
-                          field: 'width',
-                          value: Number(e.target.value),
-                        },
-                      })
-                    }
-                    defaultValueHeight={state.height}
-                    defaultValueWidth={state.width}
-                  />
-                </div>
-                <div className="w-full md:px-5 z-0">
-                  <button
-                    className={classNames(
-                      `relative mt-5 w-full h-[50px] md:h-[70px] bg-black 
-                       text-white rounded-md font-normal text-[18px] leading-[32px]`,
-                      {
-                        'opacity-25': !canGoToNextPage || loadingPreviewImage,
-                        'hover:opacity-70':
-                          canGoToNextPage && !loadingPreviewImage,
-                      },
-                    )}
-                    type="submit"
-                    disabled={!canGoToNextPage || loadingPreviewImage}
+            <div className="w-full relative mt-5">
+              <TextInput
+                onChange={e =>
+                  dispatch({
+                    type: ActionTypesCreateCollectionStore.SetFieldValue,
+                    payload: {
+                      field: 'prompt',
+                      value: e.target.value,
+                    },
+                  })
+                }
+                required
+                defaultValue={state.prompt}
+                suffixComponent={
+                  <PrimaryButton
+                    className={classNames(`absolute right-0 w-40 h-full `, {
+                      'opacity-25': !state.prompt || loadingPreviewImage,
+                    })}
+                    disabled={!state.prompt || loadingPreviewImage}
+                    onClick={generateAIPreviewImage}
                   >
-                    Next
-                  </button>
+                    {loadingPreviewImage ? 'Loading preview...' : 'Preview'}
+                  </PrimaryButton>
+                }
+                className="w-full"
+                placeholder="A portrait of a cosmonaut riding a cat in the style of Monet"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 space-x-5">
+              <div className="w-full flex pt-6">
+                <div className="w-full flex flex-col space-y-8 bg-secondary-90 border-t-secondary-100 border-b-secondary-100 px-2 py-4 border-t-2 border-b-2 rounded-sm">
+                  <div className="w-full">
+                    <LabeledImageUploadInput
+                      label="Initial/reference image (optional)"
+                      sublabel="Warning: This image gets auto uploaded to IPFS"
+                      imageURL={state.initImage}
+                      setImage={uploadInitImage}
+                      loading={uploadingInitImage}
+                    />
+                  </div>
+                  <div className="w-full">
+                    <LabeledNumberInput
+                      required
+                      label="CFG Scale"
+                      sublabel="Adjust how much the image will be like your prompt. min: 1; max: 20"
+                      min={1}
+                      max={20}
+                      onChange={e =>
+                        dispatch({
+                          type: ActionTypesCreateCollectionStore.SetFieldValue,
+                          payload: {
+                            field: 'cfgScale',
+                            value: Number(e.target.value),
+                          },
+                        })
+                      }
+                      defaultValue={state.cfgScale}
+                      suffixComponent={cfgLabel}
+                    />
+                  </div>
+                  <div className="w-full">
+                    <LabeledSizeInput
+                      required
+                      label="Size"
+                      allowedSizes={StableDiffusionValidDimensions}
+                      sublabel="Maximum 1024px width / 1024 px height"
+                      onChangeHeight={e =>
+                        dispatch({
+                          type: ActionTypesCreateCollectionStore.SetFieldValue,
+                          payload: {
+                            field: 'height',
+                            value: Number(e.target.value),
+                          },
+                        })
+                      }
+                      onChangeWidth={e =>
+                        dispatch({
+                          type: ActionTypesCreateCollectionStore.SetFieldValue,
+                          payload: {
+                            field: 'width',
+                            value: Number(e.target.value),
+                          },
+                        })
+                      }
+                      defaultValueHeight={state.height}
+                      defaultValueWidth={state.width}
+                    />
+                  </div>
+                  <div className="w-full">
+                    <LabeledSelectInput
+                      label="Engine"
+                      sublabel="AI to use for your prompt"
+                      options={AIOPTIONS}
+                      onValueChange={value =>
+                        dispatch({
+                          type: ActionTypesCreateCollectionStore.SetFieldValue,
+                          payload: {
+                            field: 'engine',
+                            value: value.value,
+                          },
+                        })
+                      }
+                      selectedOption={state.engine}
+                    />
+                  </div>
+                  <div className="w-full md:px-5 z-0">
+                    <button
+                      className={classNames(
+                        `relative mt-5 w-full h-[50px] md:h-[70px] bg-black 
+                       text-white rounded-md font-normal text-[18px] leading-[32px]`,
+                        {
+                          'opacity-25': !canGoToNextPage || loadingPreviewImage,
+                          'hover:opacity-70':
+                            canGoToNextPage && !loadingPreviewImage,
+                        },
+                      )}
+                      type="submit"
+                      disabled={!canGoToNextPage || loadingPreviewImage}
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
               </div>
-            </form>
-          </div>
-          <div className="flex-1">
-            <div className="pt-6 rounded-sm">
-              <div className="relative">
-                {loadingPreviewImage && (
-                  <>
-                    <div className="absolute w-full h-full bg-gray-100 opacity-20"></div>
-                    <div className="absolute font-bold ml-[10%] flex justify-center items-center h-full">
-                      Loading preview, please wait...
-                    </div>
-                  </>
-                )}
-                <img
-                  src={state.previewImage}
-                  alt="Preview image"
-                  onLoad={() => setLoadingPreviewImage(false)}
-                  className={classNames('max-h-[530px] w-full rounded-md', {
-                    'opacity-25': loadingPreviewImage,
-                  })}
-                />
-              </div>
+              <div>
+                <div className="pt-6 rounded-sm">
+                  <div className="relative">
+                    {loadingPreviewImage && (
+                      <>
+                        <div className="absolute w-full h-full bg-gray-100 opacity-20"></div>
+                        <div className="absolute font-bold ml-[10%] flex justify-center items-center h-full">
+                          Loading preview, please wait...
+                        </div>
+                      </>
+                    )}
+                    <img
+                      src={state.previewImage}
+                      alt="Preview image"
+                      onLoad={() => setLoadingPreviewImage(false)}
+                      className={classNames('max-h-[530px] w-full rounded-md', {
+                        'opacity-25': loadingPreviewImage,
+                      })}
+                    />
+                  </div>
 
-              <h4 className="opacity-25 text-[16px] font-light italic text-center">
-                This is a preview of your prompt
-              </h4>
+                  <h4 className="opacity-25 text-[16px] font-light italic text-center">
+                    This is a preview of your prompt
+                  </h4>
+                </div>
+              </div>
             </div>
-          </div>
+          </form>
         </div>
       </div>
-    </div>
+      {!isInitialFormState && (
+        <div className="flex py-5 space-x-2 justify-center">
+          <span className="text-base text-gray-400 self-center">
+            While unpublished, your drop is saved locally on your browser.
+          </span>
+          <span
+            className="text-white cursor-pointer text-base font-bold self-center"
+            onClick={onClickReset}
+          >
+            Click here to reset the form.
+          </span>
+        </div>
+      )}
+    </>
   );
 }

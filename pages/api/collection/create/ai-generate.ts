@@ -2,7 +2,6 @@ import { Keypair } from '@solana/web3.js';
 import { unlinkSync } from 'fs';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
-import { Readable } from 'stream';
 import { generateStableDiffImageAsync } from '../../../../functions/ai-sources/stable-diffusion';
 import { STABLE_DIFFUSION_DEFAULTS_FOR_METADATA } from '../../../../functions/ai-sources/stable-diffusion/defaults';
 import { generateSemiRandomNumberStableDiffusionRange } from '../../../../functions/ai-sources/stable-diffusion/generateSemiRandomSeed';
