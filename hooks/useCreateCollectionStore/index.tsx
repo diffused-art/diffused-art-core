@@ -20,8 +20,16 @@ interface CreateCollectionStorePromptInterface {
   engine: `${StableDiffusionVersions}`;
 }
 
+interface CreateCollectionStoreConfigurationInterface {
+  teaserImage: string;
+  dropName: string;
+  dropDescription: string;
+  keywords: string[];
+}
+
 interface CreateCollectionStoreForm
-  extends CreateCollectionStorePromptInterface {}
+  extends CreateCollectionStorePromptInterface,
+    CreateCollectionStoreConfigurationInterface {}
 
 type StepType = 'prompt' | 'configuration' | 'publish';
 
@@ -32,6 +40,7 @@ interface CreateCollectionStoreInterface extends CreateCollectionStoreForm {
 export const createCollectionStoreInitialState: CreateCollectionStoreInterface =
   {
     step: 'prompt',
+
     prompt: '',
     initImage: '',
     width: 512,
@@ -40,6 +49,11 @@ export const createCollectionStoreInitialState: CreateCollectionStoreInterface =
     engine: 'stable-diffusion-512-v2-1',
     previewImage:
       'https://d2zsqulv16efzu.cloudfront.net//image-generation/stable-diffusion-512-v2-1/placeholder-wuiahsduhwdya54656.png',
+
+    teaserImage: '',
+    dropName: '',
+    dropDescription: '',
+    keywords: [],
   };
 
 export enum ActionTypesCreateCollectionStore {

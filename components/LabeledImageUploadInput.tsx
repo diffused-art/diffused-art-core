@@ -87,6 +87,7 @@ type Props = {
   setImage: (image: File | null) => void;
   required?: boolean;
   loading?: boolean;
+  removeMessage?: string;
 };
 
 export default function LabeledImageUploadInput({
@@ -98,6 +99,7 @@ export default function LabeledImageUploadInput({
   setImage,
   loading,
   required,
+  removeMessage = 'Are you sure you want to remove this image?',
 }: Props) {
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -110,7 +112,7 @@ export default function LabeledImageUploadInput({
     const files = event.target.files;
     const imageFile = files ? files[0] : null;
     if (imageFile) {
-      if (imageFile.size > 5000000) {
+      if (imageFile.size > 5_000_000) {
         toast({
           icon: ToastIconEnum.FAILURE,
           message: 'File is too big!',
@@ -153,7 +155,7 @@ export default function LabeledImageUploadInput({
   const onClick = () => {
     if (!window || loading) return;
     if (imageURL) {
-      confirm('Are you sure you want to remove this image?') && setImage(null);
+      confirm(removeMessage) && setImage(null);
       return;
     }
     handleClick();

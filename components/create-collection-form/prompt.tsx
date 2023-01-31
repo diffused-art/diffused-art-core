@@ -1,6 +1,12 @@
 import axios from 'axios';
 import classNames from 'classnames';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   StableDiffusionValidDimensions,
   StableDiffusionVersions,
@@ -20,7 +26,7 @@ import PrimaryButton from '../primary-button';
 import TextInput from '../text-input';
 import Title from '../title';
 import { CreateCollectionFormSteps } from '../wizard-steps-header';
-import equal from 'fast-deep-equal';
+import useResetCreateCollectionStore from '../../hooks/useCreateCollectionStore/useResetCreateCollectionStore';
 
 const AIOPTIONS = [
   ...(Object.keys(StableDiffusionVersions)
@@ -37,10 +43,8 @@ export default function CreateCollectionFormPrompt() {
   const formRef = useRef<HTMLFormElement>(null);
   const [loadingPreviewImage, setLoadingPreviewImage] = useState(false);
   const { state, dispatch } = useCreateCollectionStore();
-  const isInitialFormState = useMemo(
-    () => equal(state, createCollectionStoreInitialState),
-    [state],
-  );
+  const resetNode = useResetCreateCollectionStore(formRef);
+
   const cfgLabel = useMemo(() => {
     if (state.cfgScale <= 5) return 'Almost nothing like your prompt';
     if (state.cfgScale <= 10) return 'Somewhat like your prompt';
@@ -68,6 +72,15 @@ export default function CreateCollectionFormPrompt() {
             value: data.imageURL,
           },
         });
+        if (state.teaserImage.length === 0) {
+          dispatch({
+            type: ActionTypesCreateCollectionStore.SetFieldValue,
+            payload: {
+              field: 'teaserImage',
+              value: data.imageURL,
+            },
+          });
+        }
       })
       .catch(error => {
         toast({
@@ -90,6 +103,14 @@ export default function CreateCollectionFormPrompt() {
   const { uploadImage } = useAnonymousNFTStorage();
 
   const [uploadingInitImage, setUploadingInitImage] = useState(false);
+
+  useEffect(
+    () => () => {
+      setLoadingPreviewImage(false);
+      setUploadingInitImage(false);
+    },
+    [],
+  );
 
   const uploadInitImage = useCallback(
     async (value: File | null) => {
@@ -117,17 +138,6 @@ export default function CreateCollectionFormPrompt() {
     [dispatch, uploadImage],
   );
 
-  const onClickReset = useCallback(() => {
-    if (
-      confirm('Are you sure you want to reset the form? All data will be lost!')
-    ) {
-      dispatch({
-        type: ActionTypesCreateCollectionStore.Reset,
-      });
-      formRef.current?.reset();
-    }
-  }, [dispatch]);
-
   if (state.step !== 'prompt') return null;
 
   const canGoToNextPage =
@@ -138,7 +148,6 @@ export default function CreateCollectionFormPrompt() {
     state.width > 0 &&
     state.height > 0;
 
-  console.log(state);
   return (
     <>
       <div className="py-10 flex justify-center">
@@ -148,8 +157,14 @@ export default function CreateCollectionFormPrompt() {
           <form
             ref={formRef}
             action="#"
-            onSubmit={e => {
+            onSubmit={async e => {
               e.preventDefault();
+              if (
+                state.previewImage ===
+                createCollectionStoreInitialState.previewImage
+              ) {
+                await generateAIPreviewImage();
+              }
               dispatch({
                 type: ActionTypesCreateCollectionStore.SetStep,
                 payload: 'configuration',
@@ -311,19 +326,7 @@ export default function CreateCollectionFormPrompt() {
           </form>
         </div>
       </div>
-      {!isInitialFormState && (
-        <div className="flex py-5 space-x-2 justify-center">
-          <span className="text-base text-gray-400 self-center">
-            While unpublished, your drop is saved locally on your browser.
-          </span>
-          <span
-            className="text-white cursor-pointer text-base font-bold self-center"
-            onClick={onClickReset}
-          >
-            Click here to reset the form.
-          </span>
-        </div>
-      )}
+      {resetNode}
     </>
   );
 }
