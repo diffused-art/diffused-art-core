@@ -1,5 +1,6 @@
 import React from 'react';
 import { InfiniteGrid } from '../components/infinite-grid';
+import Menu from '../components/menu';
 
 interface ArtPiece {
   id: string;
@@ -48,15 +49,19 @@ const artPieces = [
 export default function Home() {
   return (
     <>
-      <style jsx>
+      <style jsx global>
         {`
           html {
-            overscroll-behavior: none;
             overflow: hidden;
           }
 
           body {
             margin: 0;
+          }
+
+          html,
+          body {
+            overscroll-behavior-x: none;
           }
         `}
       </style>
@@ -66,6 +71,7 @@ export default function Home() {
           height: '100vh',
           overflow: 'hidden',
         }}
+        className="relative"
       >
         <InfiniteGrid>
           <div
@@ -94,12 +100,16 @@ export default function Home() {
                         ? 'a'
                         : String.fromCharCode('a'.charCodeAt(0) + i),
                   }}
-                  className="bg-cover rounded-3xl"
+                  className="bg-cover rounded-3xl cursor-pointer"
                 />
               );
             })}
           </div>
         </InfiniteGrid>
+
+        <div className="absolute top-5 w-full">
+          <Menu />
+        </div>
       </div>
     </>
   );

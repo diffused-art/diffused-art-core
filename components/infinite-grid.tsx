@@ -1,3 +1,5 @@
+// inspired by https://codesandbox.io/s/infinitegrid-rtuh7b?file=/src/infinite-grid/components.tsx
+
 import { useComponentSize } from 'react-use-size';
 import {
   motion,
