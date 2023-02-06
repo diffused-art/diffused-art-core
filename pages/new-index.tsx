@@ -7,6 +7,9 @@ interface ArtPiece {
   thumbUrl: string;
 }
 
+// TODO: Fix slowdown when scrolling sideways
+// TODO: Fix image size so that each one uses full image size
+// TODO: Fix error that  Nextjs is throwing: Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. 
 const artPieces = [
   {
     id: '1',

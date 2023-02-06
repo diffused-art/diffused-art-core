@@ -7,12 +7,12 @@ import {
   useMotionValueEvent,
   useSpring,
 } from 'framer-motion';
-import * as React from 'react';
 import { Grid, Vector } from './infinite-grid-types';
 import { useGesture } from '@use-gesture/react';
 // @ts-ignore
 import { Lethargy } from 'lethargy';
 import produce from 'immer';
+import { useEffect, useRef, useState } from 'react';
 
 const lethargy = new Lethargy(15, 12, 0.05);
 
@@ -20,9 +20,10 @@ const ItemComp = ({ item, children }) => {
   const x = useMotionValue(item.center.x);
   const y = useMotionValue(item.center.y);
 
-  React.useEffect(() => {
+  useEffect(() => {
     x.set(item.center.x);
     y.set(item.center.y);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item.center.x, item.center.y]);
 
   return (
@@ -46,11 +47,11 @@ export const InfiniteGrid = ({
   height = '100%',
   children,
 }: InfiniteGridProps) => {
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const content = useComponentSize();
   const config = { mass: 0.25, damping: 40, stiffness: 200 }; // more damping on large screens
 
-  const [grid, setGrid] = React.useState(
+  const [grid, setGrid] = useState(
     () =>
       new Grid({
         width: content.width,
@@ -58,7 +59,7 @@ export const InfiniteGrid = ({
       }),
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     setGrid(
       new Grid({
         width: content.width,
@@ -97,7 +98,7 @@ export const InfiniteGrid = ({
     );
   });
 
-  const initialOffsetRef = React.useRef({ x: 0, y: 0 });
+  const initialOffsetRef = useRef({ x: 0, y: 0 });
 
   useGesture(
     {
@@ -128,9 +129,10 @@ export const InfiniteGrid = ({
     { target: containerRef, wheel: { eventOptions: { passive: false } } },
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     x.set(-grid.cameraPosition.x);
     y.set(-grid.cameraPosition.y);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grid.cameraPosition.x, grid.cameraPosition.y]);
 
   return (
