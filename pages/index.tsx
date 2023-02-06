@@ -44,7 +44,7 @@ const Home = ({ collectionsLive }: HomeProps) => {
   return (
     <div className="bg-secondary-50">
       <Head>
-        <title>diffused.</title>
+        <title>diffused.art</title>
         <meta
           name="description"
           content="Truly immutable on-chain 1/1 AI art generated in real time"
@@ -61,7 +61,7 @@ const Home = ({ collectionsLive }: HomeProps) => {
           <h3 className="text-base">
             Mint one of the latest AI art drops powered by{' '}
             <i>
-              <b>diffused.</b>
+              <b>diffused.art</b>
             </i>{' '}
             platform below:
           </h3>

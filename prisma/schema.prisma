@@ -46,6 +46,7 @@ model Collection {
   artist                        Artist                 @relation(fields: [artistId], references: [id])
   mints                         Mint[]
   errorsCMChunksUploads         ErrorsCMChunksUpload[]
+  CollectionTag                 CollectionTag[]
 
   @@map(name: "collections")
 }
@@ -114,4 +115,28 @@ model ErrorsCMChunksUpload {
   updatedAt           DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "errorscmchunksupload")
+}
+
+model CollectionTag {
+  id           String     @id @default(cuid())
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id])
+
+  tagId     String
+  tag       Tag      @relation(fields: [tagId], references: [id])
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "collection_tag")
+}
+
+model Tag {
+  id            String          @id @default(cuid())
+  label         String
+  isEnabled     Boolean         @default(true)
+  createdAt     DateTime        @default(now()) @map(name: "created_at")
+  updatedAt     DateTime        @updatedAt @map(name: "updated_at")
+  CollectionTag CollectionTag[]
+
+  @@map(name: "tag")
 }

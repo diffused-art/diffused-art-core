@@ -2,7 +2,6 @@ import { Keypair } from '@solana/web3.js';
 import { unlinkSync } from 'fs';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
-import { Readable } from 'stream';
 import { generateStableDiffImageAsync } from '../../../../functions/ai-sources/stable-diffusion';
 import { STABLE_DIFFUSION_DEFAULTS_FOR_METADATA } from '../../../../functions/ai-sources/stable-diffusion/defaults';
 import { generateSemiRandomNumberStableDiffusionRange } from '../../../../functions/ai-sources/stable-diffusion/generateSemiRandomSeed';
@@ -73,7 +72,9 @@ export default async function handle(
     return [];
   });
   if (imageData.length === 0) {
-    return res.status(200).json({ data: 'Couldnt generate image' });
+    return res
+      .status(500)
+      .json({ data: 'Error while generating image, please try again later!' });
   }
   const lastGeneratedImage = imageData[imageData.length - 1];
   unlinkSync(lastGeneratedImage.filePath as string);

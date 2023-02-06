@@ -1,10 +1,11 @@
 import { ChangeEventHandler, ReactNode } from 'react';
-import { NumberInput } from './number-input';
+import TextInput from './text-input';
 
 interface Props {
   label: ReactNode;
   sublabel?: ReactNode;
   wrapperClassName?: string;
+  allowedSizes: number[];
   defaultValueWidth?: number;
   defaultValueHeight?: number;
   onChangeWidth: ChangeEventHandler<HTMLInputElement> | undefined;
@@ -16,15 +17,18 @@ export default function LabeledSizeInput({
   label,
   sublabel,
   wrapperClassName,
+  allowedSizes,
   defaultValueWidth,
   defaultValueHeight,
   onChangeWidth,
   onChangeHeight,
   required,
 }: Props) {
+  const validSizesPattern = allowedSizes.join('|');
+  const pattern = `^(${validSizesPattern})$`;
   return (
     <div className={`md:px-5 ${wrapperClassName || ''}`}>
-      <div className="flex flex-col lg:flex-row items-baseline mb-[10px]">
+      <div className="flex flex-col lg:flex-row items-baseline mb-[10px] px-3">
         <h2 className="text-[16px] lg:text-[19px]  font-normal text-white">
           {label}
         </h2>
@@ -32,24 +36,24 @@ export default function LabeledSizeInput({
           {sublabel}
         </span>
       </div>
-      <div className="flex space-x-5">
-        <NumberInput
+      <div className="grid grid-cols-2 gap-4">
+        <TextInput
           onChange={onChangeWidth}
           placeholder="width"
+          pattern={pattern}
+          title={`Allowed widths: ${allowedSizes.join(', ')}`}
+          maxLength={4}
           suffixComponent="px"
-          min={512}
-          max={1024}
-          className="flex-1"
           defaultValue={defaultValueWidth}
           required={required}
         />
-        <NumberInput
+        <TextInput
           onChange={onChangeHeight}
           placeholder="height"
+          pattern={pattern}
+          maxLength={4}
           suffixComponent="px"
-          min={512}
-          max={1024}
-          className="flex-1"
+          title={`Allowed heights: ${allowedSizes.join(', ')}`}
           defaultValue={defaultValueHeight}
           required={required}
         />
