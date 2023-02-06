@@ -6,7 +6,7 @@ const About = () => {
   return (
     <div className="bg-secondary-50">
       <Head>
-        <title>diffused. about.</title>
+        <title>diffused.art about.</title>
         <meta
           name="description"
           content="Truly immutable on-chain 1/1 AI art generated in real time"

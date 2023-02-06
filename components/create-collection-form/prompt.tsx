@@ -97,6 +97,7 @@ export default function CreateCollectionFormPrompt() {
     state.initImage,
     state.prompt,
     state.width,
+    state.teaserImage.length,
     toast,
   ]);
 

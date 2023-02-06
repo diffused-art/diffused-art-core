@@ -22,7 +22,8 @@
     "download-stable-diffusion-lib": "./scripts/download-and-build-sd-lib.sh",
     "reveal-cronjobs": "nodemon --watch 'src/' --exec 'ts-node ./cronjobs/revealMintsCronjob.ts' -e ts",
     "flush-db": "ts-node ./utils/flushDB.ts",
-    "postinstall": "patch-package && npx prisma generate"
+    "postinstall": "patch-package && npx prisma generate",
+    "seed-tags-prod": "ts-node ./scripts/db/seed-tags.ts"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.8",

@@ -8,11 +8,10 @@ import CreateCollectionFormConfiguration from '../components/create-collection-f
 
 // TODO: Should have multiple create pages for each stage
 // TODO: All pages should have an warning that all changes are only published at the last step, publish
-// TODO: Allow to go back on the other pages that are not the prompt one
 const CreatePage = () => (
   <div className="bg-secondary-50">
     <Head>
-      <title>diffused.</title>
+      <title>diffused.art</title>
       <meta
         name="description"
         content="Truly immutable on-chain 1/1 AI art generated in real time"

@@ -11,15 +11,15 @@ import useResetCreateCollectionStore from '../../hooks/useCreateCollectionStore/
 import LabeledTextInput from '../LabeledTextInput';
 import LabeledTextareaInput from '../LabeledTextareInput';
 import axios from 'axios';
+import LabeledTagInput from '../LabeledTagInput';
+import { useQuery } from 'react-query';
+import useTags from '../../hooks/api/useTags';
 
-// TODO: On DB, for relationship of collection to keywords, add a seed to the keywords table
-// TODO: Adds keyword selector input (list of keyword ids stored on the store, as this gets requested from BE). On click on the dropdown, show right below
-// (and adds keywords to the DB, linking to collections on a one to many relationship)
 export default function CreateCollectionFormConfiguration() {
   const formRef = useRef<HTMLFormElement>(null);
   const { state, dispatch } = useCreateCollectionStore();
   const resetNode = useResetCreateCollectionStore(formRef);
-
+  const { data: tags } = useTags();
   const [uploadingTeaserImage, setUploadingTeaserImage] = useState(false);
 
   const uploadTeaserImage = useCallback(
@@ -141,7 +141,45 @@ export default function CreateCollectionFormConfiguration() {
                       removeMessage="Are you sure you want to stop using the prompt preview as a image teaser for this drop?"
                     />
                   </div>
-                  <div className="w-full">KEYWORDS INPUT HERE</div>
+                  <div className="w-full">
+                    <LabeledTagInput
+                      label="Keywords"
+                      placeholder={
+                        (tags || []).length > 0
+                          ? 'Type keywords'
+                          : 'Loading keywords...'
+                      }
+                      options={
+                        tags?.map(value => ({
+                          label: value.label,
+                          value: value.id,
+                          count: value.count,
+                        })) ?? []
+                      }
+                      selectedOptions={state.keywords}
+                      maxTags={3}
+                      onValueChange={({ value }) =>
+                        dispatch({
+                          type: ActionTypesCreateCollectionStore.SetFieldValue,
+                          payload: {
+                            field: 'keywords',
+                            value: [...state.keywords, value],
+                          },
+                        })
+                      }
+                      onValueRemove={({ value }) =>
+                        dispatch({
+                          type: ActionTypesCreateCollectionStore.SetFieldValue,
+                          payload: {
+                            field: 'keywords',
+                            value: state.keywords.filter(
+                              keyword => keyword !== value,
+                            ),
+                          },
+                        })
+                      }
+                    />
+                  </div>
                   <div className="w-full md:px-5 z-0">
                     <button
                       className={classNames(
