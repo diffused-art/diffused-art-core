@@ -14,12 +14,7 @@ import LabeledCheckboxInput from '../../form/labeled/LabeledCheckboxInput';
 import LabeledDateInput from '../../form/labeled/LabeledDateInput';
 import LabeledTimeInput from '../../form/labeled/LabeledTimeInput';
 import PublishModal from './publish-modal';
-
-function getDatetime(date, time) {
-  const dateTime = `${date}T${time}`;
-  const dateObject = new Date(dateTime + 'Z');
-  return dateObject;
-}
+import { getDatetime } from './utils';
 
 export default function CreateCollectionFormPublish() {
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
@@ -224,7 +219,7 @@ export default function CreateCollectionFormPublish() {
                     {selectedTags.map(tag => (
                       <span
                         key={tag.id}
-                        className="group bg-primary-100 relative text-white uppercase text-xs rounded-md py-2 px-3"
+                        className="group bg-primary-100 relative text-white uppercase text-xs rounded-md py-2 px-3 mr-2"
                       >
                         <span>
                           {tag.label}{' '}

@@ -25,6 +25,7 @@ export const getServerSideProps = async context => {
     props: {
       collection: {
         ...collection,
+        updateAuthorityPrivateKey: null,
         mintPrice: collection.mintPrice.toNumber(),
         mintOpenAt: collection.mintOpenAt.getTime(),
         createdAt: collection.createdAt.getTime(),

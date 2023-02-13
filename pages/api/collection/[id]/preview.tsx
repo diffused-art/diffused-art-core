@@ -123,8 +123,6 @@ const ROBOTO_FONTS_BINARIES = Promise.all([
 
 export default async function handle(req: NextRequest) {
   const { searchParams, origin } = req.nextUrl;
-  const adminPassword = searchParams.get('adminPassword');
-  const isAdmin = adminPassword === process.env.MINT_PREVIEW_ADMIN_PASSWORD;
   // Only add together with trustless CM
   // if (!isAdmin) {
   //   const token = await getToken({ req });
@@ -144,7 +142,7 @@ export default async function handle(req: NextRequest) {
 
   const collectionId = searchParams.get('id');
 
-  const extraParam = adminPassword ? `adminPassword=${adminPassword}` : '';
+  const extraParam = `adminPassword=${process.env.MINT_PREVIEW_ADMIN_PASSWORD}`;
   const resCollection = await fetch(
     new URL(
       `${origin}/api/collection/${collectionId}?${extraParam}`,

@@ -22,8 +22,8 @@ export default async function handle(req: any, res: any) {
     optionsSuccessStatus: 200,
   });
 
-  if (req.method !== 'PUT') {
-    res.status(405).send({ message: 'Only PUT requests allowed' });
+  if (!['GET', 'PUT'].includes(req.method)) {
+    res.status(405).send({ message: 'Only GET/PUT requests allowed' });
     return;
   }
 
@@ -32,7 +32,7 @@ export default async function handle(req: any, res: any) {
 
   if (!isAdmin) {
     try {
-      applyRequireAuth(req);
+      await applyRequireAuth(req);
     } catch (error) {
       return res.status(401).send(error);
     }
@@ -41,14 +41,27 @@ export default async function handle(req: any, res: any) {
   const collection = await prisma.collection.findUnique({
     where: { id: req.query.id },
   });
+
   if (!collection) {
     return res.status(404).json({ message: 'Not found.' });
   }
 
   switch (req.method) {
+    case 'GET': {
+      return res
+        .status(200)
+        .json({ data: { ...collection, updateAuthorityPrivateKey: null } });
+    }
     case 'PUT': {
-      // TODO: Update preview image once there is a trust less mechanism for creating collections
-      return res.status(200).json({ data: collection });
+      const collection = await prisma.collection.update({
+        where: { id: req.query.id },
+        data: {
+          nftPlaceholderImageURL: req.body.nftPlaceholderImageURL,
+        },
+      });
+      return res
+        .status(200)
+        .json({ data: { ...collection, updateAuthorityPrivateKey: null } });
     }
     default:
       return res.status(404).json({ message: 'Not found.' });

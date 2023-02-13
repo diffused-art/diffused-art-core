@@ -34,9 +34,10 @@ interface CreateCollectionStorePublishInterface {
   startDate: string;
   startTime: string;
   publishStep: 'terms' | 'upload' | 'done';
+  collectionId: string;
 }
 
-interface CreateCollectionStoreForm
+export interface CreateCollectionStoreForm
   extends CreateCollectionStorePromptInterface,
     CreateCollectionStoreConfigurationInterface,
     CreateCollectionStorePublishInterface {}
@@ -76,6 +77,7 @@ export const createCollectionStoreInitialState: CreateCollectionStoreInterface =
       .split('T')[0],
     startTime: '12:00',
     publishStep: 'terms',
+    collectionId: '',
   };
 
 export enum ActionTypesCreateCollectionStore {

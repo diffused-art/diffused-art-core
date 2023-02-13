@@ -111,6 +111,7 @@ export default function CreateCollectionFormConfiguration() {
                         })
                       }
                       required
+                      maxLength={30}
                     />
                   </div>
                   <div className="w-full">

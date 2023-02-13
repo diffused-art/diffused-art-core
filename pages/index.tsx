@@ -20,6 +20,7 @@ export const getServerSideProps = async () => {
     props: {
       collectionsLive: collectionsLive.map(collection => ({
         ...collection,
+        updateAuthorityPrivateKey: null,
         mintPrice: collection.mintPrice.toNumber(),
         mintOpenAt: collection.mintOpenAt.getTime(),
         createdAt: collection.createdAt.getTime(),

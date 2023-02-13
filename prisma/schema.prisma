@@ -44,6 +44,8 @@ model Collection {
   createdAt                     DateTime               @default(now()) @map(name: "created_at")
   updatedAt                     DateTime               @updatedAt @map(name: "updated_at")
   artist                        Artist                 @relation(fields: [artistId], references: [id])
+  updateAuthorityPublicKey      String
+  updateAuthorityPrivateKey     String
   mints                         Mint[]
   errorsCMChunksUploads         ErrorsCMChunksUpload[]
   CollectionTag                 CollectionTag[]
