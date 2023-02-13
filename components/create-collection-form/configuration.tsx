@@ -4,15 +4,14 @@ import {
   ActionTypesCreateCollectionStore,
   useCreateCollectionStore,
 } from '../../hooks/useCreateCollectionStore';
-import LabeledImageUploadInput from '../LabeledImageUploadInput';
+import LabeledImageUploadInput from '../form/labeled/LabeledImageUploadInput';
 import Title from '../title';
 import { CreateCollectionFormSteps } from '../wizard-steps-header';
 import useResetCreateCollectionStore from '../../hooks/useCreateCollectionStore/useResetCreateCollectionStore';
-import LabeledTextInput from '../LabeledTextInput';
-import LabeledTextareaInput from '../LabeledTextareInput';
+import LabeledTextInput from '../form/labeled/LabeledTextInput';
+import LabeledTextareaInput from '../form/labeled/LabeledTextareInput';
 import axios from 'axios';
-import LabeledTagInput from '../LabeledTagInput';
-import { useQuery } from 'react-query';
+import LabeledTagInput from '../form/labeled/LabeledTagInput';
 import useTags from '../../hooks/api/useTags';
 
 export default function CreateCollectionFormConfiguration() {
@@ -87,9 +86,10 @@ export default function CreateCollectionFormConfiguration() {
             action="#"
             onSubmit={e => {
               e.preventDefault();
+              console.log('submitting form');
               dispatch({
                 type: ActionTypesCreateCollectionStore.SetStep,
-                payload: 'configuration',
+                payload: 'publish',
               });
             }}
           >
@@ -199,11 +199,13 @@ export default function CreateCollectionFormConfiguration() {
                 </div>
               </div>
               <div className="bg-secondary-90 border-t-2 border-b-2 rounded-sm border-t-secondary-100 border-b-secondary-100 px-2 mt-6">
-                <div className="rounded-sm py-4 px-3">
-                  <h3 className="text-[18px] font-bold my-1">Prompt</h3>
-                  <h5 className="opacity-50 text-[16px] font-normal my-2">
-                    {state.prompt}
-                  </h5>
+                <div className="rounded-sm py-4 px-3 space-y-5">
+                  <div>
+                    <h3 className="text-[18px]">Prompt</h3>
+                    <h5 className="opacity-50 text-[16px] font-normal">
+                      {state.prompt}
+                    </h5>
+                  </div>
                   <div className="relative">
                     <img
                       src={state.previewImage}

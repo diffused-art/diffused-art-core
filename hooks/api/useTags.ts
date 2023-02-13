@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useQuery } from 'react-query';
 
-interface UseTagsResultInterface {
+export interface UseTagsResultInterface {
   label: string;
   isEnabled: string;
   id: string;

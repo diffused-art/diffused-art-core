@@ -15,6 +15,8 @@ import {
 import React, { useMemo } from 'react';
 import { SessionProvider } from 'next-auth/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import NextNProgress from 'nextjs-progressbar';
+
 require('@solana/wallet-adapter-react-ui/styles.css');
 require('../styles/globals.css');
 
@@ -31,7 +33,7 @@ export function reportWebVitals({ id, name, label, value }) {
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const endpoint = useMemo(() => process.env.NEXT_PUBLIC_RPC_URL!, []);
-  
+
   const wallets = useMemo(
     () => [
       new SolflareWalletAdapter(),
@@ -51,6 +53,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
                 trackPageViews
                 gaMeasurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}
               />
+              <NextNProgress />
               <Component {...pageProps} />
             </SessionProvider>
           </WalletModalProvider>

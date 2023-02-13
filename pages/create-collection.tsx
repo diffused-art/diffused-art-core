@@ -5,9 +5,8 @@ import { Toaster } from 'react-hot-toast';
 import CreateCollectionStoreProvider from '../hooks/useCreateCollectionStore';
 import CreateCollectionFormPrompt from '../components/create-collection-form/prompt';
 import CreateCollectionFormConfiguration from '../components/create-collection-form/configuration';
+import CreateCollectionFormPublish from '../components/create-collection-form/publish';
 
-// TODO: Should have multiple create pages for each stage
-// TODO: All pages should have an warning that all changes are only published at the last step, publish
 const CreatePage = () => (
   <div className="bg-secondary-50">
     <Head>
@@ -27,6 +26,8 @@ const CreatePage = () => (
         <CreateCollectionFormPrompt />
         {/* Second step, series configuration */}
         <CreateCollectionFormConfiguration />
+        {/* Third step, series publish */}
+        <CreateCollectionFormPublish />
       </CreateCollectionStoreProvider>
     </ArtistLoginRequired>
     <Toaster />

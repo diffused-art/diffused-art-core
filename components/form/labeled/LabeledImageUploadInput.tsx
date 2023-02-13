@@ -1,9 +1,9 @@
 import { PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import { ReactNode, useRef } from 'react';
-import { StableDiffusionValidDimensions } from '../enums/stable-diffusion';
-import useToast, { ToastIconEnum } from '../hooks/useToast';
-import Popover from './popover';
+import { StableDiffusionValidDimensions } from '../../../enums/stable-diffusion';
+import useToast, { ToastIconEnum } from '../../../hooks/useToast';
+import Popover from '../../popover';
 
 interface ResizeImageFileArgs {
   file: File;
@@ -167,14 +167,16 @@ export default function LabeledImageUploadInput({
       disabled={!imageURL}
     >
       <div className={`md:px-5 ${wrapperClassName || ''}`}>
-        <input
-          ref={inputRef}
-          onChange={onChange}
-          className="hidden"
-          type="file"
-          accept="image/jpeg, image/bmp, image/png, image/jpg"
-          required={required}
-        />
+        {!imageURL && (
+          <input
+            ref={inputRef}
+            onChange={onChange}
+            className="hidden"
+            type="file"
+            accept="image/jpeg, image/bmp, image/png, image/jpg"
+            required={required}
+          />
+        )}
         <div className="flex flex-col items-baseline mb-[10px] px-3">
           <h2 className="text-[16px] lg:text-[19px] font-normal text-white">
             {label}

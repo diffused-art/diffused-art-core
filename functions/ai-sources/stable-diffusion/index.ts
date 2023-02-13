@@ -396,15 +396,17 @@ export async function generateStableDiffImageAsync(
     const readStream = fs.createReadStream(image.filePath as string);
     readStream.pipe(writeStream);
     const result: any = await promise;
+    const filePathCDN = result.Location.replace(
+      'https://stored-metadatas.s3.amazonaws.com/',
+      process.env.CLOUDFRONT_DOMAIN,
+    ).replace(
+      'https://stored-metadatas.s3.us-east-2.amazonaws.com/',
+      process.env.CLOUDFRONT_DOMAIN,
+    );
+
     images[index] = {
       ...image,
-      filePathCDN: result.Location.replace(
-        'https://stored-metadatas.s3.amazonaws.com/',
-        process.env.CLOUDFRONT_DOMAIN,
-      ).replace(
-        'https://stored-metadatas.s3.us-east-2.amazonaws.com/',
-        process.env.CLOUDFRONT_DOMAIN,
-      ),
+      filePathCDN,
     };
   }
 

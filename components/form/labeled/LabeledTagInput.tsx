@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import TagSelectInput, { TagSelectInputProps } from './tag-select-input';
+import TagSelectInput, { TagSelectInputProps } from '../base/tag-select-input';
 
 type Props = TagSelectInputProps & {
   label: ReactNode;

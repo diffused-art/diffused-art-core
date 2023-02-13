@@ -1,13 +1,13 @@
 import { ReactNode } from 'react';
-import TextareaInput, { Props as TextAreaProps } from './textarea-input';
+import TextInput, { Props as TextInputProps } from '../base/text-input';
 
-type Props = TextAreaProps & {
+type Props = TextInputProps & {
   label: ReactNode;
   sublabel?: ReactNode;
   wrapperClassName?: string;
 };
 
-export default function LabeledTextareaInput({
+export default function LabeledTextInput({
   label,
   sublabel,
   wrapperClassName,
@@ -17,11 +17,9 @@ export default function LabeledTextareaInput({
     <div className={`px-5 ${wrapperClassName || ''}`}>
       <div className="flex flex-col lg:flex-row items-baseline mb-[10px] px-3">
         <h2 className="text-[19px] font-normal text-white">{label}</h2>
-        <span className="lg:ml-4 opacity-50 text-white italic font-light text-[16px] leading-[20px]">
-          {sublabel}
-        </span>
+        <span className="lg:ml-4 opacity-50 text-white italic font-light text-[16px] leading-[20px]">{sublabel}</span>
       </div>
-      <TextareaInput {...inputProps} />
+      <TextInput {...inputProps} />
     </div>
   );
 }

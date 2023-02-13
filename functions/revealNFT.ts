@@ -283,6 +283,9 @@ async function revealNFTCore(
         where: { mint_address: nftOnChainData.address.toString() },
         data: {
           image: lastGeneratedImage.filePathCDN,
+          rawMetadata: {
+            ...nft.json,
+          } as any,
           rawMetadataCDN: {
             ...nft.json,
             image: lastGeneratedImage.filePathCDN,

@@ -18,12 +18,12 @@ import {
   useCreateCollectionStore,
 } from '../../hooks/useCreateCollectionStore';
 import useToast, { ToastIconEnum } from '../../hooks/useToast';
-import LabeledImageUploadInput from '../LabeledImageUploadInput';
-import LabeledNumberInput from '../LabeledNumberInput';
-import LabeledSelectInput from '../LabeledSelectInput';
-import LabeledSizeInput from '../LabeledSizeInput';
+import LabeledImageUploadInput from '../form/labeled/LabeledImageUploadInput';
+import LabeledNumberInput from '../form/labeled/LabeledNumberInput';
+import LabeledSelectInput from '../form/labeled/LabeledSelectInput';
+import LabeledSizeInput from '../form/labeled/LabeledSizeInput';
 import PrimaryButton from '../primary-button';
-import TextInput from '../text-input';
+import TextInput from '../form/base/text-input';
 import Title from '../title';
 import { CreateCollectionFormSteps } from '../wizard-steps-header';
 import useResetCreateCollectionStore from '../../hooks/useCreateCollectionStore/useResetCreateCollectionStore';
@@ -72,15 +72,13 @@ export default function CreateCollectionFormPrompt() {
             value: data.imageURL,
           },
         });
-        if (state.teaserImage.length === 0) {
-          dispatch({
-            type: ActionTypesCreateCollectionStore.SetFieldValue,
-            payload: {
-              field: 'teaserImage',
-              value: data.imageURL,
-            },
-          });
-        }
+        dispatch({
+          type: ActionTypesCreateCollectionStore.SetFieldValue,
+          payload: {
+            field: 'teaserImage',
+            value: data.imageURL,
+          },
+        });
       })
       .catch(error => {
         toast({

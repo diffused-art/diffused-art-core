@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import SelectInput, { SelectInputProps } from './select-input';
+import SelectInput, { SelectInputProps } from '../base/select-input';
 
 type Props = SelectInputProps & {
   label: ReactNode;

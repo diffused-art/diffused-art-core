@@ -1,5 +1,5 @@
 import { ChangeEventHandler, ReactNode } from 'react';
-import { NumberInput, NumberInputProps } from './number-input';
+import { NumberInput, NumberInputProps } from '../base/number-input';
 
 interface Props extends NumberInputProps {
   label: ReactNode;

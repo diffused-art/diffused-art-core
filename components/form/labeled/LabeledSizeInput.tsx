@@ -1,5 +1,5 @@
 import { ChangeEventHandler, ReactNode } from 'react';
-import TextInput from './text-input';
+import TextInput from '../base/text-input';
 
 interface Props {
   label: ReactNode;

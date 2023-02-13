@@ -1,6 +1,6 @@
 import React from 'react';
 import IconDiffused from '../icons/icon-diffused';
-import TextInput from './text-input';
+import TextInput from './form/base/text-input';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import ConnectButton from './connect-button';

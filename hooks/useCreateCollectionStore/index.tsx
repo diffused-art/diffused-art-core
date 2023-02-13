@@ -27,9 +27,19 @@ interface CreateCollectionStoreConfigurationInterface {
   keywords: string[];
 }
 
+interface CreateCollectionStorePublishInterface {
+  quantity: number;
+  currencyTotal: number;
+  startImediately: boolean;
+  startDate: string;
+  startTime: string;
+  publishStep: 'terms' | 'upload' | 'done';
+}
+
 interface CreateCollectionStoreForm
   extends CreateCollectionStorePromptInterface,
-    CreateCollectionStoreConfigurationInterface {}
+    CreateCollectionStoreConfigurationInterface,
+    CreateCollectionStorePublishInterface {}
 
 type StepType = 'prompt' | 'configuration' | 'publish';
 
@@ -54,6 +64,18 @@ export const createCollectionStoreInitialState: CreateCollectionStoreInterface =
     dropName: '',
     dropDescription: '',
     keywords: [],
+
+    quantity: 1,
+    currencyTotal: 0,
+    startImediately: false,
+    startDate: new Date(
+      new Date(Date.now()).getTime() -
+        new Date(Date.now()).getTimezoneOffset() * 60000,
+    )
+      .toISOString()
+      .split('T')[0],
+    startTime: '12:00',
+    publishStep: 'terms',
   };
 
 export enum ActionTypesCreateCollectionStore {
@@ -147,6 +169,8 @@ const usePersistReducer = () => {
       for (const key in createCollectionStoreInitialState) {
         if (newState.hasOwnProperty(key)) {
           result[key] = newState[key];
+        } else {
+          result[key] = createCollectionStoreInitialState[key];
         }
       }
 
