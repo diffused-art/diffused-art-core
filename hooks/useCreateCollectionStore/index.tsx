@@ -35,6 +35,9 @@ interface CreateCollectionStorePublishInterface {
   startTime: string;
   publishStep: 'terms' | 'upload' | 'done';
   collectionId: string;
+  collectionNFTAddress: string;
+  collectionCandyMachineAddress: string;
+  collectionCandyGuardAddress: string;
 }
 
 export interface CreateCollectionStoreForm
@@ -78,6 +81,9 @@ export const createCollectionStoreInitialState: CreateCollectionStoreInterface =
     startTime: '12:00',
     publishStep: 'terms',
     collectionId: '',
+    collectionNFTAddress: '',
+    collectionCandyMachineAddress: '',
+    collectionCandyGuardAddress: ''
   };
 
 export enum ActionTypesCreateCollectionStore {

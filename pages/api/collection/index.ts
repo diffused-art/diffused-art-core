@@ -1,5 +1,4 @@
 import { Decimal } from '@prisma/client/runtime';
-import { Keypair } from '@solana/web3.js';
 import { getToken } from 'next-auth/jwt';
 import NextCors from 'nextjs-cors';
 import { STABLE_DIFFUSION_DEFAULTS_FOR_METADATA } from '../../../functions/ai-sources/stable-diffusion/defaults';
@@ -9,7 +8,6 @@ import {
   getRateLimitMiddlewares,
 } from '../../../middlewares/applyRateLimit';
 import { applyRequireAuth } from '../../../middlewares/applyRequireAuth';
-import cryptojs from 'crypto-js';
 
 const middlewares = getRateLimitMiddlewares();
 
@@ -52,8 +50,6 @@ export default async function handle(req: any, res: any) {
 
   const token = await getToken({ req });
 
-  const updateAuthority = Keypair.generate();
-
   const collection = await prisma.collection.upsert({
     where: {
       slugUrl: slugify(req.body.title),
@@ -75,20 +71,14 @@ export default async function handle(req: any, res: any) {
       mintPrice: new Decimal(Number(req.body.mintPrice)),
       mintSellerFeeBasisPoints: 250,
       mintOpenAt: new Date(req.body.mintOpenAt),
-      // Figure a way to create a mint symbol
       mintSymbol: '',
       mintTotalSupply: Number(req.body.mintTotalSupply),
       artist: {
         connect: {
-          // get from token artist id
           username: (token as any).username,
         },
       },
-      updateAuthorityPublicKey: updateAuthority.publicKey.toString(),
-      updateAuthorityPrivateKey: cryptojs.AES.encrypt(
-        updateAuthority.secretKey.toString(),
-        process.env.ENCRYPT_PASS,
-      ).toString(),
+      updateAuthorityPublicKey: process.env.FUNDED_WALLET_PUBKEY!,
       isPublished: false,
       isFullyRevealed: false,
       hashList: [],
@@ -102,5 +92,7 @@ export default async function handle(req: any, res: any) {
     })),
   });
 
-  return res.status(200).json({ data: { ...collection, updateAuthorityPrivateKey: null } });
+  return res
+    .status(200)
+    .json({ data: { ...collection, updateAuthorityPrivateKey: null } });
 }

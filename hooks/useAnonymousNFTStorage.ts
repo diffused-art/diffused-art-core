@@ -3,6 +3,7 @@ import {
   Metaplex,
   MetaplexPlugin,
   toMetaplexFileFromBrowser,
+  UploadMetadataInput,
 } from '@metaplex-foundation/js';
 import { nftStorage } from '@metaplex-foundation/js-plugin-nft-storage';
 import { Connection, Keypair } from '@solana/web3.js';
@@ -33,5 +34,13 @@ export default function useAnonymousNFTStorage() {
     [metaplexCli],
   );
 
-  return { uploadImage };
+  const uploadMetadata = useCallback(
+    async (metadataToUpload: UploadMetadataInput) => {
+      const { uri } = await metaplexCli.nfts().uploadMetadata(metadataToUpload);
+      return uri;
+    },
+    [metaplexCli],
+  );
+
+  return { uploadImage, uploadMetadata };
 }

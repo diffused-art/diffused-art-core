@@ -39,6 +39,9 @@ export default async function handle(req: any, res: any) {
   }
 
   const collection = await prisma.collection.findUnique({
+    include: {
+      artist: true,
+    },
     where: { id: req.query.id },
   });
 
@@ -53,11 +56,22 @@ export default async function handle(req: any, res: any) {
         .json({ data: { ...collection, updateAuthorityPrivateKey: null } });
     }
     case 'PUT': {
+      const dataToUpdate = {};
+      if (req.body.nftPlaceholderImageURL)
+        dataToUpdate['nftPlaceholderImageURL'] =
+          req.body.nftPlaceholderImageURL;
+      if (req.body.mintOpenAt)
+        dataToUpdate['mintOpenAt'] = new Date(req.body.mintOpenAt);
+      if (req.body.collectionOnChainAddress)
+        dataToUpdate['collectionOnChainAddress'] =
+          req.body.collectionOnChainAddress;
+      if (req.body.mintCandyMachineId)
+        dataToUpdate['mintCandyMachineId'] = req.body.mintCandyMachineId;
+      if (req.body.mintGuardId)
+        dataToUpdate['mintGuardId'] = req.body.mintGuardId;
       const collection = await prisma.collection.update({
         where: { id: req.query.id },
-        data: {
-          nftPlaceholderImageURL: req.body.nftPlaceholderImageURL,
-        },
+        data: dataToUpdate,
       });
       return res
         .status(200)

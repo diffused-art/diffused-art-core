@@ -15,6 +15,7 @@ import LabeledDateInput from '../../form/labeled/LabeledDateInput';
 import LabeledTimeInput from '../../form/labeled/LabeledTimeInput';
 import PublishModal from './publish-modal';
 import { getDatetime } from './utils';
+import axios from 'axios';
 
 export default function CreateCollectionFormPublish() {
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
@@ -53,9 +54,21 @@ export default function CreateCollectionFormPublish() {
           <form
             ref={formRef}
             action="#"
-            onSubmit={e => {
+            onSubmit={async e => {
               e.preventDefault();
               setIsPublishModalOpen(true);
+
+              state.collectionId &&
+                (await axios({
+                  url: `/api/collection/${state.collectionId}`,
+                  method: 'PUT',
+                  data: {
+                    mintOpenAt: getDatetime(
+                      state.startDate,
+                      state.startTime,
+                    ).getTime(),
+                  },
+                }));
             }}
           >
             <div className="grid grid-cols-2 space-x-5">

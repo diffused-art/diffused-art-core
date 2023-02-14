@@ -13,9 +13,14 @@ enum Source {
   STABLEDIFFUSION
 }
 
+enum CandyMachineObjectType {
+  CANDY_MACHINE
+  GUARD
+}
+
 model Collection {
-  id                            String                 @id @default(cuid())
-  slugUrl                       String                 @unique
+  id                            String                     @id @default(cuid())
+  slugUrl                       String                     @unique
   title                         String
   description                   String
   promptPhrase                  String
@@ -24,31 +29,32 @@ model Collection {
   promptSourceParams            Json
   bannerImageURL                String
   nftPlaceholderImageURL        String?
-  nftPlaceholderForegroundColor String?                @default("#d5d5d5")
-  nftPlaceholderBackgroundColor String?                @default("#000000")
-  nftPlaceholderFontFamily      String?                @default("Roboto")
+  nftPlaceholderForegroundColor String?                    @default("#d5d5d5")
+  nftPlaceholderBackgroundColor String?                    @default("#000000")
+  nftPlaceholderFontFamily      String?                    @default("Roboto")
   mintName                      String
   mintPrice                     Decimal
-  mintSellerFeeBasisPoints      Int                    @default(250)
+  mintSellerFeeBasisPoints      Int                        @default(250)
   mintOpenAt                    DateTime
   mintSymbol                    String
   mintTokenSPL                  String?
   mintTotalSupply               Int?
-  mintCandyMachineId            String?                @unique
-  collectionOnChainAddress      String?                @unique
+  mintCandyMachineId            String?                    @unique
+  mintGuardId                   String?                    @unique
+  collectionOnChainAddress      String?                    @unique
   mintDiscountPercentage        Int?
   artistId                      String
-  isPublished                   Boolean                @default(false)
-  isFullyRevealed               Boolean                @default(false)
+  isPublished                   Boolean                    @default(false)
+  isFullyRevealed               Boolean                    @default(false)
   hashList                      Json?
-  createdAt                     DateTime               @default(now()) @map(name: "created_at")
-  updatedAt                     DateTime               @updatedAt @map(name: "updated_at")
-  artist                        Artist                 @relation(fields: [artistId], references: [id])
+  createdAt                     DateTime                   @default(now()) @map(name: "created_at")
+  updatedAt                     DateTime                   @updatedAt @map(name: "updated_at")
+  artist                        Artist                     @relation(fields: [artistId], references: [id])
   updateAuthorityPublicKey      String
-  updateAuthorityPrivateKey     String
   mints                         Mint[]
   errorsCMChunksUploads         ErrorsCMChunksUpload[]
   CollectionTag                 CollectionTag[]
+  CandyMachineCreationLogs      CandyMachineCreationLogs[]
 
   @@map(name: "collections")
 }
@@ -141,4 +147,18 @@ model Tag {
   CollectionTag CollectionTag[]
 
   @@map(name: "tag")
+}
+
+// TODO: Should be deprecated once we have a way from fetching and closing CMs from the chain directly through Sugar or find time to create a small lib using GPA calls
+model CandyMachineCreationLogs {
+  id             String                 @id @default(cuid())
+  collectionId   String
+  cmCreationType CandyMachineObjectType
+  accountAddress String                 @unique
+  collection     Collection             @relation(fields: [collectionId], references: [id])
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "candy_machine_creation_logs")
 }
