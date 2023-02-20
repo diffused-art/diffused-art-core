@@ -95,7 +95,7 @@ export default function useCandyMachineCreate() {
         .nfts()
         .create({
           uri: metadataURL,
-          isMutable: false,
+          isMutable: true,
           name: data.mintName.replace(' #', ''),
           sellerFeeBasisPoints: 250,
           creators: [
@@ -384,6 +384,17 @@ export default function useCandyMachineCreate() {
     );
 
     if (isSuccess) {
+      const nft = await metaplexCli.nfts().findByMint({
+        mintAddress: new PublicKey(state.collectionNFTAddress),
+      });
+
+      const updatedNFT = await metaplexCli.nfts().update({
+        nftOrSft: nft,
+        authority: metaplexCli.identity(),
+        newUpdateAuthority: new PublicKey(data.updateAuthorityPublicKey),
+      });
+
+      console.log(`Updated NFT up auth`, updatedNFT);
       // Update collection NFT to have the update authority of the reveal wallet
       await axios.put(`/api/collection/${state.collectionId}`, {
         isPublished: true,
@@ -402,7 +413,15 @@ export default function useCandyMachineCreate() {
         value: 'done',
       },
     });
-  }, [state.collectionId, state.collectionCandyMachineAddress, dispatch]);
+  }, [
+    state.collectionId,
+    connection,
+    metaplexCli,
+    state.collectionNFTAddress,
+    uploadMetadata,
+    wallet,
+    dispatch,
+  ]);
 
   return {
     createCollectionNFT,
