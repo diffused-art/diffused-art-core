@@ -26,6 +26,7 @@ import {
 import useMetaplexWriteCli from './useMetaplexWriteCli';
 
 async function wrapInfiniteRetry(promise) {
+  // @ts-ignore
   return await retry<any>(() => promise(), {
     retries: 'INFINITELY',
     delay: 1000,

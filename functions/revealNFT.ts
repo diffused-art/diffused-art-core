@@ -10,6 +10,16 @@ import { generateStableDiffImageAsync } from './ai-sources/stable-diffusion';
 import { generateSemiRandomNumberStableDiffusionRange } from './ai-sources/stable-diffusion/generateSemiRandomSeed';
 import { getReadonlyCli, getWriteCli } from './getMetaplexCli';
 
+async function wrapInfiniteRetry(promise) {
+  return await retry<any>(() => promise(), {
+    retries: 'INFINITELY',
+    delay: 1000,
+    backoff: 'LINEAR',
+    timeout: 10000000,
+    logger: console.log,
+  });
+}
+
 const prisma = new PrismaClient();
 
 type PossibleResults =
@@ -135,16 +145,9 @@ async function revealNFTCore(
     return { status: 400, message: 'already_revealed' };
   }
   const metaplexCli = getReadonlyCli();
-  const nftOnChainData: Nft | NftWithToken = await retry(
-    () => metaplexCli.nfts().findByMint({ mintAddress: new PublicKey(mint_address) }),
-    {
-      retries: 'INFINITELY',
-      delay: 1000,
-      backoff: 'LINEAR',
-      timeout: 1000000,
-      logger: console.log,
-    },
-  ) as unknown as Nft | NftWithToken;
+  const nftOnChainData: Nft | NftWithToken = (await wrapInfiniteRetry(() =>
+    metaplexCli.nfts().findByMint({ mintAddress: new PublicKey(mint_address) }),
+  )) as unknown as Nft | NftWithToken;
 
   // TODO: Change to use collection update authority, currently not implemented on the DB
   if (

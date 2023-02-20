@@ -2,9 +2,13 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "allowJs": true,
     "noImplicitAny": false,
     "strict": false
+  },
+  "ts-node": {
+    "experimentalResolver": true
   }
 }

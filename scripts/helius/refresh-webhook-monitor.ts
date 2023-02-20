@@ -25,11 +25,18 @@ export async function refreshWebhookMonitor() {
     `https://api.helius.xyz/v0/webhooks/${process.env.HELIUS_CM_MONITOR_ID}?api-key=${process.env.HELIUS_API_KEY}`,
   );
 
-  await axios.put(
+  const result = await axios.put(
     `https://api.helius.xyz/v0/webhooks/${process.env.HELIUS_CM_MONITOR_ID}?api-key=${process.env.HELIUS_API_KEY}`,
     {
-      ...data,
+      transactionTypes: data.transactionTypes,
+      authHeader: data.authHeader,
+      webhookURL: data.webhookURL,
+      webhookType: data.webhookType,
       accountAddresses,
     },
   );
+
+  console.log(result.data);
 }
+
+refreshWebhookMonitor();

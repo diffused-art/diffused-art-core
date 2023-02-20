@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { getToken } from 'next-auth/jwt';
 import NextCors from 'nextjs-cors';
 import prisma from '../../../../lib/prisma';
@@ -69,8 +70,37 @@ export default async function handle(req: any, res: any) {
         dataToUpdate['mintCandyMachineId'] = req.body.mintCandyMachineId;
       if (req.body.mintGuardId)
         dataToUpdate['mintGuardId'] = req.body.mintGuardId;
-      if (req.body.isPublished)
+      if (req.body.isPublished) {
         dataToUpdate['isPublished'] = req.body.isPublished;
+        let collections = await prisma.collection.findMany({
+          where: {
+            isFullyRevealed: false,
+          },
+        });
+        collections = collections.filter(
+          collection =>
+            collection.mintTotalSupply !==
+            [...new Set([...((collection.hashList as string[]) || [])])].length,
+        );
+        const accountAddresses = collections
+          .map(({ mintCandyMachineId }) => mintCandyMachineId)
+          .filter(Boolean);
+
+        const { data } = await axios.get(
+          `https://api.helius.xyz/v0/webhooks/${process.env.HELIUS_CM_MONITOR_ID}?api-key=${process.env.HELIUS_API_KEY}`,
+        );
+
+        const result = await axios.put(
+          `https://api.helius.xyz/v0/webhooks/${process.env.HELIUS_CM_MONITOR_ID}?api-key=${process.env.HELIUS_API_KEY}`,
+          {
+            transactionTypes: data.transactionTypes,
+            authHeader: data.authHeader,
+            webhookURL: data.webhookURL,
+            webhookType: data.webhookType,
+            accountAddresses,
+          },
+        );
+      }
       const collection = await prisma.collection.update({
         where: { id: req.query.id },
         data: dataToUpdate,
