@@ -69,6 +69,8 @@ export default async function handle(req: any, res: any) {
         dataToUpdate['mintCandyMachineId'] = req.body.mintCandyMachineId;
       if (req.body.mintGuardId)
         dataToUpdate['mintGuardId'] = req.body.mintGuardId;
+      if (req.body.isPublished)
+        dataToUpdate['isPublished'] = req.body.isPublished;
       const collection = await prisma.collection.update({
         where: { id: req.query.id },
         data: dataToUpdate,

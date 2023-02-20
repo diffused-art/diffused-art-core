@@ -1,31 +1,31 @@
 import {
-  CandyMachineV2,
-  Metaplex,
+  CandyMachine,
+  DefaultCandyGuardSettings,
   walletAdapterIdentity,
 } from '@metaplex-foundation/js';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { useEffect, useState } from 'react';
-
-const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL!);
-const metaplex = Metaplex.make(connection);
+import useMetaplexWriteCli from '../../hooks/useMetaplexWriteCli';
 
 export function useCandyMachine(candyMachineId: string) {
+  const metaplex = useMetaplexWriteCli();
   const wallet = useWallet();
-  const [candyMachine, setCandyMachine] = useState<CandyMachineV2 | null>(null);
+  const [candyMachine, setCandyMachine] =
+    useState<CandyMachine<DefaultCandyGuardSettings> | null>(null);
   const [isLoadingState, setIsLoadingState] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
 
   useEffect(() => {
     setIsLoadingState(true);
     metaplex
-      .candyMachinesV2()
+      .candyMachines()
       .findByAddress({ address: new PublicKey(candyMachineId) })
 
       .then(cm => setCandyMachine(cm))
       .catch(() => setCandyMachine(null))
       .then(() => setIsLoadingState(false));
-  }, [candyMachineId, wallet]);
+  }, [candyMachineId, metaplex, wallet]);
 
   const onMint = async () => {
     setIsMinting(true);
@@ -33,36 +33,38 @@ export function useCandyMachine(candyMachineId: string) {
     if (candyMachine) {
       mintHash = await metaplex
         .use(walletAdapterIdentity(wallet))
-        .candyMachinesV2()
+        .candyMachines()
         .mint({
           candyMachine,
+          collectionUpdateAuthority: candyMachine.authorityAddress,
         })
         .then(res => res.nft.address.toString())
         .catch(e => {
           if (
-            e.message.includes(
-              'raised an error that is not recognized by the programs registered by the SDK',
-            )
+            e
+              ?.toString()
+              .includes(
+                'raised an error that is not recognized by the programs registered by the SDK',
+              )
           ) {
             console.error('Error >', e);
             return null;
           } else if (
-            e?.message.includes(
-              'The account of type [MintAccount] was not found at the provided address',
-            )
+            e
+              ?.toString()
+              .includes?.(
+                '[AccountNotFoundError] The account of type [MintAccount] was not found at the provided address [',
+              )
           ) {
-            const message = e?.message.substring(
-              e?.message.indexOf(
-                'The account of type [MintAccount] was not found at the provided address [',
-              ),
-            );
-
-            return message
+            return e
+              ?.toString()
               ?.replace(
-                'The account of type [MintAccount] was not found at the provided address [',
+                '[AccountNotFoundError] The account of type [MintAccount] was not found at the provided address [',
                 '',
               )
-              .split('].')[0];
+              .split('].')[0]
+              .replace('].', '')
+              .trim();
           }
         });
     }

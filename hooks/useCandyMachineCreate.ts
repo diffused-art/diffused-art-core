@@ -3,12 +3,18 @@ import {
   sol,
   toBigNumber,
   toDateTime,
+  TransactionBuilder,
 } from '@metaplex-foundation/js';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import {
+  BlockhashWithExpiryBlockHeight,
+  Connection,
+  PublicKey,
+  Transaction,
+} from '@solana/web3.js';
 import axios from 'axios';
 import { addMinutes } from 'date-fns';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { retry } from 'ts-retry-promise';
 import { GUIDANCE_PRESETS } from '../functions/ai-sources/stable-diffusion/defaults';
 import { AISource } from '../types';
@@ -27,6 +33,26 @@ async function wrapInfiniteRetry(promise) {
     timeout: 10000000,
     logger: console.log,
   });
+}
+
+async function sendAndConfirmTransaction(
+  connection: Connection,
+  signedTransaction: Transaction,
+) {
+  const txid = await connection.sendRawTransaction(
+    signedTransaction.serialize(),
+    {
+      skipPreflight: true,
+    },
+  );
+
+  // Confirm the transaction
+  const signatureStatus = await connection.confirmTransaction(
+    txid,
+    'confirmed',
+  );
+
+  return signatureStatus;
 }
 function getAttributes(collection) {
   const attributes: any[] = [];
@@ -97,6 +123,7 @@ export default function useCandyMachineCreate() {
   const metaplexCli = useMetaplexWriteCli();
   const { uploadMetadata } = useAnonymousNFTStorage();
   const wallet = useWallet();
+  const { connection } = useConnection();
   const { state, dispatch } = useCreateCollectionStore();
   const createCollectionNFT = useCallback(async () => {
     const {
@@ -289,18 +316,6 @@ export default function useCandyMachineCreate() {
         },
       );
 
-      const signature: string = await wrapInfiniteRetry(() =>
-        metaplexCli
-          .candyMachines()
-          .update({
-            authority: metaplexCli.identity(),
-            newAuthority: new PublicKey(data.updateAuthorityPublicKey),
-            candyMachine: new PublicKey(mintCandyMachineId),
-          })
-          .then(data => data.response.signature),
-      );
-      console.info('Created Candy Machine update auth updated - ', signature);
-
       // TODO: In case the need arises to update the candy guard authority as well. Shouldnt be needed tho.
       // const signatureGuard: string = await wrapInfiniteRetry(
       //   metaplexCli
@@ -314,13 +329,10 @@ export default function useCandyMachineCreate() {
       // );
       // console.info('Created Candy Machine update auth updated - ', signatureGuard);
 
-      await axios.put(
-        `/api/collection/${state.collectionId}`,
-        {
-          mintCandyMachineId,
-          mintGuardId: candyMachine.candyGuard?.address.toString(),
-        },
-      );
+      await axios.put(`/api/collection/${state.collectionId}`, {
+        mintCandyMachineId,
+        mintGuardId: candyMachine.candyGuard?.address.toString(),
+      });
 
       dispatch({
         type: ActionTypesCreateCollectionStore.SetFieldValue,
@@ -333,13 +345,13 @@ export default function useCandyMachineCreate() {
       dispatch({
         type: ActionTypesCreateCollectionStore.SetFieldValue,
         payload: {
-          field: 'collectionCandyMachineAddress',
-          value: mintCandyMachineId
+          field: 'collectionCandyGuardAddress',
+          value: candyMachine.candyGuard?.address.toString() || '',
         },
       });
 
       console.info(
-        'Candy Machine using the guard and changed authority, we are ready to go houston!',
+        'Candy Machine using the guard created, we are ready to go houston!',
       );
     }
   }, [state.collectionId, metaplexCli, dispatch]);
@@ -383,14 +395,109 @@ export default function useCandyMachineCreate() {
     const items = Array(data.mintTotalSupply)
       .fill(0)
       .map((_, i) => ({
-        name: `${i + 1}`,
+        name: '',
         uri: uri.replace('https://nftstorage.link/ipfs/', ''),
       }));
 
-    console.log(items);
+    console.info(
+      `Array created to be inserted into the CM (${
+        items.length
+      } items) ${JSON.stringify(items.slice(0, 5))}`,
+    );
 
-    // insert items batched
-  }, [state.collectionId, metaplexCli, dispatch, uploadMetadata]);
+    const chunkSize = 5;
+    const chunkedItems: any[] = [];
+    for (let i = 0; i < items.length; i += chunkSize) {
+      const chunk = items.slice(i, i + chunkSize);
+      chunkedItems.push(chunk);
+    }
+
+    console.log('chunkedItems', chunkedItems);
+
+    const txnArray: Transaction[] = [];
+    const blockhashWithExpiryBlockHeight: BlockhashWithExpiryBlockHeight =
+      await connection.getLatestBlockhash();
+    for (let index = 0; index < chunkedItems.length; index++) {
+      const chunkItems = chunkedItems[index];
+      console.info(`Creating TXN for Chunk N${index + 1} with 5 items`);
+      const txBuilder: TransactionBuilder = metaplexCli
+        .candyMachines()
+        .builders()
+        .insertItems({
+          candyMachine,
+          items: chunkItems,
+          index: index * chunkSize,
+        });
+
+      txnArray.push(txBuilder.toTransaction(blockhashWithExpiryBlockHeight));
+    }
+
+    const batchSize = 75;
+    const batchedTxns: Transaction[][] = [];
+    for (let i = 0; i < txnArray.length; i += batchSize) {
+      const batch = txnArray.slice(i, i + batchSize);
+      batchedTxns.push(batch);
+    }
+
+    const result = await wallet
+      ?.signAllTransactions?.(txnArray)
+      .catch(() => false);
+
+    // User did not approve the transaction
+    if (!result) {
+      return;
+    }
+    const resultOfAll: any[] = [];
+    for (let index = 0; index < batchedTxns.length; index++) {
+      resultOfAll.push(
+        await Promise.all(
+          batchedTxns[index].map(txn =>
+            sendAndConfirmTransaction(connection, txn),
+          ),
+        ),
+      );
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    const isSuccess = resultOfAll.every((result: any) => result.every((r: any) => !r?.value?.err));
+    console.log('isSuccess', isSuccess);
+
+    // const signature: string = await wrapInfiniteRetry(() =>
+    //   metaplexCli
+    //     .candyMachines()
+    //     .update({
+    //       authority: metaplexCli.identity(),
+    //       newAuthority: new PublicKey(data.updateAuthorityPublicKey),
+    //       candyMachine: new PublicKey(candyMachine.address.toString()),
+    //     })
+    //     .then(data => data.response.signature),
+    // );
+    // console.info('Created Candy Machine update auth updated - ', signature);
+
+    // await axios.put(`/api/collection/${state.collectionId}`, {
+    //   isPublished: true,
+    // });
+
+    console.info(
+      `Finished inserting items into the CM! Please validate with "reinsertNonConfirmedItemsInsert" that all have been uploaded. 
+        Hash: https://solana.fm/address/account/${candyMachine.address.toString()}`,
+    );
+
+    // dispatch({
+    //   type: ActionTypesCreateCollectionStore.SetFieldValue,
+    //   payload: {
+    //     field: 'publishStep',
+    //     value: 'done',
+    //   },
+    // });
+  }, [
+    state.collectionId,
+    metaplexCli,
+    dispatch,
+    uploadMetadata,
+    connection,
+    wallet,
+  ]);
 
   return {
     createCollectionNFT,

@@ -8,6 +8,7 @@ import Footer from '../../components/footer';
 import Menu from '../../components/menu';
 import MintButton from '../../components/mint-button';
 import MintModal from '../../components/mint-modal';
+import NoSSR from '../../components/no-ssr';
 import { useCandyMachine } from '../../lib/candy-machine';
 import prisma from '../../lib/prisma';
 
@@ -127,102 +128,109 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
             </a>
           </h2>
 
-          <CornerCard
-            backgroundColor={collection.nftPlaceholderBackgroundColor!}
-            textColor={collection.nftPlaceholderForegroundColor!}
-            title={
-              new Date(Date.now()) > new Date(collection.mintOpenAt)
-                ? 'mint is live.'
-                : `mint will be live starting at:${' '}
+          <NoSSR>
+            <CornerCard
+              backgroundColor={collection.nftPlaceholderBackgroundColor!}
+              textColor={collection.nftPlaceholderForegroundColor!}
+              title={
+                new Date(Date.now()) > new Date(collection.mintOpenAt)
+                  ? 'mint is live.'
+                  : `mint will be live starting at:${' '}
                 ${new Date(collection.mintOpenAt).toLocaleString()}`
-            }
-          >
-            {!isLoadingState ? (
-              <>
-                <h2 className="text-base">
-                  <b>supply -</b> {candyMachine?.itemsAvailable.toNumber()}
-                </h2>
-                <h2 className="text-base">
-                  <b>pieces remaining -</b>{' '}
-                  {candyMachine?.itemsRemaining.toNumber()}
-                </h2>
-                <h2 className="text-base">
-                  <b>price -</b>{' '}
-                  {(candyMachine?.price.basisPoints?.toNumber() || 0) /
-                    Math.pow(10, candyMachine?.price.currency.decimals || 0)}
-                  ◎
-                </h2>
-              </>
-            ) : (
-              <h2 className="text-lg">loading mint details...</h2>
-            )}
+              }
+            >
+              {!isLoadingState ? (
+                <>
+                  <h2 className="text-base">
+                    <b>supply -</b> {candyMachine?.itemsAvailable.toNumber()}
+                  </h2>
+                  <h2 className="text-base">
+                    <b>pieces remaining -</b>{' '}
+                    {candyMachine?.itemsRemaining.toNumber()}
+                  </h2>
+                  <h2 className="text-base">
+                    <b>price -</b>{' '}
+                    {(candyMachine?.candyGuard?.guards.solPayment?.amount.basisPoints?.toNumber() ||
+                      0) /
+                      Math.pow(
+                        10,
+                        candyMachine?.candyGuard?.guards.solPayment?.amount
+                          .currency.decimals || 0,
+                      )}
+                    ◎
+                  </h2>
+                </>
+              ) : (
+                <h2 className="text-lg">loading mint details...</h2>
+              )}
 
-            <div className="absolute top-10 right-5">
-              <MintButton onMint={onMintCB} isLoading={isMinting} />
-            </div>
-          </CornerCard>
-
-          <CornerCard
-            backgroundColor={collection.nftPlaceholderBackgroundColor!}
-            textColor={collection.nftPlaceholderForegroundColor!}
-            title="drop details."
-            side="right"
-          >
-            {collection.artist.websiteURL && (
-              <a href={collection.artist.websiteURL}>
-                <h2 className="text-lg font-bold">
-                  {collection.artist.websiteURL}
-                </h2>
-              </a>
-            )}
-
-            <h2 className="text-base text-justify mt-1">
-              {collection.description}
-            </h2>
-          </CornerCard>
-
-          <CornerCard
-            backgroundColor={collection.nftPlaceholderBackgroundColor!}
-            textColor={collection.nftPlaceholderForegroundColor!}
-            title="generation parameters."
-            side="left"
-          >
-            <h2 className="text-base text-left mt-1">
-              <b>prompt - </b> {collection.promptPhrase.toLowerCase()}
-            </h2>
-
-            {collection.promptInitImage && (
-              <div className="text-base text-left mt-1">
-                <b>initial image - </b>{' '}
-                <a
-                  href={collection.promptInitImage}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline"
-                >
-                  Click here to see
-                </a>
+              <div className="absolute top-10 right-5">
+                <MintButton onMint={onMintCB} isLoading={isMinting} />
               </div>
-            )}
+            </CornerCard>
 
-            <h2 className="text-base text-left mt-1">
-              <b>artificial intelligence model - </b>{' '}
-              {collection.promptSource.toLowerCase()}
-            </h2>
+            <CornerCard
+              backgroundColor={collection.nftPlaceholderBackgroundColor!}
+              textColor={collection.nftPlaceholderForegroundColor!}
+              title="drop details."
+              side="right"
+            >
+              {collection.artist.websiteURL && (
+                <a href={collection.artist.websiteURL}>
+                  <h2 className="text-lg font-bold">
+                    {collection.artist.websiteURL}
+                  </h2>
+                </a>
+              )}
 
-            <h2 className="text-base text-left mt-1">
-              <b>techniques used</b>
-              <ul className="ml-5">
-                <li>
-                  <b>- dynamic seed:</b> each art is unique and immutable by
-                  using a derivation of the NFT address that gets generated on
-                  mint time
-                </li>
-              </ul>
-            </h2>
+              <h2 className="text-base text-justify mt-1">
+                {collection.description}
+              </h2>
+            </CornerCard>
 
-            <h1 className="text-2xl space-x-1"></h1>
-          </CornerCard>
+            <CornerCard
+              backgroundColor={collection.nftPlaceholderBackgroundColor!}
+              textColor={collection.nftPlaceholderForegroundColor!}
+              title="generation parameters."
+              side="left"
+            >
+              <h2 className="text-base text-left mt-1">
+                <b>prompt - </b> {collection.promptPhrase.toLowerCase()}
+              </h2>
+
+              {collection.promptInitImage && (
+                <div className="text-base text-left mt-1">
+                  <b>initial image - </b>{' '}
+                  <a
+                    href={collection.promptInitImage}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline"
+                  >
+                    Click here to see
+                  </a>
+                </div>
+              )}
+
+              <h2 className="text-base text-left mt-1">
+                <b>artificial intelligence model - </b>{' '}
+                {collection.promptSource.toLowerCase()}
+              </h2>
+
+              <h2 className="text-base text-left mt-1">
+                <b>techniques used</b>
+                <ul className="ml-5">
+                  <li>
+                    <b>- dynamic seed:</b> each art is unique and immutable by
+                    using a derivation of the NFT address that gets generated on
+                    mint time
+                  </li>
+                </ul>
+              </h2>
+
+              <h1 className="text-2xl space-x-1"></h1>
+            </CornerCard>
+          </NoSSR>
         </main>
         <Footer ctaEnabled={false} twitterEnabled={false} />
       </div>

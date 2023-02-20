@@ -8,6 +8,7 @@ import {
 } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import {
+  BackpackWalletAdapter,
   GlowWalletAdapter,
   PhantomWalletAdapter,
   SolflareWalletAdapter,
@@ -39,6 +40,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
       new SolflareWalletAdapter(),
       new PhantomWalletAdapter(),
       new GlowWalletAdapter(),
+      new BackpackWalletAdapter()
     ],
     [],
   );
