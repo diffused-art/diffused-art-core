@@ -44,6 +44,7 @@ async function updateNFTOnChain(
   });
 
   console.log('Updating on chain now for - ' + currentNft.address.toString());
+  console.log('Artist address - ' + artistAddress + '<--->' + artistAddress.toString())
 
   const result = await metaplexWriteCli.nfts().update({
     nftOrSft: currentNft,
