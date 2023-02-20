@@ -10,7 +10,7 @@ import useMetaplexWriteCli from '../../hooks/useMetaplexWriteCli';
 
 export function useCandyMachine(
   candyMachineId: string,
-  collectionArtistAddress: string,
+  collectionUpdateAuthority: string,
 ) {
   const metaplex = useMetaplexWriteCli();
   const wallet = useWallet();
@@ -34,16 +34,12 @@ export function useCandyMachine(
     setIsMinting(true);
     let mintHash: string | null = null;
     if (candyMachine) {
-      console.log(candyMachine.collectionMintAddress.toString());
-      console.log(`collectionArtistAddress`, collectionArtistAddress);
       mintHash = await metaplex
         .use(walletAdapterIdentity(wallet))
         .candyMachines()
         .mint({
           candyMachine,
-          collectionUpdateAuthority: new PublicKey(
-            collectionArtistAddress,
-          ),
+          collectionUpdateAuthority: new PublicKey(collectionUpdateAuthority),
         })
         .then(res => res.nft.address.toString())
         .catch(e => {
