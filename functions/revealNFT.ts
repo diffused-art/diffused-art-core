@@ -42,12 +42,17 @@ async function updateNFTOnChain(
       },
     ],
   });
-  await metaplexWriteCli.nfts().update({
+
+  console.log('Updating on chain now for - ' + currentNft.address.toString());
+
+  const result = await metaplexWriteCli.nfts().update({
     nftOrSft: currentNft,
     uri: newUri,
     newUpdateAuthority: artistAddress,
     isMutable: false,
   });
+
+  console.log('Updated NFT', result);
 
   const updatedNFT: Nft | NftWithToken = (await metaplexWriteCli
     .nfts()
