@@ -6,19 +6,10 @@ import { retry } from 'ts-retry-promise';
 import { getV1SpecFromAttributes } from '../utils/getV1SpecFromAttributes';
 import { isValidPublicKey } from '../utils/isValidPublicKey';
 import { isValidV1SpecStableDiffusion } from '../utils/isValidV1Spec';
+import { wrapInfiniteRetry } from '../utils/wrapInfiniteRetry';
 import { generateStableDiffImageAsync } from './ai-sources/stable-diffusion';
 import { generateSemiRandomNumberStableDiffusionRange } from './ai-sources/stable-diffusion/generateSemiRandomSeed';
 import { getReadonlyCli, getWriteCli } from './getMetaplexCli';
-
-async function wrapInfiniteRetry(promise) {
-  return await retry<any>(() => promise(), {
-    retries: 'INFINITELY',
-    delay: 1000,
-    backoff: 'LINEAR',
-    timeout: 10000000,
-    logger: console.log,
-  });
-}
 
 const prisma = new PrismaClient();
 

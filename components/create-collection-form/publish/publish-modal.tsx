@@ -10,10 +10,6 @@ interface PublishModalProps {
   closeModal: () => void;
 }
 
-// Should add to data store all steps of the publish modal and continue knowing last user choices
-// step 2: save collection to DB (and get back collection id on the store)
-// step 3: create collection NFT on chain, create candy machine on chain, and upload candy machine config lines (nfts) (should use collection id from step 2 to fetch data)
-// step 4: done, uploaded, redirect to collection page
 export default function PublishModal({ open, closeModal }: PublishModalProps) {
   const cancelButtonRef = useRef(null);
   return (

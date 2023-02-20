@@ -1,4 +1,5 @@
 import { Collection } from '@prisma/client';
+import { useLocalStorage } from '@solana/wallet-adapter-react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import React, { useCallback } from 'react';
@@ -11,19 +12,27 @@ import {
 export default function PublishDone() {
   const { state, dispatch } = useCreateCollectionStore();
   const router = useRouter();
+  const [, setActiveStep] = useLocalStorage('activeStep', 0);
 
-  const data = useQuery<Collection>('created-collection', () =>
-    axios
-      .get(`/api/collection/${state.collectionId}`)
-      .then(data => data.data.data as Collection),
+  const data = useQuery<Collection>(
+    'created-collection',
+    () =>
+      axios
+        .get(`/api/collection/${state.collectionId}`)
+        .then(data => data.data.data as Collection),
+    {
+      enabled: state.publishStep === 'done',
+    },
   );
 
   const cleanAndRedirect = useCallback(() => {
     dispatch({
       type: ActionTypesCreateCollectionStore.Reset,
     });
+    setActiveStep(0);
+
     router.push(`/drops/${data.data?.slugUrl}`);
-  }, [dispatch, data, router]);
+  }, [dispatch, setActiveStep, data, router]);
   if (state.publishStep !== 'done') return null;
 
   return (

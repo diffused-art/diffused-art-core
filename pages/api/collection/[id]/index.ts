@@ -100,6 +100,8 @@ export default async function handle(req: any, res: any) {
             accountAddresses,
           },
         );
+
+        console.info(result);
       }
       const collection = await prisma.collection.update({
         where: { id: req.query.id },
