@@ -1,5 +1,5 @@
 import { Nft, NftWithToken, toMetaplexFile } from '@metaplex-foundation/js';
-import { PrismaClient } from '@prisma/client';
+import { Artist, Collection, PrismaClient } from '@prisma/client';
 import { PublicKey } from '@solana/web3.js';
 import { unlinkSync } from 'fs';
 import { retry } from 'ts-retry-promise';
@@ -27,6 +27,7 @@ async function updateNFTOnChain(
   newImage: Buffer,
   currentNft: Nft | NftWithToken,
   newAttributes: any,
+  artistAddress: PublicKey,
 ) {
   const metaplexWriteCli = await getWriteCli();
 
@@ -44,6 +45,7 @@ async function updateNFTOnChain(
   await metaplexWriteCli.nfts().update({
     nftOrSft: currentNft,
     uri: newUri,
+    newUpdateAuthority: artistAddress,
     isMutable: false,
   });
 
@@ -198,12 +200,16 @@ async function revealNFTCore(
     prisma.$disconnect();
     return { status: 400, message: 'already_revealed' };
   }
+  let foundCollection: (Collection & { artist: Artist }) | null = null;
 
   if (
     nftOnChainData.collection?.verified &&
     nftOnChainData.collection?.address
   ) {
-    const foundCollection = await prisma.collection.findFirst({
+    foundCollection = await prisma.collection.findFirst({
+      include: {
+        artist: true,
+      },
       where: {
         collectionOnChainAddress: nftOnChainData.collection.address?.toString(),
         isFullyRevealed: false,
@@ -272,6 +278,7 @@ async function revealNFTCore(
         lastGeneratedImage.buffer,
         nftOnChainData,
         nftAttributes,
+        new PublicKey(foundCollection.artist.royaltiesWalletAddress),
       );
       await prisma.mint.update({
         where: { mint_address: nftOnChainData.address.toString() },

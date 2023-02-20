@@ -1,9 +1,10 @@
 import {
   CandyMachine,
   sol,
-  toBigNumber,
   toDateTime,
   TransactionBuilder,
+  CreateCandyGuardOutput,
+  Nft,
 } from '@metaplex-foundation/js';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import {
@@ -16,7 +17,6 @@ import axios from 'axios';
 import { addMinutes } from 'date-fns';
 import { useCallback } from 'react';
 import { retry } from 'ts-retry-promise';
-import { getAttributes } from '../utils/getAttributes';
 import useAnonymousNFTStorage from './useAnonymousNFTStorage';
 import {
   ActionTypesCreateCollectionStore,
@@ -62,85 +62,32 @@ export default function useCandyMachineCreate() {
   const { state, dispatch } = useCreateCollectionStore();
   const createCollectionNFT = useCallback(async () => {
     const {
-      data: { data },
+      data: { data: collectionData },
     } = await axios.get(`/api/collection/${state.collectionId}`);
 
-    if (!data.collectionOnChainAddress) {
-      const metadataURL = await uploadMetadata({
-        name: data.mintName.replace(' #', ''),
-        image: data.nftPlaceholderImageURL,
-        description: data.description,
-        attributes: getAttributes(data),
-        properties: {
-          files: [
-            {
-              type: 'image/png',
-              uri: data.nftPlaceholderImageURL,
-            },
-          ],
-          creators: [
-            {
-              address: process.env.NEXT_PUBLIC_DIFFUSED_ART_CREATOR,
-              share: 10,
-            },
-            {
-              address: data.artist.royaltiesWalletAddress,
-              share: 90,
-            },
-          ],
-        },
-      });
-
-      const collectionOnChainAddress: string = await metaplexCli
-        .nfts()
-        .create({
-          uri: metadataURL,
-          isMutable: true,
-          name: data.mintName.replace(' #', ''),
-          sellerFeeBasisPoints: 250,
-          creators: [
-            {
-              address: new PublicKey(
-                process.env.NEXT_PUBLIC_DIFFUSED_ART_CREATOR!,
-              ),
-              share: 10,
-            },
-            {
-              address: new PublicKey(data.artist.royaltiesWalletAddress),
-              share: 90,
-            },
-          ],
-          isCollection: true,
-        })
-        .then(res => res.nft.address.toString())
-        .catch(e => {
-          if (
-            e
-              ?.toString()
-              .includes?.(
-                '[AccountNotFoundError] The account of type [MintAccount] was not found at the provided address [',
-              )
-          ) {
-            return e
-              ?.toString()
-              ?.replace(
-                '[AccountNotFoundError] The account of type [MintAccount] was not found at the provided address [',
-                '',
-              )
-              .split('].')[0]
-              .replace('].', '')
-              .trim();
-          } else {
-            console.error('Error when creating Collection NFT >', e);
-            throw new Error(`Error when creating Collection NFT - ${e}`);
-          }
-        });
-
+    if (!collectionData.collectionOnChainAddress) {
+      const {
+        data: { data },
+      } = await axios.post(
+        `/api/collection/${state.collectionId}/create-collection-nft`,
+      );
+      const transaction = Transaction.from(data.data);
+      const signedTxn = await wallet?.signTransaction?.(transaction);
+      await sendAndConfirmTransaction(metaplexCli.connection, signedTxn!);
+      const collectionOnChainAddress = signedTxn?.signatures
+        .find(
+          sig =>
+            ![
+              collectionData.updateAuthorityPublicKey,
+              metaplexCli.identity().publicKey.toString(),
+            ].includes(sig.publicKey.toString()),
+        )
+        ?.publicKey.toString();
       dispatch({
         type: ActionTypesCreateCollectionStore.SetFieldValue,
         payload: {
           field: 'collectionNFTAddress',
-          value: collectionOnChainAddress,
+          value: collectionOnChainAddress || '',
         },
       });
 
@@ -148,25 +95,12 @@ export default function useCandyMachineCreate() {
         collectionOnChainAddress,
       });
     }
-  }, [state.collectionId, uploadMetadata, metaplexCli, dispatch]);
+  }, [state.collectionId, wallet, metaplexCli, dispatch]);
 
   const createCandyMachine = useCallback(async () => {
     const {
       data: { data },
     } = await axios.get(`/api/collection/${state.collectionId}`);
-
-    const creators = [
-      {
-        address: new PublicKey(process.env.NEXT_PUBLIC_DIFFUSED_ART_CREATOR!),
-        share: 10,
-        verified: false,
-      },
-      {
-        address: new PublicKey(data.artist.royaltiesWalletAddress),
-        share: 90,
-        verified: true,
-      },
-    ];
 
     if (!data.mintCandyMachineId) {
       let startDate = toDateTime(data.mintOpenAt);
@@ -176,91 +110,73 @@ export default function useCandyMachineCreate() {
         );
       }
 
-      const mintCandyMachineId: string = await wrapInfiniteRetry(() =>
-        metaplexCli
-          .candyMachines()
-          .create({
-            authority: metaplexCli.identity(),
-            collection: {
-              address: new PublicKey(data.collectionOnChainAddress),
-              updateAuthority: metaplexCli.identity(),
-            },
-            guards: {
-              botTax: { lamports: sol(0.01), lastInstruction: false },
-              solPayment: {
-                amount: sol(Number(data.mintPrice)),
-                destination: new PublicKey(
-                  process.env.NEXT_PUBLIC_DIFFUSED_ART_CREATOR!,
-                ),
-              },
-              startDate: { date: startDate },
-            },
-            sellerFeeBasisPoints: Number(data.mintSellerFeeBasisPoints),
-            itemsAvailable: toBigNumber(data.mintTotalSupply),
-            itemSettings: {
-              type: 'configLines',
-              prefixName: `${data.mintName.replace(' #', '')} #$ID+1$`,
-              nameLength: 0,
-              prefixUri: `https://nftstorage.link/ipfs/`,
-              uriLength: 59,
-              isSequential: false,
-            },
-            symbol: data.mintSymbol,
-            maxEditionSupply: toBigNumber(0),
-            isMutable: true,
-            creators,
-          })
-          .then(data => data.candyMachine.address.toString())
-          .catch(e => {
-            if (
-              e
-                ?.toString()
-                .includes?.(
-                  '[AccountNotFoundError] The account of type [CandyMachine] was not found at the provided address [',
-                )
-            ) {
-              return e
-                ?.toString()
-                ?.replace(
-                  '[AccountNotFoundError] The account of type [CandyMachine] was not found at the provided address [',
-                  '',
-                )
-                .split('].')[0]
-                .replace('].', '')
-                .trim();
-            } else {
-              console.error('Error when creating candy machine >', e);
-              throw new Error(`Error when creating candy machine - ${e}`);
-            }
-          }),
+      const {
+        data: { data: transactionData },
+      } = await axios.post(
+        `/api/collection/${state.collectionId}/create-candy-machine`,
       );
+      const transaction = Transaction.from(transactionData.data);
+      const signedTxn = await wallet?.signTransaction?.(transaction);
+      await sendAndConfirmTransaction(metaplexCli.connection, signedTxn!);
+      const mintCandyMachineId = signedTxn?.signatures
+        .find(
+          sig =>
+            ![
+              data.updateAuthorityPublicKey,
+              metaplexCli.identity().publicKey.toString(),
+            ].includes(sig.publicKey.toString()),
+        )
+        ?.publicKey.toString();
 
       const candyMachine: CandyMachine = await wrapInfiniteRetry(() =>
         metaplexCli
           .candyMachines()
-          .findByAddress({ address: new PublicKey(mintCandyMachineId) }),
+          .findByAddress({ address: new PublicKey(mintCandyMachineId!) }),
       );
 
-      console.info('Created Candy Machine - ', mintCandyMachineId);
+      console.info('Created Candy Machine - ', candyMachine);
+
+      const candyGuards: CreateCandyGuardOutput = await wrapInfiniteRetry(() =>
+        metaplexCli.candyMachines().createCandyGuard({
+          guards: {
+            botTax: { lamports: sol(0.01), lastInstruction: false },
+            solPayment: {
+              amount: sol(Number(data.mintPrice)),
+              destination: new PublicKey(
+                process.env.NEXT_PUBLIC_DIFFUSED_ART_CREATOR!,
+              ),
+            },
+            startDate: { date: startDate },
+          },
+        }),
+      );
+
+      // Finally, wrap the CM with the guards
+      await wrapInfiniteRetry(() =>
+        metaplexCli.candyMachines().wrapCandyGuard({
+          candyGuard: candyGuards.candyGuardAddress,
+          candyMachine: candyMachine.address,
+        }),
+      );
 
       await axios.post(
         `/api/collection/${state.collectionId}/candy-machine-create-logs`,
         {
           mintCandyMachineId,
-          mintGuardId: candyMachine.candyGuard?.address.toString(),
+          mintGuardId: candyGuards.candyGuard?.address.toString(),
         },
       );
 
       await axios.put(`/api/collection/${state.collectionId}`, {
         mintCandyMachineId,
-        mintGuardId: candyMachine.candyGuard?.address.toString(),
+        mintGuardId: candyGuards.candyGuard?.address.toString(),
       });
 
       dispatch({
         type: ActionTypesCreateCollectionStore.SetFieldValue,
         payload: {
           field: 'collectionCandyMachineAddress',
-          value: mintCandyMachineId,
+          value: mintCandyMachineId!,
         },
       });
 
@@ -268,7 +184,7 @@ export default function useCandyMachineCreate() {
         type: ActionTypesCreateCollectionStore.SetFieldValue,
         payload: {
           field: 'collectionCandyGuardAddress',
-          value: candyMachine.candyGuard?.address.toString() || '',
+          value: candyGuards.candyGuard?.address.toString() || '',
         },
       });
 
@@ -276,7 +192,7 @@ export default function useCandyMachineCreate() {
         'Candy Machine using the guard created, we are ready to go houston!',
       );
     }
-  }, [state.collectionId, metaplexCli, dispatch]);
+  }, [state.collectionId, metaplexCli, wallet, dispatch]);
 
   const insertItems = useCallback(async () => {
     const {
@@ -289,36 +205,17 @@ export default function useCandyMachineCreate() {
         .findByAddress({ address: new PublicKey(data.mintCandyMachineId) }),
     );
 
-    const uri = await uploadMetadata({
-      name: data.mintName.replace(' #', ''),
-      image: data.nftPlaceholderImageURL,
-      description: data.description,
-      attributes: getAttributes(data),
-      properties: {
-        files: [
-          {
-            type: 'image/png',
-            uri: data.nftPlaceholderImageURL,
-          },
-        ],
-        creators: [
-          {
-            address: process.env.NEXT_PUBLIC_DIFFUSED_ART_CREATOR,
-            share: 10,
-          },
-          {
-            address: data.artist.royaltiesWalletAddress,
-            share: 90,
-          },
-        ],
-      },
-    });
+    const collectionNft: Nft = await wrapInfiniteRetry(() =>
+      metaplexCli.nfts().findByMint({
+        mintAddress: new PublicKey(data.collectionOnChainAddress),
+      }),
+    );
 
     const items = Array(data.mintTotalSupply)
       .fill(0)
-      .map((_, i) => ({
+      .map(() => ({
         name: '',
-        uri: uri.replace('https://nftstorage.link/ipfs/', ''),
+        uri: collectionNft.uri.replace('https://nftstorage.link/ipfs/', ''),
       }));
 
     console.info(
@@ -384,17 +281,6 @@ export default function useCandyMachineCreate() {
     );
 
     if (isSuccess) {
-      const nft = await metaplexCli.nfts().findByMint({
-        mintAddress: new PublicKey(state.collectionNFTAddress),
-      });
-
-      const updatedNFT = await metaplexCli.nfts().update({
-        nftOrSft: nft,
-        authority: metaplexCli.identity(),
-        newUpdateAuthority: new PublicKey(data.updateAuthorityPublicKey),
-      });
-
-      console.log(`Updated NFT up auth`, updatedNFT);
       // Update collection NFT to have the update authority of the reveal wallet
       await axios.put(`/api/collection/${state.collectionId}`, {
         isPublished: true,

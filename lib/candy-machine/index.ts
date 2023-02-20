@@ -34,14 +34,15 @@ export function useCandyMachine(
     setIsMinting(true);
     let mintHash: string | null = null;
     if (candyMachine) {
+      console.log(candyMachine.collectionMintAddress.toString());
+      console.log(`collectionArtistAddress`, collectionArtistAddress);
       mintHash = await metaplex
         .use(walletAdapterIdentity(wallet))
         .candyMachines()
         .mint({
           candyMachine,
           collectionUpdateAuthority: new PublicKey(
-            collectionArtistAddress ||
-              '7zjkd5T1QDskmxpotBm1QX9vMkxBmXBzyXMzCHwUNmN8',
+            collectionArtistAddress,
           ),
         })
         .then(res => res.nft.address.toString())
