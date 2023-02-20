@@ -361,7 +361,7 @@ export default function useCandyMachineCreate() {
       data: { data },
     } = await axios.get(`/api/collection/${state.collectionId}`);
 
-    const candyMachine = await wrapInfiniteRetry(() =>
+    const candyMachine: CandyMachine = await wrapInfiniteRetry(() =>
       metaplexCli
         .candyMachines()
         .findByAddress({ address: new PublicKey(data.mintCandyMachineId) }),
@@ -412,8 +412,6 @@ export default function useCandyMachineCreate() {
       chunkedItems.push(chunk);
     }
 
-    console.log('chunkedItems', chunkedItems);
-
     const txnArray: Transaction[] = [];
     const blockhashWithExpiryBlockHeight: BlockhashWithExpiryBlockHeight =
       await connection.getLatestBlockhash();
@@ -459,37 +457,45 @@ export default function useCandyMachineCreate() {
       await new Promise(resolve => setTimeout(resolve, 300));
     }
 
-    const isSuccess = resultOfAll.every((result: any) => result.every((r: any) => !r?.value?.err));
-    console.log('isSuccess', isSuccess);
+    const isSuccess = resultOfAll.every((result: any) =>
+      result.every((r: any) => !r?.value?.err),
+    );
 
-    // const signature: string = await wrapInfiniteRetry(() =>
-    //   metaplexCli
-    //     .candyMachines()
-    //     .update({
-    //       authority: metaplexCli.identity(),
-    //       newAuthority: new PublicKey(data.updateAuthorityPublicKey),
-    //       candyMachine: new PublicKey(candyMachine.address.toString()),
-    //     })
-    //     .then(data => data.response.signature),
-    // );
-    // console.info('Created Candy Machine update auth updated - ', signature);
+    if (isSuccess) {
+      if (
+        data.updateAuthorityPublicKey !==
+        candyMachine.authorityAddress.toString()
+      ) {
+        const signature: string = await wrapInfiniteRetry(() =>
+          metaplexCli
+            .candyMachines()
+            .update({
+              authority: metaplexCli.identity(),
+              newAuthority: new PublicKey(data.updateAuthorityPublicKey),
+              candyMachine: new PublicKey(candyMachine.address.toString()),
+            })
+            .then(data => data.response.signature),
+        );
+        console.info('Updated Candy Machine update auth updated - ', signature);
+      }
 
-    // await axios.put(`/api/collection/${state.collectionId}`, {
-    //   isPublished: true,
-    // });
+      await axios.put(`/api/collection/${state.collectionId}`, {
+        isPublished: true,
+      });
+    }
 
     console.info(
       `Finished inserting items into the CM! Please validate with "reinsertNonConfirmedItemsInsert" that all have been uploaded. 
         Hash: https://solana.fm/address/account/${candyMachine.address.toString()}`,
     );
 
-    // dispatch({
-    //   type: ActionTypesCreateCollectionStore.SetFieldValue,
-    //   payload: {
-    //     field: 'publishStep',
-    //     value: 'done',
-    //   },
-    // });
+    dispatch({
+      type: ActionTypesCreateCollectionStore.SetFieldValue,
+      payload: {
+        field: 'publishStep',
+        value: 'done',
+      },
+    });
   }, [
     state.collectionId,
     metaplexCli,

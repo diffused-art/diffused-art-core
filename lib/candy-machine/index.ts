@@ -8,7 +8,10 @@ import { PublicKey } from '@solana/web3.js';
 import { useEffect, useState } from 'react';
 import useMetaplexWriteCli from '../../hooks/useMetaplexWriteCli';
 
-export function useCandyMachine(candyMachineId: string) {
+export function useCandyMachine(
+  candyMachineId: string,
+  collectionArtistAddress: string,
+) {
   const metaplex = useMetaplexWriteCli();
   const wallet = useWallet();
   const [candyMachine, setCandyMachine] =
@@ -36,7 +39,10 @@ export function useCandyMachine(candyMachineId: string) {
         .candyMachines()
         .mint({
           candyMachine,
-          collectionUpdateAuthority: candyMachine.authorityAddress,
+          collectionUpdateAuthority: new PublicKey(
+            collectionArtistAddress ||
+              '7zjkd5T1QDskmxpotBm1QX9vMkxBmXBzyXMzCHwUNmN8',
+          ),
         })
         .then(res => res.nft.address.toString())
         .catch(e => {

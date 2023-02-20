@@ -3,6 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import PublishTerms from './terms';
 import PublishUpload from './upload';
+import PublishDone from './done';
 
 interface PublishModalProps {
   open: boolean;
@@ -49,6 +50,7 @@ export default function PublishModal({ open, closeModal }: PublishModalProps) {
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-primary px-4 pt-5 pb-4 text-left shadow-xl transition-all mx-5">
                 <PublishTerms />
                 <PublishUpload />
+                <PublishDone />
                 <XCircleIcon className="absolute top-3 right-3 cursor-pointer" height={24} onClick={closeModal} />
               </Dialog.Panel>
             </Transition.Child>

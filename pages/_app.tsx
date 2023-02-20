@@ -55,7 +55,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
                 trackPageViews
                 gaMeasurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}
               />
-              <NextNProgress />
+              <NextNProgress color='#FFC700' />
               <Component {...pageProps} />
             </SessionProvider>
           </WalletModalProvider>

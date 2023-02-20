@@ -1,3 +1,16 @@
+diff --git a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/insertCandyMachineItems.mjs b/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/insertCandyMachineItems.mjs
+index 094f8d7..5e63fe7 100644
+--- a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/insertCandyMachineItems.mjs
++++ b/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/insertCandyMachineItems.mjs
+@@ -83,7 +83,7 @@ const insertCandyMachineItemsBuilder = (metaplex, params, options = {}) => {
+   const {
+     items
+   } = params;
+-  assertNotFull(params.candyMachine, index);
++  // assertNotFull(params.candyMachine, index);
+   assertCanAdd(params.candyMachine, index, items.length);
+   assertAllItemConstraints(params.candyMachine, items);
+ 
 diff --git a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineV2Module/asserts.mjs b/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineV2Module/asserts.mjs
 index c175d6f..08f8bf7 100644
 --- a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineV2Module/asserts.mjs

@@ -51,6 +51,7 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
   const { isLoadingState, onMint, isMinting, candyMachine } = useCandyMachine(
     collection.mintCandyMachineId!,
+    collection.artist.royaltiesWalletAddress!,
   );
 
   const [activeMintHash, setActiveMintHash] = useState<string | null>(null);
