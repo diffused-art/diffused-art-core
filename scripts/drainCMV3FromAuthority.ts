@@ -6,6 +6,7 @@ import { getWriteCli } from '../functions/getMetaplexCli';
 import { PublicKey } from '@solana/web3.js';
 const prisma = new PrismaClient();
 
+// TODO: Should tweak to use rw creator address and then use sugar since it is connected here
 async function drainCMV3FromAuthority() {
   const metaplex = await getWriteCli();
 
