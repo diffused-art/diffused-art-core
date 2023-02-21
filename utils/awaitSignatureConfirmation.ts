@@ -17,6 +17,7 @@ export const awaitTransactionSignatureConfirmation = async (
     confirmations: 0,
     err: null,
   };
+  console.log('Is here');
   let subId = 0;
   status = await new Promise(async (resolve, reject) => {
     setTimeout(() => {
@@ -58,6 +59,7 @@ export const awaitTransactionSignatureConfirmation = async (
           const signatureStatuses = await connection.getSignatureStatuses([
             txid,
           ]);
+          console.log(signatureStatuses);
           status = signatureStatuses && signatureStatuses.value[0];
           if (!done) {
             if (!status) {
@@ -84,10 +86,7 @@ export const awaitTransactionSignatureConfirmation = async (
     }
   });
 
-  //@ts-ignore
-  if (connection._signatureSubscriptions[subId]) {
-    connection.removeSignatureListener(subId);
-  }
+  connection.removeSignatureListener(subId).catch(() => true);
   done = true;
   console.log('Returning status ', status);
   return status;
