@@ -79,7 +79,7 @@ export default function PublishUpload() {
   const insertItemsCB = async () => {
     setIsLoading(true);
     await insertItems();
-    setActiveStep(3);
+    setActiveStep(0);
     setIsLoading(false);
   };
 

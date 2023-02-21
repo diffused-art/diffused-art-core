@@ -12,7 +12,6 @@ import {
 export default function PublishDone() {
   const { state, dispatch } = useCreateCollectionStore();
   const router = useRouter();
-  const [, setActiveStep] = useLocalStorage('activeStep', 0);
 
   const data = useQuery<Collection>(
     'created-collection',
@@ -29,10 +28,10 @@ export default function PublishDone() {
     dispatch({
       type: ActionTypesCreateCollectionStore.Reset,
     });
-    setActiveStep(0);
 
     router.push(`/drops/${data.data?.slugUrl}`);
-  }, [dispatch, setActiveStep, data, router]);
+  }, [dispatch, data, router]);
+  
   if (state.publishStep !== 'done') return null;
 
   return (

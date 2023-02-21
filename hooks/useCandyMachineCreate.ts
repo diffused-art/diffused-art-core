@@ -303,8 +303,6 @@ export default function useCandyMachineCreate() {
     state.collectionId,
     connection,
     metaplexCli,
-    state.collectionNFTAddress,
-    uploadMetadata,
     wallet,
     dispatch,
   ]);
