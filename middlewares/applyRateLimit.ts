@@ -9,12 +9,15 @@ export const getIP = request =>
   request.headers['x-real-ip'] ||
   request.connection.remoteAddress;
 
-const client = new RedisClient.Cluster([
-  {
-    host: process.env.REDIS_HOST!,
-    port: 6379,
-  },
-]);
+const connection = {
+  host: process.env.REDIS_HOST!,
+  port: 6379,
+};
+
+const client =
+  process.env.NODE_ENV === 'development'
+    ? new RedisClient(connection)
+    : new RedisClient.Cluster([connection]);
 
 export const getRateLimitMiddlewares = ({
   limit = 100,
