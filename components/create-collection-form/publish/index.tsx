@@ -232,15 +232,15 @@ export default function CreateCollectionFormPublish() {
                   <div>
                     <h3 className="text-[18px]">Keywords</h3>
                     {selectedTags.map(tag => (
-                      <span
+                      <div
                         key={tag.id}
-                        className="group bg-primary-100 relative text-white uppercase text-xs rounded-md py-2 px-3 mr-2"
+                        className="bg-primary-100 relative text-white uppercase text-xs rounded-md py-2 px-3 mr-2 inline-block my-1"
                       >
                         <span>
                           {tag.label}{' '}
                           <span className="opacity-25 ml-2">{tag.count}</span>
                         </span>
-                      </span>
+                      </div>
                     ))}
                   </div>
                   <div className="relative">
