@@ -38,7 +38,7 @@ async function sendAndConfirmTransaction(
   );
 
   // Confirm the transaction
-  console.info('Before confirm txn');
+  console.info('Confirming txn');
   const signatureStatus = await wrapInfiniteRetry(() =>
     connection.confirmTransaction(txid, 'confirmed'),
   );
@@ -86,6 +86,11 @@ export default function useCandyMachineCreate() {
             ].includes(sig.publicKey.toString()),
         )
         ?.publicKey.toString();
+
+      console.info(
+        'Created collection NFT, address ' + collectionOnChainAddress,
+      );
+
       dispatch({
         type: ActionTypesCreateCollectionStore.SetFieldValue,
         payload: {
@@ -196,6 +201,8 @@ export default function useCandyMachineCreate() {
           }),
         );
 
+      console.info('Created Candy Guard - ', candyGuard);
+
       // Finally, wrap the CM with the guards
       await wrapInfiniteRetry(() =>
         metaplexCli.candyMachines().wrapCandyGuard({
@@ -234,7 +241,7 @@ export default function useCandyMachineCreate() {
       });
 
       console.info(
-        'Candy Machine using the guard created, we are ready to go houston!',
+        'Candy Machine using the guard created, we are ready to go, Houston 🚀!',
       );
 
       return true;
