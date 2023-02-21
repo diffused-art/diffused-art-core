@@ -18,6 +18,7 @@ import axios from 'axios';
 import { addMinutes } from 'date-fns';
 import { useCallback } from 'react';
 import { retry } from 'ts-retry-promise';
+import { wrapInfiniteRetry } from '../utils/wrapInfiniteRetry';
 import {
   ActionTypesCreateCollectionStore,
   useCreateCollectionStore,
@@ -37,21 +38,13 @@ async function sendAndConfirmTransaction(
   );
 
   // Confirm the transaction
+  console.info('Before confirm txn');
   const signatureStatus = await wrapInfiniteRetry(() =>
     connection.confirmTransaction(txid, 'confirmed'),
   );
+  console.info('Signature Status: ', signatureStatus);
 
   return signatureStatus;
-}
-
-async function wrapInfiniteRetry(promise) {
-  return await retry<any>(() => promise(), {
-    retries: 'INFINITELY',
-    delay: 1000,
-    backoff: 'LINEAR',
-    timeout: 10000000,
-    logger: console.log,
-  });
 }
 
 export default function useCandyMachineCreate() {
