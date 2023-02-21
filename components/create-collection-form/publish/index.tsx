@@ -34,6 +34,7 @@ export default function CreateCollectionFormPublish() {
   const canGoToNextPage =
     state.quantity > 0 &&
     state.currencyTotal >= 0 &&
+    state.currencyTotal <= 1000 &&
     (state.startImediately ||
       new Date(getDatetime(state.startDate, state.startTime)) > new Date());
 
@@ -101,6 +102,7 @@ export default function CreateCollectionFormPublish() {
                       placeholder="0"
                       min={0}
                       max={1000}
+                      step={0.01}
                       defaultValue={state.currencyTotal}
                       suffixComponent="SOL"
                       onChange={e =>
@@ -108,7 +110,7 @@ export default function CreateCollectionFormPublish() {
                           type: ActionTypesCreateCollectionStore.SetFieldValue,
                           payload: {
                             field: 'currencyTotal',
-                            value: e.target.value,
+                            value: Number(e.target.value),
                           },
                         })
                       }
