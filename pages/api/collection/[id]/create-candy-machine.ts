@@ -1,5 +1,5 @@
 import { toBigNumber } from '@metaplex-foundation/js';
-import { PublicKey, Signer, Transaction } from '@solana/web3.js';
+import { Keypair, PublicKey, Signer, Transaction } from '@solana/web3.js';
 import NextCors from 'nextjs-cors';
 import { getWriteCli } from '../../../../functions/getMetaplexCli';
 import prisma from '../../../../lib/prisma';
@@ -59,28 +59,39 @@ export default async function handle(req: any, res: any) {
   const transactionBuilder = await metaplexCli
     .candyMachines()
     .builders()
-    .create({
-      authority: new PublicKey(collection.artist.royaltiesWalletAddress),
-      collection: {
-        address: new PublicKey(collection.collectionOnChainAddress!),
-        updateAuthority: metaplexCli.identity(),
+    .create(
+      {
+        authority: new PublicKey(collection.artist.royaltiesWalletAddress),
+        collection: {
+          address: new PublicKey(collection.collectionOnChainAddress!),
+          updateAuthority: metaplexCli.identity(),
+        },
+        sellerFeeBasisPoints: Number(collection.mintSellerFeeBasisPoints),
+        itemsAvailable: toBigNumber(collection.mintTotalSupply!),
+        itemSettings: {
+          type: 'configLines',
+          prefixName: `${collection.mintName.replace(' #', '')} #$ID+1$`,
+          nameLength: 0,
+          prefixUri: `https://nftstorage.link/ipfs/`,
+          uriLength: 59,
+          isSequential: false,
+        },
+        symbol: collection.mintSymbol,
+        maxEditionSupply: toBigNumber(0),
+        isMutable: true,
+        creators,
+        withoutCandyGuard: true,
       },
-      sellerFeeBasisPoints: Number(collection.mintSellerFeeBasisPoints),
-      itemsAvailable: toBigNumber(collection.mintTotalSupply!),
-      itemSettings: {
-        type: 'configLines',
-        prefixName: `${collection.mintName.replace(' #', '')} #$ID+1$`,
-        nameLength: 0,
-        prefixUri: `https://nftstorage.link/ipfs/`,
-        uriLength: 59,
-        isSequential: false,
+      {
+        // TODO: Patchy hacky since payer expects a Signer
+        // And I just want to make the updateAuthority pay for everything
+        // Ideally, Metaplex/JS should allow for a payer to be a PublicKey
+        payer: {
+          publicKey: new PublicKey(collection.artist.royaltiesWalletAddress),
+          secretKey: Keypair.generate().secretKey,
+        } as Signer,
       },
-      symbol: collection.mintSymbol,
-      maxEditionSupply: toBigNumber(0),
-      isMutable: true,
-      creators,
-      withoutCandyGuard: true,
-    });
+    );
   const blockhashWithExpiryBlockHeight =
     await metaplexCli.connection.getLatestBlockhash();
 
@@ -97,7 +108,13 @@ export default async function handle(req: any, res: any) {
   ) {
     const txIns = transactionBuilder.getInstructionsWithSigners()[index];
     for (const signer of txIns.signers) {
-      if (signer.publicKey.equals(metaplexCli.identity().publicKey)) {
+      // TODO: This guarantees that both the update authority (this server) and the royalties wallet address remain unsigned
+      if (
+        signer.publicKey.equals(metaplexCli.identity().publicKey) ||
+        signer.publicKey.equals(
+          new PublicKey(collection.artist.royaltiesWalletAddress),
+        )
+      ) {
         continue;
       }
       extraKeypairsToSign.push(signer as Signer);

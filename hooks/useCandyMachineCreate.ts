@@ -73,6 +73,7 @@ export default function useCandyMachineCreate() {
         `/api/collection/${state.collectionId}/create-collection-nft`,
       );
       const transaction = Transaction.from(data.data);
+
       const signedTxn = await wallet
         ?.signTransaction?.(transaction)
         .catch(() => {

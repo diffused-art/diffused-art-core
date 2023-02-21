@@ -1,4 +1,4 @@
-import { PublicKey, Signer, Transaction } from '@solana/web3.js';
+import { Keypair, PublicKey, Signer, Transaction } from '@solana/web3.js';
 import NextCors from 'nextjs-cors';
 import { getWriteCli } from '../../../../functions/getMetaplexCli';
 import prisma from '../../../../lib/prisma';
@@ -68,25 +68,38 @@ export default async function handle(req: any, res: any) {
   const transactionBuilder = await metaplexCli
     .nfts()
     .builders()
-    .create({
-      tokenOwner: new PublicKey(collection.artist.royaltiesWalletAddress),
-      uri: metadataURL,
-      isMutable: false,
-      updateAuthority: metaplexCli.identity(),
-      name: collection.mintName.replace(' #', ''),
-      sellerFeeBasisPoints: 250,
-      creators: [
-        {
-          address: new PublicKey(process.env.NEXT_PUBLIC_DIFFUSED_ART_CREATOR!),
-          share: 10,
-        },
-        {
-          address: new PublicKey(collection.artist.royaltiesWalletAddress),
-          share: 90,
-        },
-      ],
-      isCollection: true,
-    });
+    .create(
+      {
+        tokenOwner: new PublicKey(collection.artist.royaltiesWalletAddress),
+        uri: metadataURL,
+        isMutable: false,
+        updateAuthority: metaplexCli.identity(),
+        name: collection.mintName.replace(' #', ''),
+        sellerFeeBasisPoints: 250,
+        creators: [
+          {
+            address: new PublicKey(
+              process.env.NEXT_PUBLIC_DIFFUSED_ART_CREATOR!,
+            ),
+            share: 10,
+          },
+          {
+            address: new PublicKey(collection.artist.royaltiesWalletAddress),
+            share: 90,
+          },
+        ],
+        isCollection: true,
+      },
+      {
+        // TODO: Patchy hacky since payer expects a Signer
+        // And I just want to make the updateAuthority pay for everything
+        // Ideally, Metaplex/JS should allow for a payer to be a PublicKey
+        payer: {
+          publicKey: new PublicKey(collection.artist.royaltiesWalletAddress),
+          secretKey: Keypair.generate().secretKey,
+        } as Signer,
+      },
+    );
   const blockhashWithExpiryBlockHeight =
     await metaplexCli.connection.getLatestBlockhash();
 
@@ -103,13 +116,20 @@ export default async function handle(req: any, res: any) {
   ) {
     const txIns = transactionBuilder.getInstructionsWithSigners()[index];
     for (const signer of txIns.signers) {
-      if (signer.publicKey.equals(metaplexCli.identity().publicKey)) {
+      // TODO: This guarantees that both the update authority (this server) and the royalties wallet address remain unsigned
+      if (
+        signer.publicKey.equals(metaplexCli.identity().publicKey) ||
+        signer.publicKey.equals(
+          new PublicKey(collection.artist.royaltiesWalletAddress),
+        )
+      ) {
         continue;
       }
       extraKeypairsToSign.push(signer as Signer);
     }
     transaction.add(txIns.instruction);
   }
+
   transaction.partialSign(metaplexCli.identity() as Signer);
   for (let index = 0; index < extraKeypairsToSign.length; index++) {
     const signer = extraKeypairsToSign[index];
