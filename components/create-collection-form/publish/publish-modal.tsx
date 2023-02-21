@@ -18,7 +18,7 @@ export default function PublishModal({ open, closeModal }: PublishModalProps) {
         as="div"
         className="relative z-10"
         initialFocus={cancelButtonRef}
-        onClose={closeModal}
+        onClose={() => null}
       >
         <Transition.Child
           as={Fragment}
