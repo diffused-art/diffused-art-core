@@ -263,7 +263,14 @@ export default function CreateCollectionFormPublish() {
       {resetNode}
       <PublishModal
         open={isPublishModalOpen}
-        closeModal={() => setIsPublishModalOpen(false)}
+        closeModal={() => {
+          setIsPublishModalOpen(false);
+          if (state.publishStep === 'done') {
+            dispatch({
+              type: ActionTypesCreateCollectionStore.Reset,
+            });
+          }
+        }}
       />
     </>
   );

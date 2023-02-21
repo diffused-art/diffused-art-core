@@ -15,7 +15,8 @@ export default function PublishUpload() {
   const [activeStep, setActiveStep] = useLocalStorage('activeStep', 0);
   const [isLoading, setIsLoading] = useState(false);
   const { uploadImage } = useAnonymousNFTStorage();
-  const { createCollectionNFT, createCandyMachine, insertItems } = useCandyMachineCreate();
+  const { createCollectionNFT, createCandyMachine, insertItems } =
+    useCandyMachineCreate();
 
   if (state.publishStep !== 'upload') return null;
 
@@ -64,22 +65,22 @@ export default function PublishUpload() {
 
   const createCollectionNFTCB = async () => {
     setIsLoading(true);
-    await createCollectionNFT();
-    setActiveStep(2);
+    const result = await createCollectionNFT();
+    if (result) setActiveStep(2);
     setIsLoading(false);
   };
 
   const createCandyMachineCB = async () => {
     setIsLoading(true);
-    await createCandyMachine();
-    setActiveStep(3);
+    const result = await createCandyMachine();
+    if (result) setActiveStep(3);
     setIsLoading(false);
   };
 
   const insertItemsCB = async () => {
     setIsLoading(true);
-    await insertItems();
-    setActiveStep(0);
+    const result = await insertItems();
+    if (result) setActiveStep(0);
     setIsLoading(false);
   };
 
@@ -154,9 +155,7 @@ export default function PublishUpload() {
           {isLoading ? (
             'Loading...'
           ) : (
-            <span>
-              Candy Machine created! Finally, let`s upload the NFTs!
-            </span>
+            <span>Candy Machine created! Finally, let`s upload the NFTs!</span>
           )}
         </button>
       )}

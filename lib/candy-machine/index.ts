@@ -68,6 +68,8 @@ export function useCandyMachine(
               .split('].')[0]
               .replace('].', '')
               .trim();
+          } else {
+            return null;
           }
         });
     }

@@ -2,6 +2,7 @@ import { Artist, Collection, Mint } from '@prisma/client';
 import axios from 'axios';
 import Head from 'next/head';
 import { useCallback, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { useInterval } from 'usehooks-ts';
 import CornerCard from '../../components/corner-card';
 import Footer from '../../components/footer';
@@ -9,6 +10,7 @@ import Menu from '../../components/menu';
 import MintButton from '../../components/mint-button';
 import MintModal from '../../components/mint-modal';
 import NoSSR from '../../components/no-ssr';
+import useToast, { ToastIconEnum } from '../../hooks/useToast';
 import { useCandyMachine } from '../../lib/candy-machine';
 import prisma from '../../lib/prisma';
 
@@ -48,6 +50,7 @@ interface DropsSlugPageProps {
 }
 
 const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
+  const toast = useToast();
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
   const { isLoadingState, onMint, isMinting, candyMachine } = useCandyMachine(
     collection.mintCandyMachineId!,
@@ -63,10 +66,14 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
     if (mintHash === null) {
       setIsMintModalOpen(false);
       setActiveMintHash(null);
+      toast({
+        message: 'User refused to sign in the mint transaction',
+        icon: ToastIconEnum.FAILURE,
+      });
     } else {
       setActiveMintHash(mintHash);
     }
-  }, [onMint]);
+  }, [onMint, toast]);
 
   const onCloseModal = useCallback(() => {
     setIsMintModalOpen(false);
@@ -235,6 +242,7 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
         </main>
         <Footer ctaEnabled={false} twitterEnabled={false} />
       </div>
+      <Toaster />
     </div>
   );
 };

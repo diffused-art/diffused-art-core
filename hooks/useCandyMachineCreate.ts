@@ -5,6 +5,8 @@ import {
   TransactionBuilder,
   CreateCandyGuardOutput,
   Nft,
+  CandyGuard,
+  DefaultCandyGuardSettings,
 } from '@metaplex-foundation/js';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import {
@@ -23,6 +25,7 @@ import {
   useCreateCollectionStore,
 } from './useCreateCollectionStore';
 import useMetaplexWriteCli from './useMetaplexWriteCli';
+import useToast, { ToastIconEnum } from './useToast';
 
 async function sendAndConfirmTransaction(
   connection: Connection,
@@ -58,8 +61,9 @@ export default function useCandyMachineCreate() {
   const wallet = useWallet();
   const { connection } = useConnection();
   const metaplexCli = useMetaplexWriteCli();
-  const { uploadMetadata } = useAnonymousNFTStorage();
   const { state, dispatch } = useCreateCollectionStore();
+  const toast = useToast();
+
   const createCollectionNFT = useCallback(async () => {
     const {
       data: { data: collectionData },
@@ -72,7 +76,15 @@ export default function useCandyMachineCreate() {
         `/api/collection/${state.collectionId}/create-collection-nft`,
       );
       const transaction = Transaction.from(data.data);
-      const signedTxn = await wallet?.signTransaction?.(transaction);
+      const signedTxn = await wallet
+        ?.signTransaction?.(transaction)
+        .catch(() => {
+          toast({
+            message: 'User refused to sign in the transaction',
+            icon: ToastIconEnum.FAILURE,
+          });
+        });
+      if (!signedTxn) return false;
       await sendAndConfirmTransaction(metaplexCli.connection, signedTxn!);
       const collectionOnChainAddress = signedTxn?.signatures
         .find(
@@ -94,8 +106,10 @@ export default function useCandyMachineCreate() {
       await axios.put(`/api/collection/${state.collectionId}`, {
         collectionOnChainAddress,
       });
+
+      return true;
     }
-  }, [state.collectionId, wallet, metaplexCli, dispatch]);
+  }, [state.collectionId, wallet, metaplexCli, toast, dispatch]);
 
   const createCandyMachine = useCallback(async () => {
     const {
@@ -116,7 +130,15 @@ export default function useCandyMachineCreate() {
         `/api/collection/${state.collectionId}/create-candy-machine`,
       );
       const transaction = Transaction.from(transactionData.data);
-      const signedTxn = await wallet?.signTransaction?.(transaction);
+      const signedTxn = await wallet
+        ?.signTransaction?.(transaction)
+        .catch(() => {
+          toast({
+            message: 'User refused to sign in the transaction',
+            icon: ToastIconEnum.FAILURE,
+          });
+        });
+      if (!signedTxn) return false;
       await sendAndConfirmTransaction(metaplexCli.connection, signedTxn!);
       const mintCandyMachineId = signedTxn?.signatures
         .find(
@@ -136,25 +158,57 @@ export default function useCandyMachineCreate() {
 
       console.info('Created Candy Machine - ', candyMachine);
 
-      const candyGuards: CreateCandyGuardOutput = await wrapInfiniteRetry(() =>
-        metaplexCli.candyMachines().createCandyGuard({
-          guards: {
-            botTax: { lamports: sol(0.01), lastInstruction: false },
-            solPayment: {
-              amount: sol(Number(data.mintPrice)),
-              destination: new PublicKey(
-                process.env.NEXT_PUBLIC_DIFFUSED_ART_CREATOR!,
-              ),
+      const candyGuardAddress: string = await wrapInfiniteRetry(() =>
+        metaplexCli
+          .candyMachines()
+          .createCandyGuard({
+            guards: {
+              botTax: { lamports: sol(0.01), lastInstruction: false },
+              solPayment: {
+                amount: sol(Number(data.mintPrice)),
+                destination: new PublicKey(
+                  process.env.NEXT_PUBLIC_DIFFUSED_ART_CREATOR!,
+                ),
+              },
+              startDate: { date: startDate },
             },
-            startDate: { date: startDate },
-          },
-        }),
+          })
+          .then(res => res.candyGuardAddress.toString())
+          .catch(e => {
+            if (
+              e
+                ?.toString()
+                .includes?.(
+                  '[AccountNotFoundError] The account of type [CandyGuard] was not found at the provided address [',
+                )
+            ) {
+              return e
+                ?.toString()
+                ?.replace(
+                  '[AccountNotFoundError] The account of type [CandyGuard] was not found at the provided address [',
+                  '',
+                )
+                .split('].')[0]
+                .replace('].', '')
+                .trim();
+            } else {
+              console.error('Error when creating Collection NFT >', e);
+              throw new Error(`Error when creating Collection NFT - ${e}`);
+            }
+          }),
       );
+
+      const candyGuard: CandyGuard<DefaultCandyGuardSettings> =
+        await wrapInfiniteRetry(() =>
+          metaplexCli.candyMachines().findCandyGuardByAddress({
+            address: new PublicKey(candyGuardAddress),
+          }),
+        );
 
       // Finally, wrap the CM with the guards
       await wrapInfiniteRetry(() =>
         metaplexCli.candyMachines().wrapCandyGuard({
-          candyGuard: candyGuards.candyGuardAddress,
+          candyGuard: candyGuard.address,
           candyMachine: candyMachine.address,
         }),
       );
@@ -163,13 +217,13 @@ export default function useCandyMachineCreate() {
         `/api/collection/${state.collectionId}/candy-machine-create-logs`,
         {
           mintCandyMachineId,
-          mintGuardId: candyGuards.candyGuard?.address.toString(),
+          mintGuardId: candyGuard.address.toString(),
         },
       );
 
       await axios.put(`/api/collection/${state.collectionId}`, {
         mintCandyMachineId,
-        mintGuardId: candyGuards.candyGuard?.address.toString(),
+        mintGuardId: candyGuard.address.toString(),
       });
 
       dispatch({
@@ -184,15 +238,17 @@ export default function useCandyMachineCreate() {
         type: ActionTypesCreateCollectionStore.SetFieldValue,
         payload: {
           field: 'collectionCandyGuardAddress',
-          value: candyGuards.candyGuard?.address.toString() || '',
+          value: candyGuard.address.toString() || '',
         },
       });
 
       console.info(
         'Candy Machine using the guard created, we are ready to go houston!',
       );
+
+      return true;
     }
-  }, [state.collectionId, metaplexCli, wallet, dispatch]);
+  }, [state.collectionId, metaplexCli, wallet, toast, dispatch]);
 
   const insertItems = useCallback(async () => {
     const {
@@ -256,14 +312,18 @@ export default function useCandyMachineCreate() {
       batchedTxns.push(batch);
     }
 
-    const result = await wallet
-      ?.signAllTransactions?.(txnArray)
-      .catch(() => false);
+    const result = await wallet?.signAllTransactions?.(txnArray).catch(() => {
+      toast({
+        message: 'User refused to sign in the transaction',
+        icon: ToastIconEnum.FAILURE,
+      });
+    });
 
     // User did not approve the transaction
     if (!result) {
       return;
     }
+
     const resultOfAll: any[] = [];
     for (let index = 0; index < batchedTxns.length; index++) {
       resultOfAll.push(
@@ -299,13 +359,8 @@ export default function useCandyMachineCreate() {
         value: 'done',
       },
     });
-  }, [
-    state.collectionId,
-    connection,
-    metaplexCli,
-    wallet,
-    dispatch,
-  ]);
+    return true;
+  }, [state.collectionId, connection, toast, metaplexCli, wallet, dispatch]);
 
   return {
     createCollectionNFT,
