@@ -16,7 +16,6 @@ export function useCandyMachine(
   const wallet = useWallet();
   const [candyMachine, setCandyMachine] =
     useState<CandyMachine<DefaultCandyGuardSettings> | null>(null);
-  console.log(candyMachine?.candyGuard?.guards.startDate?.date.toString());
   const [isLoadingState, setIsLoadingState] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
 

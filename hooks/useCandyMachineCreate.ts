@@ -159,7 +159,7 @@ export default function useCandyMachineCreate() {
           .candyMachines()
           .createCandyGuard({
             guards: {
-              botTax: { lamports: sol(0.01), lastInstruction: false },
+              botTax: { lamports: sol(0.01), lastInstruction: true },
               solPayment: {
                 amount: sol(Number(data.mintPrice)),
                 destination: new PublicKey(
