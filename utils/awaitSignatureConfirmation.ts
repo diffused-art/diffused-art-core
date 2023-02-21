@@ -17,7 +17,6 @@ export const awaitTransactionSignatureConfirmation = async (
     confirmations: 0,
     err: null,
   };
-  console.log('Is here');
   let subId = 0;
   status = await new Promise(async (resolve, reject) => {
     setTimeout(() => {
@@ -25,7 +24,7 @@ export const awaitTransactionSignatureConfirmation = async (
         return;
       }
       done = true;
-      console.log('Rejecting for timeout...');
+      console.debug('Rejecting for timeout...');
       reject({ timeout: true });
     }, timeout);
     try {
@@ -39,10 +38,10 @@ export const awaitTransactionSignatureConfirmation = async (
             confirmations: 0,
           };
           if (result.err) {
-            console.log('Rejected via websocket', result.err);
+            console.debug('Rejected via websocket', result.err);
             reject(status);
           } else {
-            console.log('Resolved via websocket', result);
+            console.debug('Resolved via websocket', result);
             resolve(status);
           }
         },
@@ -59,26 +58,26 @@ export const awaitTransactionSignatureConfirmation = async (
           const signatureStatuses = await connection.getSignatureStatuses([
             txid,
           ]);
-          console.log(signatureStatuses);
+          console.debug(signatureStatuses);
           status = signatureStatuses && signatureStatuses.value[0];
           if (!done) {
             if (!status) {
-              console.log('REST null result for', txid, status);
+              console.debug('REST null result for', txid, status);
             } else if (status.err) {
-              console.log('REST error for', txid, status);
+              console.debug('REST error for', txid, status);
               done = true;
               reject(status.err);
             } else if (!status.confirmations) {
-              console.log('REST no confirmations for', txid, status);
+              console.debug('REST no confirmations for', txid, status);
             } else {
-              console.log('REST confirmation for', txid, status);
+              console.debug('REST confirmation for', txid, status);
               done = true;
               resolve(status);
             }
           }
         } catch (e) {
           if (!done) {
-            console.log('REST connection error: txid', txid, e);
+            console.debug('REST connection error: txid', txid, e);
           }
         }
       })();
@@ -88,6 +87,6 @@ export const awaitTransactionSignatureConfirmation = async (
 
   connection.removeSignatureListener(subId).catch(() => true);
   done = true;
-  console.log('Returning status ', status);
+  console.debug('Returning status ', status);
   return status;
 };
