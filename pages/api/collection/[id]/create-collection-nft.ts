@@ -46,6 +46,7 @@ export default async function handle(req: any, res: any) {
     description: collection.description,
     attributes: getAttributes(collection),
     properties: {
+      category: 'image',
       files: [
         {
           type: 'image/png',

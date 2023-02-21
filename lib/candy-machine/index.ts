@@ -16,6 +16,7 @@ export function useCandyMachine(
   const wallet = useWallet();
   const [candyMachine, setCandyMachine] =
     useState<CandyMachine<DefaultCandyGuardSettings> | null>(null);
+  console.log(candyMachine?.candyGuard?.guards.startDate?.date.toString());
   const [isLoadingState, setIsLoadingState] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
 
@@ -72,6 +73,12 @@ export function useCandyMachine(
             return null;
           }
         });
+    }
+    if (mintHash && candyMachine) {
+      metaplex
+        .candyMachines()
+        .refresh(candyMachine)
+        .then(cm => setCandyMachine(cm));
     }
     setIsMinting(false);
     return mintHash;

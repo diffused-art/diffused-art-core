@@ -3,7 +3,6 @@ import {
   sol,
   toDateTime,
   TransactionBuilder,
-  CreateCandyGuardOutput,
   Nft,
   CandyGuard,
   DefaultCandyGuardSettings,
@@ -117,10 +116,10 @@ export default function useCandyMachineCreate() {
     } = await axios.get(`/api/collection/${state.collectionId}`);
 
     if (!data.mintCandyMachineId) {
-      let startDate = toDateTime(data.mintOpenAt);
-      if (new Date(data.mintOpenAt) >= new Date(Date.now())) {
+      let startDate = toDateTime(new Date(data.mintOpenAt).getTime());
+      if (new Date(data.mintOpenAt) <= new Date(Date.now())) {
         startDate = toDateTime(
-          addMinutes(15, new Date(data.mintOpenAt).getTime()),
+          new Date(addMinutes(new Date(Date.now()), 15)).getTime(),
         );
       }
 
@@ -179,21 +178,21 @@ export default function useCandyMachineCreate() {
               e
                 ?.toString()
                 .includes?.(
-                  '[AccountNotFoundError] The account of type [CandyGuard] was not found at the provided address [',
+                  '[AccountNotFoundError] No account was found at the provided address [',
                 )
             ) {
               return e
                 ?.toString()
                 ?.replace(
-                  '[AccountNotFoundError] The account of type [CandyGuard] was not found at the provided address [',
+                  '[AccountNotFoundError] No account was found at the provided address [',
                   '',
                 )
                 .split('].')[0]
                 .replace('].', '')
                 .trim();
             } else {
-              console.error('Error when creating Collection NFT >', e);
-              throw new Error(`Error when creating Collection NFT - ${e}`);
+              console.error('Error when creating Candy Guard >', e);
+              throw new Error(`Error when creating Candy Guard - ${e}`);
             }
           }),
       );

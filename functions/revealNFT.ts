@@ -32,19 +32,25 @@ async function updateNFTOnChain(
   const metaplexWriteCli = await getWriteCli();
 
   const { uri: newUri } = await metaplexWriteCli.nfts().uploadMetadata({
-    name: currentNft.name,
+    ...currentNft.json,
     image: toMetaplexFile(newImage, 'generation.png'),
     attributes: newAttributes,
-    files: [
-      {
-        type: 'image/png',
-        uri: toMetaplexFile(newImage, 'generation.png'),
-      },
-    ],
+    properties: {
+      ...currentNft.json?.properties,
+      category: 'image',
+      files: [
+        {
+          type: 'image/png',
+          uri: toMetaplexFile(newImage, 'generation.png'),
+        },
+      ],
+    },
   });
 
   console.log('Updating on chain now for - ' + currentNft.address.toString());
-  console.log('Artist address - ' + artistAddress + '<--->' + artistAddress.toString())
+  console.log(
+    'Artist address - ' + artistAddress + '<--->' + artistAddress.toString(),
+  );
 
   const result = await metaplexWriteCli.nfts().update({
     nftOrSft: currentNft,
