@@ -1,7 +1,7 @@
 import { Artist, Collection, Mint } from '@prisma/client';
 import axios from 'axios';
 import Head from 'next/head';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useInterval } from 'usehooks-ts';
 import CornerCard from '../../components/corner-card';
@@ -58,18 +58,25 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
   );
   const [isMintOpen, setIsMintOpen] = useState(false);
 
-  useInterval(() => {
-    setIsMintOpen(
-      new Date(Date.now()) >
-        new Date(candyMachine?.candyGuard?.guards.startDate?.date.toNumber()!),
-    );
-  }, isMintOpen ? null : 30000);
+  useInterval(
+    () => {
+      setIsMintOpen(
+        new Date(Date.now()) >
+          new Date(
+            candyMachine?.candyGuard?.guards.startDate?.date.toNumber()!,
+          ),
+      );
+    },
+    isMintOpen ? null : 30000,
+  );
 
   const date = useMemo(() => {
     return new Date(
       candyMachine?.candyGuard?.guards.startDate?.date.toNumber()!,
     );
   }, [candyMachine]);
+
+  useEffect(() => setIsMintOpen(new Date(Date.now()) > date), [date]);
 
   const [activeMintHash, setActiveMintHash] = useState<string | null>(null);
   const [activeMint, setActiveMint] = useState<Mint | null>(null);
