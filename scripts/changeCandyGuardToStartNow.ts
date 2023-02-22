@@ -38,7 +38,7 @@ async function changeCandyGuardToStartNow() {
           ...candyGuard.guards,
           startDate: {
             date: toDateTime(
-              new Date(addMinutes(new Date(Date.now()), 15)).getTime(),
+              new Date(addMinutes(new Date(Date.now()), 15)).getTime() / 1000,
             ),
           },
         },
