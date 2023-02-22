@@ -32,40 +32,18 @@ async function changeCandyGuardToStartNow() {
       metaplex.identity().publicKey.toString()
     ) {
       console.log(candyGuard);
-      const result = await metaplex
-        .candyMachines()
-        .updateCandyGuard({
-          candyGuard: candyGuard.address,
-          guards: {
-            ...candyGuard.guards,
-            startDate: {
-              date: toDateTime(
-                new Date(addMinutes(new Date(Date.now()), 15)).getTime(),
-              ),
-            },
+      const result = await metaplex.candyMachines().updateCandyGuard({
+        candyGuard: candyGuard.address,
+        guards: {
+          ...candyGuard.guards,
+          startDate: {
+            date: toDateTime(
+              new Date(addMinutes(new Date(Date.now()), 15)).getTime(),
+            ),
           },
-        })
-        .then(async () =>
-          prisma.candyMachineCreationLogs.delete({
-            where: { id: element.id },
-          }),
-        )
-        .catch(async e => {
-          if (
-            e
-              .toString()
-              .includes(
-                'The program expected this account to be already initialized',
-              )
-          ) {
-            await prisma.candyMachineCreationLogs.delete({
-              where: { id: element.id },
-            });
-          } else {
-            throw new Error(e);
-          }
-        });
-      console.log('Result guard', result)
+        },
+      });
+      console.log('Result guard', result);
     }
   }
 }
