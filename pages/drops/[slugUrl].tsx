@@ -56,9 +56,19 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
     collection.mintCandyMachineId!,
     collection.updateAuthorityPublicKey!,
   );
+  const [isMintOpen, setIsMintOpen] = useState(false);
+
+  useInterval(() => {
+    setIsMintOpen(
+      new Date(Date.now()) >
+        new Date(candyMachine?.candyGuard?.guards.startDate?.date.toNumber()!),
+    );
+  }, isMintOpen ? null : 30000);
 
   const date = useMemo(() => {
-    return new Date(candyMachine?.candyGuard?.guards.startDate?.date.toNumber()!);
+    return new Date(
+      candyMachine?.candyGuard?.guards.startDate?.date.toNumber()!,
+    );
   }, [candyMachine]);
 
   const [activeMintHash, setActiveMintHash] = useState<string | null>(null);
@@ -145,7 +155,7 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
               backgroundColor={collection.nftPlaceholderBackgroundColor!}
               textColor={collection.nftPlaceholderForegroundColor!}
               title={
-                new Date(Date.now()) > date
+                isMintOpen
                   ? 'mint is live.'
                   : `mint will be live starting at:${' '}
                 ${date.toLocaleString()}`
@@ -175,10 +185,11 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
               ) : (
                 <h2 className="text-lg">loading mint details...</h2>
               )}
-
-              <div className="absolute top-10 right-5">
-                <MintButton onMint={onMintCB} isLoading={isMinting} />
-              </div>
+              {isMintOpen && (
+                <div className="absolute top-10 right-5">
+                  <MintButton onMint={onMintCB} isLoading={isMinting} />
+                </div>
+              )}
             </CornerCard>
 
             <CornerCard
