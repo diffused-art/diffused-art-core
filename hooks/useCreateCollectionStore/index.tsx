@@ -34,6 +34,7 @@ interface CreateCollectionStorePublishInterface {
   startDate: string;
   startTime: string;
   publishStep: 'terms' | 'upload' | 'done';
+  uploadStep: number;
   collectionId: string;
   collectionNFTAddress: string;
   collectionCandyMachineAddress: string;
@@ -80,6 +81,7 @@ export const createCollectionStoreInitialState: CreateCollectionStoreInterface =
       .split('T')[0],
     startTime: '12:00',
     publishStep: 'terms',
+    uploadStep: 0,
     collectionId: '',
     collectionNFTAddress: '',
     collectionCandyMachineAddress: '',

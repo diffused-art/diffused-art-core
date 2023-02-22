@@ -63,7 +63,7 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
       setIsMintOpen(
         new Date(Date.now()) >
           new Date(
-            candyMachine?.candyGuard?.guards.startDate?.date.toNumber()!,
+            candyMachine?.candyGuard?.guards.startDate?.date.toNumber()! * 1000,
           ),
       );
     },
@@ -72,7 +72,7 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
 
   const date = useMemo(() => {
     return new Date(
-      candyMachine?.candyGuard?.guards.startDate?.date.toNumber()!,
+      candyMachine?.candyGuard?.guards.startDate?.date.toNumber()! * 1000,
     );
   }, [candyMachine]);
 

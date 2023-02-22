@@ -1,4 +1,5 @@
 import { Collection } from '@prisma/client';
+import { addMinutes } from 'date-fns';
 import { CreateCollectionStoreForm } from '../../../hooks/useCreateCollectionStore';
 
 export function getDatetime(date, time) {
@@ -30,7 +31,9 @@ export function generateAPIObjectFromStore(
     mintName: `${store.dropName} #`,
     mintPrice: store.currencyTotal as any,
     mintSellerFeeBasisPoints: 250,
-    mintOpenAt: getDatetime(store.startDate, store.startTime).getTime() as any,
+    mintOpenAt: store.startImediately
+      ? (addMinutes(new Date(Date.now()), 15).getTime() as any)
+      : (getDatetime(store.startDate, store.startTime).getTime() as any),
     mintTotalSupply: store.quantity,
     tags: store.keywords,
   };

@@ -17,7 +17,6 @@ import {
 import axios from 'axios';
 import { addMinutes } from 'date-fns';
 import { useCallback } from 'react';
-import { retry } from 'ts-retry-promise';
 import { wrapInfiniteRetry } from '../utils/wrapInfiniteRetry';
 import {
   ActionTypesCreateCollectionStore,
@@ -113,10 +112,10 @@ export default function useCandyMachineCreate() {
     } = await axios.get(`/api/collection/${state.collectionId}`);
 
     if (!data.mintCandyMachineId) {
-      let startDate = toDateTime(new Date(data.mintOpenAt).getTime());
+      let startDate = toDateTime(new Date(data.mintOpenAt).getTime() / 1000);
       if (new Date(data.mintOpenAt) <= new Date(Date.now())) {
         startDate = toDateTime(
-          new Date(addMinutes(new Date(Date.now()), 15)).getTime(),
+          new Date(addMinutes(new Date(Date.now()), 15)).getTime() / 1000,
         );
       }
 

@@ -12,7 +12,6 @@ import { generateAPIObjectFromStore } from './utils';
 
 export default function PublishUpload() {
   const { state, dispatch } = useCreateCollectionStore();
-  const [activeStep, setActiveStep] = useLocalStorage('activeStep', 0);
   const [isLoading, setIsLoading] = useState(false);
   const { uploadImage } = useAnonymousNFTStorage();
   const { createCollectionNFT, createCandyMachine, insertItems } =
@@ -59,28 +58,55 @@ export default function PublishUpload() {
         nftPlaceholderImageURL,
       },
     });
-    setActiveStep(1);
+    dispatch({
+      type: ActionTypesCreateCollectionStore.SetFieldValue,
+      payload: {
+        field: 'uploadStep',
+        value: 1,
+      },
+    });
     setIsLoading(false);
   };
 
   const createCollectionNFTCB = async () => {
     setIsLoading(true);
     const result = await createCollectionNFT();
-    if (result) setActiveStep(2);
+    if (result)
+      dispatch({
+        type: ActionTypesCreateCollectionStore.SetFieldValue,
+        payload: {
+          field: 'uploadStep',
+          value: 2,
+        },
+      });
     setIsLoading(false);
   };
 
   const createCandyMachineCB = async () => {
     setIsLoading(true);
     const result = await createCandyMachine();
-    if (result) setActiveStep(3);
+    if (result)
+      dispatch({
+        type: ActionTypesCreateCollectionStore.SetFieldValue,
+        payload: {
+          field: 'uploadStep',
+          value: 3,
+        },
+      });
     setIsLoading(false);
   };
 
   const insertItemsCB = async () => {
     setIsLoading(true);
     const result = await insertItems();
-    if (result) setActiveStep(0);
+    if (result)
+      dispatch({
+        type: ActionTypesCreateCollectionStore.SetFieldValue,
+        payload: {
+          field: 'uploadStep',
+          value: 0,
+        },
+      });
     setIsLoading(false);
   };
 
@@ -95,7 +121,7 @@ export default function PublishUpload() {
         Just keep smashing the buttons as they appear, and it will be done soon
         😁
       </h1>
-      {activeStep === 0 && (
+      {state.uploadStep === 0 && (
         <button
           disabled={isLoading}
           onClick={handleCreateCollectionOnDB}
@@ -107,7 +133,7 @@ export default function PublishUpload() {
         </button>
       )}
 
-      {activeStep === 1 && (
+      {state.uploadStep === 1 && (
         <button
           disabled={isLoading}
           onClick={createCollectionNFTCB}
@@ -128,7 +154,7 @@ export default function PublishUpload() {
         </button>
       )}
 
-      {activeStep === 2 && (
+      {state.uploadStep === 2 && (
         <button
           disabled={isLoading}
           onClick={createCandyMachineCB}
@@ -146,7 +172,7 @@ export default function PublishUpload() {
         </button>
       )}
 
-      {activeStep === 3 && (
+      {state.uploadStep === 3 && (
         <button
           disabled={isLoading}
           onClick={insertItemsCB}
