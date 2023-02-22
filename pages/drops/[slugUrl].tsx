@@ -1,7 +1,7 @@
 import { Artist, Collection, Mint } from '@prisma/client';
 import axios from 'axios';
 import Head from 'next/head';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useInterval } from 'usehooks-ts';
 import CornerCard from '../../components/corner-card';
@@ -56,6 +56,10 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
     collection.mintCandyMachineId!,
     collection.updateAuthorityPublicKey!,
   );
+
+  const date = useMemo(() => {
+    return new Date(candyMachine?.candyGuard?.guards.startDate?.date.toNumber()!);
+  }, [candyMachine]);
 
   const [activeMintHash, setActiveMintHash] = useState<string | null>(null);
   const [activeMint, setActiveMint] = useState<Mint | null>(null);
@@ -141,10 +145,10 @@ const DropsSlugPage = ({ collection }: DropsSlugPageProps) => {
               backgroundColor={collection.nftPlaceholderBackgroundColor!}
               textColor={collection.nftPlaceholderForegroundColor!}
               title={
-                new Date(Date.now()) > new Date(collection.mintOpenAt)
+                new Date(Date.now()) > date
                   ? 'mint is live.'
                   : `mint will be live starting at:${' '}
-                ${new Date(collection.mintOpenAt).toLocaleString()}`
+                ${date.toLocaleString()}`
               }
             >
               {!isLoadingState ? (

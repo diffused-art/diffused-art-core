@@ -22,11 +22,11 @@ export function getReadonlyCli() {
   return metaplex;
 }
 
-export function getWriteCli(RPC_URL = process.env.RPC_URL_INSERTCM!) {
+export function getWriteCli(RPC_URL = process.env.RPC_URL_INSERTCM!, FUNDED_WALLET_SECRET = process.env.FUNDED_WALLET_SECRET!) {
   const connection = new Connection(RPC_URL);
 
   const fundedWallet = Keypair.fromSecretKey(
-    bs58.decode(process.env.FUNDED_WALLET_SECRET!),
+    bs58.decode(FUNDED_WALLET_SECRET),
   );
   const metaplex = Metaplex.make(connection)
     .use(keypairIdentity(fundedWallet))

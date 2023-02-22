@@ -16,6 +16,7 @@
     "db-push": "npx prisma db push",
     "db-studio": "npx prisma studio",
     "drain-cmv3": "ts-node ./scripts/drainCMV3FromAuthority.ts",
+    "start-candy-guard": "ts-node ./scripts/changeCandyGuardToStartNow.ts",
     "reinsert-non-confirmed-items-insert": "ts-node ./scripts/reinsertNonConfirmedItemsInsert.ts --cmid ",
     "mint-from-cmid": "ts-node ./scripts/utils/mintFromCMID.ts --cmid ",
     "refresh-helius-webhooks": "ts-node ./scripts/helius/refresh-webhook-monitor.ts",
