@@ -198,7 +198,7 @@ export default function Menu() {
             />
           </div>
 
-          <div className="flex items-center h-full space-x-10">
+          <div className="flex items-center h-full space-x-5 md:space-x-10 mx-2">
             <div
               className="text-main-yellow cursor-pointer h-full flex items-center justify-end relative space-x-1 text-xs md:text-base"
               onClick={() => setModalOpen(true)}
@@ -206,7 +206,7 @@ export default function Menu() {
               <span>
                 <QuestionMarkCircleIcon height={26} />
               </span>
-              <span>How it works?</span>
+              <span className="hidden md:inline-block">How it works?</span>
             </div>
             {navItems.map(item => (
               <Link
@@ -219,7 +219,7 @@ export default function Menu() {
                 }`}
               >
                 <span>{item.icon}</span>
-                <span>{item.label}</span>
+                <span className="hidden md:inline-block">{item.label}</span>
               </Link>
             ))}
           </div>
