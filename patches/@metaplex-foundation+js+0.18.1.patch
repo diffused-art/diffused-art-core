@@ -1,0 +1,88 @@
+diff --git a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/insertCandyMachineItems.mjs b/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/insertCandyMachineItems.mjs
+index 094f8d7..5e63fe7 100644
+--- a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/insertCandyMachineItems.mjs
++++ b/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/insertCandyMachineItems.mjs
+@@ -83,7 +83,7 @@ const insertCandyMachineItemsBuilder = (metaplex, params, options = {}) => {
+   const {
+     items
+   } = params;
+-  assertNotFull(params.candyMachine, index);
++  // assertNotFull(params.candyMachine, index);
+   assertCanAdd(params.candyMachine, index, items.length);
+   assertAllItemConstraints(params.candyMachine, items);
+ 
+diff --git a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/mintFromCandyMachine.mjs b/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/mintFromCandyMachine.mjs
+index 8f6a59d..47cae5e 100644
+--- a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/mintFromCandyMachine.mjs
++++ b/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineModule/operations/mintFromCandyMachine.mjs
+@@ -46,6 +46,19 @@ _mintFromCandyMachineOperation.key = Key;
+  * @group Operations
+  * @category Handlers
+  */
++
++import { retry } from 'ts-retry-promise';
++
++async function wrapInfiniteRetry(promise) {
++  return await retry(() => promise(), {
++    retries: 'INFINITELY',
++    delay: 1000,
++    backoff: 'LINEAR',
++    timeout: 10000000,
++    logger: console.log,
++  });
++}
++
+ const mintFromCandyMachineOperationHandler = {
+   async handle(operation, metaplex, scope) {
+     const builder = await mintFromCandyMachineBuilder(metaplex, operation.input, scope);
+@@ -55,10 +68,11 @@ const mintFromCandyMachineOperationHandler = {
+     scope.throwIfCanceled();
+     let nft;
+     try {
+-      nft = await metaplex.nfts().findByMint({
++      console.info('Minted NFT, now fetching it from the network...')
++      nft = await wrapInfiniteRetry(() => metaplex.nfts().findByMint({
+         mintAddress: output.mintSigner.publicKey,
+         tokenAddress: output.tokenAddress
+-      }, scope);
++      }, scope));
+     } catch (error) {
+       const {
+         candyGuard
+@@ -230,15 +244,15 @@ const mintFromCandyMachineBuilder = async (metaplex, params, options = {}) => {
+     mintSigner: mint
+   })
+ 
+-  // Create token and mint accounts.
+-  .add(tokenWithMintBuilder)
++    // Create token and mint accounts.
++    .add(tokenWithMintBuilder)
+ 
+-  // Mint the new NFT.
+-  .add({
+-    instruction: mintNftInstruction,
+-    signers: mintNftSigners,
+-    key: params.mintFromCandyMachineInstructionKey ?? 'mintNft'
+-  });
++    // Mint the new NFT.
++    .add({
++      instruction: mintNftInstruction,
++      signers: mintNftSigners,
++      key: params.mintFromCandyMachineInstructionKey ?? 'mintNft'
++    });
+ };
+ 
+ export { mintFromCandyMachineBuilder, mintFromCandyMachineOperation, mintFromCandyMachineOperationHandler };
+diff --git a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineV2Module/asserts.mjs b/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineV2Module/asserts.mjs
+index c175d6f..08f8bf7 100644
+--- a/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineV2Module/asserts.mjs
++++ b/node_modules/@metaplex-foundation/js/dist/esm/plugins/candyMachineV2Module/asserts.mjs
+@@ -42,7 +42,7 @@ const assertCandyMachineV2IsLive = candyMachine => {
+     return;
+   }
+   const liveDate = candyMachine.goLiveDate;
+-  if (!liveDate || liveDate.gte(now())) {
++  if (!liveDate || new Date(liveDate.toNumber()) >= new Date(Date.now())) {
+     throw new CandyMachineV2NotLiveError(liveDate);
+   }
+ };

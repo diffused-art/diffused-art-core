@@ -1,0 +1,83 @@
+name: Deploy project to production
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  APPLICATION_NAME: diffused-art
+  ENVIRONMENT_NAME: diffused-art
+  ELASTIC_BEANSTALK_BUCKET: elasticbeanstalk-us-east-2-831812516802
+  NEXT_PUBLIC_RPC_URL: ${{ vars.NEXT_PUBLIC_RPC_URL }}
+  NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+  NEXT_PUBLIC_DIFFUSED_ART_CREATOR: ${{ vars.NEXT_PUBLIC_DIFFUSED_ART_CREATOR }}
+
+jobs:
+  deploy-to-elastic-beanstalk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - uses: benjlevesque/short-sha@v2.1
+        id: short-sha
+        with:
+          length: 6
+
+      - name: Setup node env
+        uses: actions/setup-node@v3
+        with:
+          always-auth: true
+          registry-url: 'https://registry.npmjs.org'
+          node-version: 16
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npx next telemetry disable && npm run build
+
+      - name: Create deploy folder
+        run: rm -rf ./deploy && mkdir ./deploy && cp -r .next ./deploy && mkdir ./deploy/node_modules && touch ./deploy/node_modules/.placeholder && cp -r package.json ./deploy && cp -r package-lock.json ./deploy
+
+      - name: Zip project
+        run: cd ./deploy && zip -9 -rq --symlinks deploy.zip . && cp deploy.zip ../ && cd ..
+
+      - name: Get timestamp
+        uses: gerred/actions/current-time@master
+        id: current-time
+
+      - name: Run string replace
+        uses: frabert/replace-string-action@master
+        id: format-time
+        with:
+          pattern: '[:\.]+'
+          string: '${{ steps.current-time.outputs.time }}'
+          replace-with: '-'
+          flags: 'g'
+
+      - name: Deploy for app
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ env.APPLICATION_NAME }}
+          environment_name: ${{ env.ENVIRONMENT_NAME }}
+          existing_bucket_name: ${{ env.ELASTIC_BEANSTALK_BUCKET }}
+          region: us-east-2
+          version_label: '${{ env.APPLICATION_NAME }}-${{ steps.short-sha.outputs.sha }}-[${{ steps.format-time.outputs.replaced }}]'
+          deployment_package: deploy.zip
+          version_description: '[${{ github.actor }}] [GH Actions] [${{ steps.short-sha.outputs.sha }}] ${{ github.event.head_commit.message }}'
+
+      - name: Deployed!
+        run: echo App deployed to ELB
