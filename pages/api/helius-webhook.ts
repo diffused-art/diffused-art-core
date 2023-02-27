@@ -4,7 +4,7 @@ import prisma from '../../lib/prisma';
 
 export default async function handle(req: any, res: any) {
   if (req.method !== 'POST') {
-    res.status(405).send({ message: 'Only POST requests allowed' });
+    res.status(405).send({ message: 'Only POST requests allowed.' });
     return;
   }
 
