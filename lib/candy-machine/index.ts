@@ -43,6 +43,7 @@ export function useCandyMachine(
         })
         .then(res => res.nft.address.toString())
         .catch(e => {
+          console.error('Error >', e);
           if (
             e
               ?.toString()
@@ -50,7 +51,6 @@ export function useCandyMachine(
                 'raised an error that is not recognized by the programs registered by the SDK',
               )
           ) {
-            console.error('Error >', e);
             return null;
           } else if (
             e
